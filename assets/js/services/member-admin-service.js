@@ -182,6 +182,53 @@ export async function updateMemberRecord(memberId, payload = {}) {
   return ref;
 }
 
+export async function loadMemberInsights(memberId) {
+  if (!memberId) {
+    return {
+      wallet: null,
+      recentRedemptions: [],
+    };
+  }
+
+  const walletSnap = await getDoc(doc(state.db, 'point_wallets', memberId));
+  const wallet = walletSnap.exists() ? {
+    id: walletSnap.id,
+    ...walletSnap.data(),
+    updatedLabel: formatDate(walletSnap.data()?.updatedAt),
+    lastTransactionLabel: formatDate(walletSnap.data()?.lastTransactionAt),
+  } : null;
+
+  let recentRedemptions = [];
+  try {
+    const redemptionsRef = collection(state.db, 'redemptions');
+    const redemptionsQuery = query(
+      redemptionsRef,
+      where('memberId', '==', memberId),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+    const snap = await getDocs(redemptionsQuery);
+    recentRedemptions = snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        ...data,
+        createdLabel: formatDate(data.createdAt),
+        approvedLabel: formatDate(data.approvedAt),
+        usedLabel: formatDate(data.usedAt),
+        expiresLabel: formatDate(data.expiresAt),
+      };
+    });
+  } catch (error) {
+    console.warn('load recentRedemptions failed', error);
+  }
+
+  return {
+    wallet,
+    recentRedemptions,
+  };
+}
+
 export async function deleteMemberRecord(memberId) {
   if (!memberId) throw new Error('memberId is required');
   await deleteDoc(doc(state.db, 'members', memberId));

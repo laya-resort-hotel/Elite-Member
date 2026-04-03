@@ -16,13 +16,14 @@ import {
   createMemberShell,
   deleteMemberRecord,
   loadMemberById,
+  loadMemberInsights,
   loadMembersSafe,
   saveMemberRecord,
   updateMemberRecord,
 } from '../services/member-admin-service.js';
 import { renderAdminKpis, renderResidentSearchResults, renderTable, updateStatusLabels } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
-import { escapeHtml, formatTHB } from '../core/format.js';
+import { escapeHtml, formatTHB, formatNumber } from '../core/format.js';
 
 const demoContentMap = {
   news: demoNews,
@@ -77,6 +78,7 @@ const adminContentState = {
 const adminMembersState = {
   cache: [],
   editor: blankMemberEditorState(),
+  insights: blankMemberInsightsState(),
 };
 
 let dragImageId = '';
@@ -115,6 +117,36 @@ function blankMemberEditorState() {
     ownedUnitsText: '',
     notes: '',
     isExisting: false,
+  };
+}
+
+function blankMemberInsightsState() {
+  return {
+    wallet: {
+      currentPoints: 0,
+      pendingPoints: 0,
+      lifetimeEarned: 0,
+      lifetimeRedeemed: 0,
+      updatedLabel: '',
+      tier: 'elite_black',
+    },
+    recentRedemptions: [],
+  };
+}
+
+function getMemberInsightsState() {
+  return adminMembersState.insights || blankMemberInsightsState();
+}
+
+function setMemberInsightsState(nextState = {}) {
+  adminMembersState.insights = {
+    ...blankMemberInsightsState(),
+    ...nextState,
+    wallet: {
+      ...blankMemberInsightsState().wallet,
+      ...(nextState.wallet || {}),
+    },
+    recentRedemptions: Array.isArray(nextState.recentRedemptions) ? nextState.recentRedemptions : [],
   };
 }
 
@@ -421,6 +453,149 @@ function renderContentList() {
   }).join('');
 }
 
+function renderMemberInsights() {
+  const editor = getMemberEditorState();
+  const insights = getMemberInsightsState();
+  const wallet = insights.wallet || {};
+  const redemptions = Array.isArray(insights.recentRedemptions) ? insights.recentRedemptions : [];
+  const unitsCount = parseUnitsText(editor.ownedUnitsText || '').length;
+
+  const displayName = editor.fullName || 'New member';
+  const initials = (displayName || 'M')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase() || 'M';
+
+  if ($('memberDetailAvatar')) $('memberDetailAvatar').textContent = initials;
+  if ($('memberDetailName')) $('memberDetailName').textContent = displayName;
+  if ($('memberDetailCode')) $('memberDetailCode').textContent = editor.publicCardCode || 'Not created';
+  if ($('memberDetailTier')) $('memberDetailTier').textContent = editor.tier || 'elite_black';
+  if ($('memberDetailStatus')) $('memberDetailStatus').textContent = editor.status || 'active';
+  if ($('memberDetailOwnerType')) $('memberDetailOwnerType').textContent = editor.ownerType || 'resident_owner';
+  if ($('memberDetailEmail')) $('memberDetailEmail').textContent = editor.email || '-';
+  if ($('memberDetailPhone')) $('memberDetailPhone').textContent = editor.phone || '-';
+  if ($('memberDetailLanguage')) $('memberDetailLanguage').textContent = editor.preferredLanguage || 'en';
+  if ($('memberDetailUnits')) $('memberDetailUnits').textContent = String(unitsCount);
+  if ($('memberPointTierBadge')) $('memberPointTierBadge').textContent = wallet.tier || editor.tier || 'elite_black';
+  if ($('memberPointCurrent')) $('memberPointCurrent').textContent = formatNumber(wallet.currentPoints || 0);
+  if ($('memberPointPending')) $('memberPointPending').textContent = formatNumber(wallet.pendingPoints || 0);
+  if ($('memberPointEarned')) $('memberPointEarned').textContent = formatNumber(wallet.lifetimeEarned || 0);
+  if ($('memberPointRedeemed')) $('memberPointRedeemed').textContent = formatNumber(wallet.lifetimeRedeemed || 0);
+  if ($('memberPointUpdatedAt')) {
+    $('memberPointUpdatedAt').textContent = wallet.updatedLabel
+      ? `Wallet updated ${wallet.updatedLabel}`
+      : 'No wallet data yet';
+  }
+  if ($('memberRedemptionCount')) {
+    $('memberRedemptionCount').textContent = `${redemptions.length} item${redemptions.length === 1 ? '' : 's'}`;
+  }
+
+  const list = $('memberRecentRedemptions');
+  if (!list) return;
+
+  if (!redemptions.length) {
+    list.innerHTML = '<div class="member-redemption-empty">ยังไม่มีประวัติแลกสิทธิ์ของสมาชิกคนนี้</div>';
+    return;
+  }
+
+  list.innerHTML = redemptions.map((item) => {
+    const points = Number(item.pointsCost || 0);
+    const dateLabel = item.usedLabel || item.approvedLabel || item.createdLabel || '-';
+    return `
+      <article class="member-redemption-item">
+        <div class="member-redemption-top">
+          <div>
+            <div class="member-redemption-title">${escapeHtml(item.targetTitleSnapshot || item.targetTitle || item.title || 'Untitled redemption')}</div>
+            <div class="member-redemption-meta">${escapeHtml(item.redemptionCode || item.id || '')}</div>
+          </div>
+          <span class="mini-badge ${item.status === 'used' ? 'gold' : 'subtle'}">${escapeHtml(item.status || 'pending')}</span>
+        </div>
+        <div class="member-redemption-foot">
+          <span>${points ? `${formatNumber(points)} pts` : '0 pts'}</span>
+          <span>${escapeHtml(dateLabel)}</span>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function refreshMemberInsights(memberRecord = null) {
+  const editor = getMemberEditorState();
+  const memberId = memberRecord?.memberId || editor.memberId;
+
+  if (!memberId) {
+    setMemberInsightsState(blankMemberInsightsState());
+    renderMemberInsights();
+    return;
+  }
+
+  if (canManageContent()) {
+    try {
+      const loaded = await loadMemberInsights(memberId);
+      setMemberInsightsState({
+        wallet: loaded.wallet || {
+          currentPoints: 0,
+          pendingPoints: 0,
+          lifetimeEarned: 0,
+          lifetimeRedeemed: 0,
+          updatedLabel: '',
+          tier: editor.tier || 'elite_black',
+        },
+        recentRedemptions: loaded.recentRedemptions || [],
+      });
+      renderMemberInsights();
+      return;
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+
+  const demoWallet = {
+    currentPoints: Number(demoResident.points || 0),
+    pendingPoints: 0,
+    lifetimeEarned: Number(demoResident.points || 0) + 12000,
+    lifetimeRedeemed: 4800,
+    updatedLabel: 'Demo data',
+    tier: editor.tier || 'elite_black',
+  };
+
+  const demoRedemptions = [
+    {
+      id: 'demo-red-001',
+      targetTitleSnapshot: 'Complimentary Welcome Cocktail',
+      redemptionCode: 'RDM-DEMO-001',
+      status: 'used',
+      pointsCost: 500,
+      usedLabel: '2 Apr 2026, 19:20',
+    },
+    {
+      id: 'demo-red-002',
+      targetTitleSnapshot: 'Late Checkout Benefit',
+      redemptionCode: 'RDM-DEMO-002',
+      status: 'approved',
+      pointsCost: 1200,
+      approvedLabel: '29 Mar 2026, 13:10',
+    },
+    {
+      id: 'demo-red-003',
+      targetTitleSnapshot: 'Complimentary Dessert',
+      redemptionCode: 'RDM-DEMO-003',
+      status: 'pending',
+      pointsCost: 350,
+      createdLabel: '28 Mar 2026, 16:00',
+    },
+  ];
+
+  setMemberInsightsState({
+    wallet: demoWallet,
+    recentRedemptions: demoRedemptions,
+  });
+  renderMemberInsights();
+}
+
 function renderMembersList() {
   const items = adminMembersState.cache || [];
   const container = $('adminMembersList');
@@ -555,6 +730,7 @@ async function loadMemberEditorItem(memberId) {
   });
 
   hydrateMemberEditorFromState();
+  await refreshMemberInsights(item);
   renderMembersList();
 }
 
@@ -572,6 +748,7 @@ function resetMemberEditor() {
     memberId,
     publicCardCode: makeCardCodeFromMemberId(memberId),
   });
+  setMemberInsightsState(blankMemberInsightsState());
   hydrateMemberEditorFromState();
 }
 
@@ -942,6 +1119,7 @@ async function saveCurrentMember() {
       isExisting: true,
     });
     hydrateMemberEditorFromState();
+    await refreshMemberInsights({ memberId });
     await loadMembersTab({ force: true });
     await loadAdminOverview();
     showToast('Member saved');
@@ -1004,6 +1182,7 @@ async function deleteCurrentMember() {
       await deleteMemberRecord(editor.memberId);
     }
     resetMemberEditor();
+    setMemberInsightsState(blankMemberInsightsState());
     await loadMembersTab({ force: true });
     await loadAdminOverview();
     showToast('Member deleted');

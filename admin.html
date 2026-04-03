@@ -299,6 +299,77 @@
               <button id="cancelMemberEditBtn" class="ghost-btn" type="button">Cancel edit</button>
               <button id="deleteMemberBtn" class="danger-btn" type="button">Delete Member</button>
             </div>
+
+            <div class="member-luxury-card mt-lg">
+              <div class="member-luxury-hero">
+                <div class="member-luxury-avatar" id="memberDetailAvatar">M</div>
+                <div class="member-luxury-copy">
+                  <div class="eyebrow gold">Member Detail Card</div>
+                  <h5 id="memberDetailName">New member</h5>
+                  <div class="member-luxury-code" id="memberDetailCode">Not created</div>
+                  <div class="member-luxury-tags">
+                    <span class="mini-badge gold" id="memberDetailTier">elite_black</span>
+                    <span class="mini-badge subtle" id="memberDetailStatus">active</span>
+                    <span class="mini-badge" id="memberDetailOwnerType">resident_owner</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="member-detail-grid">
+                <div class="member-detail-item">
+                  <span>Email</span>
+                  <strong id="memberDetailEmail">-</strong>
+                </div>
+                <div class="member-detail-item">
+                  <span>Phone</span>
+                  <strong id="memberDetailPhone">-</strong>
+                </div>
+                <div class="member-detail-item">
+                  <span>Language</span>
+                  <strong id="memberDetailLanguage">en</strong>
+                </div>
+                <div class="member-detail-item">
+                  <span>Owned units</span>
+                  <strong id="memberDetailUnits">0</strong>
+                </div>
+              </div>
+
+              <div class="member-insights-grid">
+                <section class="member-insight-panel">
+                  <div class="panel-title-row compact-row">
+                    <h5>Point Summary</h5>
+                    <span class="mini-badge gold" id="memberPointTierBadge">elite_black</span>
+                  </div>
+                  <div class="member-point-summary">
+                    <div class="member-point-card">
+                      <span>Current Points</span>
+                      <strong id="memberPointCurrent">0</strong>
+                    </div>
+                    <div class="member-point-card">
+                      <span>Pending Points</span>
+                      <strong id="memberPointPending">0</strong>
+                    </div>
+                    <div class="member-point-card">
+                      <span>Lifetime Earned</span>
+                      <strong id="memberPointEarned">0</strong>
+                    </div>
+                    <div class="member-point-card">
+                      <span>Lifetime Redeemed</span>
+                      <strong id="memberPointRedeemed">0</strong>
+                    </div>
+                  </div>
+                  <div class="upload-note" id="memberPointUpdatedAt">No wallet data yet</div>
+                </section>
+
+                <section class="member-insight-panel">
+                  <div class="panel-title-row compact-row">
+                    <h5>Recent Redemptions</h5>
+                    <span class="mini-badge subtle" id="memberRedemptionCount">0 items</span>
+                  </div>
+                  <div id="memberRecentRedemptions" class="member-redemption-list"></div>
+                </section>
+              </div>
+            </div>
           </section>
         </div>
       </section>
