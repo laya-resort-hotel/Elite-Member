@@ -28,13 +28,8 @@ export function renderVaultHome(newsItem, promotionItems = []) {
     const image = newsItem?.coverImageUrl || newsItem?.galleryImages?.[0]?.url || '';
     hero.innerHTML = `
       <a class="vault-news-hero-link" href="./news.html">
-        <div class="vault-news-image-wrap">
+        <div class="vault-news-image-wrap vault-news-frame">
           ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(newsItem?.title || 'News')}" />` : '<div class="vault-news-image vault-news-fallback">News</div>'}
-        </div>
-        <div class="vault-news-copy">
-          <div class="vault-news-kicker">Latest update</div>
-          <h2>${escapeHtml(newsItem?.title || 'Resident news')}</h2>
-          <p>${escapeHtml(newsItem?.summary || newsItem?.body || 'ติดตามข่าวสารล่าสุดของ LAYA Resident ได้ที่นี่')}</p>
         </div>
       </a>
     `;
@@ -46,13 +41,9 @@ export function renderVaultHome(newsItem, promotionItems = []) {
     promoGrid.innerHTML = items.map((item) => {
       const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
       return `
-        <a class="vault-promo-card" href="./promotions.html">
+        <a class="vault-promo-card image-only" href="./promotions.html" aria-label="${escapeHtml(item.title || 'Promotion')}">
           <div class="vault-promo-thumb-wrap">
             ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || 'Promotion')}" />` : '<div class="vault-promo-thumb vault-news-fallback">Promo</div>'}
-          </div>
-          <div class="vault-promo-copy">
-            <strong>${escapeHtml(item.title || 'Promotion')}</strong>
-            <span>${escapeHtml(item.summary || '')}</span>
           </div>
         </a>
       `;

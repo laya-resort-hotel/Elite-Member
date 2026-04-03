@@ -1085,3 +1085,194 @@ body.lightbox-open {
   .vault-promo-copy { min-height: 88px; }
 }
 .nav-ico svg { width: 24px; height: 24px; display: block; }
+
+
+/* Vault refinement pass */
+.vault-shell {
+  max-width: 430px;
+  padding-bottom: 104px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05);
+}
+.vault-brand-bar {
+  padding: 12px 16px 14px;
+  min-height: 72px;
+}
+.vault-app-name {
+  font-size: 10px;
+  letter-spacing: .24em;
+}
+.vault-app-subtitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.vault-profile-strip {
+  padding: 14px 16px;
+  grid-template-columns: 54px 1fr auto;
+  gap: 12px;
+}
+.vault-avatar {
+  width: 54px;
+  height: 54px;
+  font-size: 22px;
+}
+.vault-profile-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+.vault-profile-meta {
+  font-size: 11px;
+  margin-top: 2px;
+}
+.vault-points-pill strong {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1;
+}
+.vault-points-pill span {
+  width: 48px;
+  height: 48px;
+  font-size: 26px;
+  font-weight: 800;
+}
+.vault-main-content {
+  padding-bottom: 18px;
+}
+.vault-section-title {
+  background: #9d0015;
+  color: #fff;
+  font-size: 19px;
+  line-height: 1;
+  padding: 12px 14px 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.vault-section-split {
+  background: #000;
+}
+.vault-news-hero {
+  padding: 0;
+  border-top: 4px solid #000;
+  border-bottom: 4px solid #000;
+}
+.vault-news-frame {
+  background: #dde7de;
+}
+.vault-news-image,
+.vault-news-fallback {
+  height: 420px;
+}
+.vault-promo-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 0 0 14px;
+}
+.vault-promo-card.image-only {
+  background: #000;
+}
+.vault-promo-card.image-only .vault-promo-thumb {
+  height: 144px;
+}
+.vault-promo-card.image-only .vault-promo-thumb-wrap {
+  background: #111;
+}
+.vault-bottom-nav {
+  padding: 7px 6px 10px;
+}
+.vault-bottom-nav .nav-btn {
+  padding: 7px 2px;
+  gap: 5px;
+}
+.nav-ico svg {
+  width: 25px;
+  height: 25px;
+}
+.nav-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+.vault-tabs-panel {
+  padding: 0;
+}
+.vault-reward-tabs {
+  border-top: 4px solid #000;
+  background: #970013;
+}
+.vault-reward-tab {
+  padding: 12px 6px 11px;
+  font-size: 11px;
+  letter-spacing: .01em;
+}
+.vault-reward-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 18px;
+  padding: 14px;
+}
+.vault-reward-group-title span {
+  color: rgba(255,255,255,.85);
+  font-size: 20px;
+  line-height: 1;
+}
+.vault-reward-list {
+  gap: 10px;
+  padding: 10px 0 18px;
+}
+.vault-reward-card {
+  grid-template-columns: 112px minmax(0,1fr) 124px;
+  gap: 16px;
+  padding: 14px 14px 14px 12px;
+  background: #efefef;
+}
+.vault-reward-thumb { width: 112px; height: 112px; }
+.vault-reward-info h3 {
+  font-size: 16px;
+  line-height: 1.35;
+  margin: 0 0 14px;
+}
+.vault-points-text {
+  font-size: 17px;
+  font-weight: 500;
+}
+.vault-redeem-btn {
+  min-width: 118px;
+  padding: 15px 12px;
+  background: #b9bcc4;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+}
+.vault-settings-list {
+  padding: 16px 0 14px;
+  gap: 6px;
+}
+.vault-settings-item {
+  gap: 18px;
+  padding: 15px 18px;
+}
+.vault-settings-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 0;
+}
+.vault-settings-icon svg {
+  width: 36px;
+  height: 36px;
+}
+.vault-settings-item span:last-child {
+  font-size: 17px;
+  letter-spacing: .01em;
+}
+@media (max-width: 640px) {
+  .vault-news-image, .vault-news-fallback { height: 330px; }
+  .vault-promo-card.image-only .vault-promo-thumb { height: 118px; }
+  .vault-reward-card {
+    grid-template-columns: 96px minmax(0,1fr);
+    gap: 14px;
+  }
+  .vault-reward-thumb { width: 96px; height: 96px; }
+  .vault-reward-action { grid-column: 1 / -1; justify-content: flex-end; }
+  .vault-redeem-btn { min-width: 132px; }
+}
