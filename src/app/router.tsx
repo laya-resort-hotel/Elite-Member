@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createHashRouter, Navigate } from "react-router-dom";
 import LoginPage from "../pages/resident/LoginPage";
 import HomePage from "../pages/resident/HomePage";
 import CardPage from "../pages/resident/CardPage";
@@ -25,7 +25,7 @@ import { ResidentProtectedRoute } from "../components/guards/ResidentProtectedRo
 import { AdminProtectedRoute } from "../components/guards/AdminProtectedRoute";
 import { PublicOnlyRoute } from "../components/guards/PublicOnlyRoute";
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     element: <PublicOnlyRoute />,
     children: [
