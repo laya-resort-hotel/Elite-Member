@@ -48,6 +48,60 @@ function bindTilt(scene) {
   scene.addEventListener('blur', resetTilt);
 }
 
+function bindSwipe(scene, card) {
+  if (!scene || !card) return;
+
+  let startX = 0;
+  let startY = 0;
+  let dragging = false;
+  let recentSwipeAt = 0;
+
+  const swipeThreshold = 36;
+  const verticalTolerance = 28;
+  const clickSuppressMs = 420;
+
+  const handleSwipeResult = (deltaX, deltaY) => {
+    if (Math.abs(deltaX) < swipeThreshold) return false;
+    if (Math.abs(deltaY) > verticalTolerance && Math.abs(deltaY) > Math.abs(deltaX)) return false;
+
+    recentSwipeAt = Date.now();
+
+    if (deltaX < 0) {
+      setSide(card, 'back');
+    } else {
+      setSide(card, 'front');
+    }
+    return true;
+  };
+
+  scene.addEventListener('touchstart', (event) => {
+    if (!event.touches || !event.touches.length) return;
+    const touch = event.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+    dragging = true;
+  }, { passive: true });
+
+  scene.addEventListener('touchend', (event) => {
+    if (!dragging) return;
+    const touch = event.changedTouches && event.changedTouches[0];
+    if (!touch) return;
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+    handleSwipeResult(deltaX, deltaY);
+    dragging = false;
+  }, { passive: true });
+
+  scene.addEventListener('touchcancel', () => {
+    dragging = false;
+  }, { passive: true });
+
+  scene.addEventListener('click', () => {
+    if (Date.now() - recentSwipeAt < clickSuppressMs) return;
+    toggleSide(card);
+  });
+}
+
 function downloadCurrentSide(card) {
   const side = card.dataset.side === 'back' ? 'back' : 'front';
   const img = card.querySelector(`.elite-card-${side} img`);
@@ -95,7 +149,6 @@ export function bindFlipCards() {
       downloadCurrentSide(card);
     });
 
-    scene?.addEventListener('click', () => toggleSide(card));
     scene?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
@@ -109,6 +162,7 @@ export function bindFlipCards() {
       }
     });
 
+    bindSwipe(scene, card);
     bindTilt(scene);
     setSide(card, card.dataset.defaultSide || 'front');
   });

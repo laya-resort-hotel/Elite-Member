@@ -558,6 +558,8 @@ body.lightbox-open {
   border-radius: 28px;
   perspective: 2400px;
   cursor: pointer;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
   transform: translateY(0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transition: transform .35s ease, filter .35s ease;
   will-change: transform;
