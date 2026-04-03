@@ -254,6 +254,30 @@
               </div>
             </div>
 
+            <div class="member-auth-panel mt-md">
+              <div class="panel-title-row compact-row">
+                <div>
+                  <div class="eyebrow gold">Resident Login Account</div>
+                  <h5>Create Firebase login from admin side</h5>
+                </div>
+                <span class="mini-badge subtle" id="memberAccountStatusBadge">No login yet</span>
+              </div>
+              <div class="upload-note" id="memberSignupStatus">ใช้ Email ด้านบน + Temporary password เพื่อสร้าง login ให้ Resident</div>
+              <div class="grid-2 mt-sm admin-editor-grid">
+                <div>
+                  <label class="field-label" for="memberSignupPasswordInput">Temporary password</label>
+                  <input id="memberSignupPasswordInput" class="input" type="password" placeholder="At least 6 characters" />
+                </div>
+                <div>
+                  <label class="field-label" for="memberSignupConfirmInput">Confirm password</label>
+                  <input id="memberSignupConfirmInput" class="input" type="password" placeholder="Confirm password" />
+                </div>
+              </div>
+              <div class="row gap wrap mt-sm">
+                <button id="createMemberLoginBtn" class="primary-btn" type="button">Create Login Account</button>
+              </div>
+            </div>
+
             <div class="grid-4 mt-md admin-editor-grid member-grid-4">
               <div>
                 <label class="field-label" for="memberStatusInput">Status</label>

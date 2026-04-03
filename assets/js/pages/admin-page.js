@@ -13,6 +13,7 @@ import {
 } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import {
+  createMemberLoginAccount,
   createMemberShell,
   deleteMemberRecord,
   loadMemberById,
@@ -338,6 +339,40 @@ function hydrateMemberEditorFromState() {
   if ($('memberEditorModeLabel')) $('memberEditorModeLabel').textContent = editor.isExisting ? 'Editing member' : 'Create new member';
   if ($('memberEditorDocIdLabel')) $('memberEditorDocIdLabel').textContent = editor.memberId || 'Not created';
   renderMemberQrPreview();
+  updateMemberSignupUi();
+}
+
+function updateMemberSignupUi(message = '') {
+  const editor = getMemberEditorState();
+  const linked = !!String(editor.authUid || '').trim();
+  const adminCanCreate = state.firebaseReady && state.currentRole === 'admin';
+
+  const badge = $('memberAccountStatusBadge');
+  if (badge) {
+    badge.textContent = linked ? 'Auth linked' : 'No login yet';
+    badge.classList.toggle('gold', linked);
+    badge.classList.toggle('subtle', !linked);
+  }
+
+  const note = $('memberSignupStatus');
+  if (note) {
+    note.textContent = message || (linked
+      ? `Linked auth UID: ${editor.authUid}`
+      : (adminCanCreate
+        ? 'ใช้ Email ด้านบน + Temporary password เพื่อสร้าง login ให้ Resident'
+        : 'การสร้าง Firebase login ทำได้เฉพาะตอน login เป็น admin'));
+    note.classList.remove('hidden');
+  }
+
+  const passwordInput = $('memberSignupPasswordInput');
+  const confirmInput = $('memberSignupConfirmInput');
+  const createBtn = $('createMemberLoginBtn');
+  if (passwordInput) passwordInput.disabled = linked || !adminCanCreate;
+  if (confirmInput) confirmInput.disabled = linked || !adminCanCreate;
+  if (createBtn) {
+    createBtn.disabled = linked || !adminCanCreate;
+    createBtn.textContent = linked ? 'Login already created' : 'Create Login Account';
+  }
 }
 
 function updateCoverPreview() {
@@ -847,7 +882,10 @@ function resetMemberEditor() {
     publicCardCode: makeCardCodeFromMemberId(memberId),
   });
   setMemberInsightsState(blankMemberInsightsState());
+  if ($('memberSignupPasswordInput')) $('memberSignupPasswordInput').value = '';
+  if ($('memberSignupConfirmInput')) $('memberSignupConfirmInput').value = '';
   hydrateMemberEditorFromState();
+  updateMemberSignupUi();
   renderMemberInsights();
 }
 
@@ -1218,6 +1256,7 @@ async function saveCurrentMember() {
       isExisting: true,
     });
     hydrateMemberEditorFromState();
+    updateMemberSignupUi();
     await refreshMemberInsights({ memberId });
     await loadMembersTab({ force: true });
     await loadAdminOverview();
@@ -1225,6 +1264,113 @@ async function saveCurrentMember() {
   } catch (error) {
     console.error(error);
     showToast(error.message || 'บันทึก member ไม่สำเร็จ', 'error');
+  }
+}
+
+async function handleCreateMemberLoginAccount() {
+  if (!state.firebaseReady) {
+    showToast('Firebase not ready', 'error');
+    return;
+  }
+
+  if (state.currentRole !== 'admin') {
+    showToast('Create Login Account ใช้ได้เฉพาะ admin', 'error');
+    updateMemberSignupUi();
+    return;
+  }
+
+  syncMemberEditorFromDom();
+  const editor = getMemberEditorState();
+  const password = $('memberSignupPasswordInput')?.value || '';
+  const confirmPassword = $('memberSignupConfirmInput')?.value || '';
+
+  if (editor.authUid) {
+    showToast('Member นี้มี login อยู่แล้ว', 'error');
+    updateMemberSignupUi();
+    return;
+  }
+
+  if (!editor.fullName) {
+    showToast('กรอก Full name ก่อน', 'error');
+    return;
+  }
+
+  if (!editor.email) {
+    showToast('กรอก Email ก่อนสร้าง login', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showToast('Password ต้องอย่างน้อย 6 ตัวอักษร', 'error');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showToast('Confirm password ไม่ตรงกัน', 'error');
+    return;
+  }
+
+  const memberId = editor.memberId || createMemberShell();
+  const publicCardCode = editor.publicCardCode || makeCardCodeFromMemberId(memberId);
+  const payload = {
+    memberId,
+    publicCardCode,
+    authUid: editor.authUid,
+    fullName: editor.fullName,
+    firstName: editor.firstName,
+    lastName: editor.lastName,
+    email: editor.email,
+    phone: editor.phone,
+    status: editor.status,
+    tier: editor.tier,
+    ownerType: editor.ownerType,
+    preferredLanguage: editor.preferredLanguage,
+    avatarUrl: editor.avatarUrl,
+    ownedUnits: parseUnitsText(editor.ownedUnitsText),
+    notes: editor.notes,
+  };
+
+  try {
+    updateMemberSignupUi('Creating Firebase login account...');
+
+    if (editor.isExisting) {
+      await updateMemberRecord(memberId, payload);
+    } else {
+      await saveMemberRecord(payload, { memberId });
+    }
+
+    const createdUser = await createMemberLoginAccount({
+      memberId,
+      email: editor.email,
+      password,
+      displayName: editor.fullName,
+      publicCardCode,
+    });
+
+    setMemberEditorState({
+      ...editor,
+      memberId,
+      publicCardCode,
+      authUid: createdUser.uid,
+      isExisting: true,
+    });
+
+    if ($('memberSignupPasswordInput')) $('memberSignupPasswordInput').value = '';
+    if ($('memberSignupConfirmInput')) $('memberSignupConfirmInput').value = '';
+
+    hydrateMemberEditorFromState();
+    await refreshMemberInsights({ memberId });
+    await loadMembersTab({ force: true });
+    await loadAdminOverview();
+    updateMemberSignupUi(`Login created for ${editor.email}`);
+    showToast('Resident login account created');
+  } catch (error) {
+    console.error(error);
+    const message = error?.code === 'auth/email-already-in-use'
+      ? 'Email นี้ถูกใช้ใน Firebase Auth แล้ว'
+      : (error.message || 'Create login account failed');
+    updateMemberSignupUi(message);
+    showToast(message, 'error');
   }
 }
 
@@ -1436,6 +1582,7 @@ function bindAdminContentTabs() {
   $('saveMemberBtn')?.addEventListener('click', saveCurrentMember);
   $('cancelMemberEditBtn')?.addEventListener('click', resetMemberEditor);
   $('deleteMemberBtn')?.addEventListener('click', deleteCurrentMember);
+  $('createMemberLoginBtn')?.addEventListener('click', handleCreateMemberLoginAccount);
   $('copyMemberCardCodeBtn')?.addEventListener('click', handleCopyMemberCardCode);
   $('downloadMemberQrBtn')?.addEventListener('click', handleDownloadMemberQr);
 

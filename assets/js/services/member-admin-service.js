@@ -13,6 +13,7 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
+import { registerResidentLoginAccountByAdmin } from './auth-service.js';
 import { formatDate } from '../core/format.js';
 
 function stringValue(value = '') {
@@ -237,4 +238,50 @@ export async function deleteMemberRecord(memberId) {
   } catch (error) {
     console.warn('delete point_wallet failed', error);
   }
+}
+
+
+export async function createMemberLoginAccount({ memberId, email, password, displayName = '', publicCardCode = '' }) {
+  const safeMemberId = stringValue(memberId);
+  const safeEmail = stringValue(email);
+
+  if (!safeMemberId) throw new Error('memberId is required');
+  if (!safeEmail) throw new Error('Email is required');
+  if (String(password || '').length < 6) throw new Error('Password must be at least 6 characters');
+
+  const memberRef = doc(state.db, 'members', safeMemberId);
+  const memberSnap = await getDoc(memberRef);
+  if (!memberSnap.exists()) throw new Error('Save Member first before creating login account');
+
+  const memberData = memberSnap.data() || {};
+  if (memberData.authUid) {
+    return { uid: memberData.authUid, alreadyLinked: true };
+  }
+
+  const createdUser = await registerResidentLoginAccountByAdmin({
+    email: safeEmail,
+    password,
+    displayName: displayName || memberData.fullName || '',
+  });
+
+  await setDoc(doc(state.db, 'users', createdUser.uid), {
+    displayName: displayName || memberData.fullName || '',
+    email: safeEmail,
+    role: 'resident',
+    employeeId: null,
+    memberId: safeMemberId,
+    publicCardCode: stringValue(publicCardCode) || stringValue(memberData.publicCardCode),
+    isActive: true,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    lastLoginAt: null,
+  }, { merge: true });
+
+  await updateDoc(memberRef, {
+    authUid: createdUser.uid,
+    email: safeEmail,
+    updatedAt: serverTimestamp(),
+  });
+
+  return createdUser;
 }
