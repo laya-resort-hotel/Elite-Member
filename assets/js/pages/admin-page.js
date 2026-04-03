@@ -1376,7 +1376,7 @@ async function loadAdminOverview() {
   }
 }
 
-function openDemoAdmin() {
+export function openDemoAdmin() {
   renderAdminKpis({
     residents: 1,
     points: demoTransactions.reduce((a, b) => a + b.points, 0),
@@ -1490,7 +1490,7 @@ function bindSpendForm() {
   });
 }
 
-export async function loadAdminDashboardPage() {
+export async function loadAdminDashboard() {
   await loadAdminOverview();
   updateReadonlyNote();
   updateMemberReadonlyNote();
