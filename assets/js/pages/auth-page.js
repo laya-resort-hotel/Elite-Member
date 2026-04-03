@@ -51,7 +51,7 @@ export function bindAuthPage() {
   if ($('demoResidentBtn')) {
     $('demoResidentBtn').addEventListener('click', () => {
       setDemoMode('resident');
-      go('./resident.html');
+      go('./home.html');
     });
   }
 

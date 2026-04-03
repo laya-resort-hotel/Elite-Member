@@ -99,3 +99,8 @@ Notes:
 - Premium smooth flip effect
 - White background removed from card artwork
 - Download current card side from Home and Resident pages
+
+
+## Front path split
+- Resident / customer path: `home.html`, `redemption.html`, `member.html`, `settings.html`
+- Admin / hotel path: `admin.html`, `members.html`, CMS pages

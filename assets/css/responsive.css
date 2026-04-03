@@ -50,3 +50,16 @@
     padding: 7px 10px;
   }
 }
+
+@media (max-width: 900px) {
+  .home-card-strip,
+  .member-page-panel .resident-card-hero,
+  .reward-card { grid-template-columns: 1fr; }
+  .reward-thumb { width:100%; aspect-ratio: 16 / 10; height:auto; }
+  .reward-action { justify-content:flex-start; }
+}
+@media (max-width: 640px) {
+  .customer-nav .nav-btn { font-size:13px; padding:13px 6px; }
+  .member-mini-stats,
+  .member-links-grid { grid-template-columns: 1fr; }
+}

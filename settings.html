@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Settings</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident settings" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="settings">
+  <div id="app" class="app-shell customer-shell">
+    <header class="topbar customer-topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./home.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions compact-actions">
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden compact-btn">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel">
+        <div class="eyebrow gold">SETTINGS</div>
+        <h2 style="margin:8px 0 16px">Other</h2>
+        <div class="settings-list">
+          <a class="settings-item" href="./home.html"><span class="settings-icon">⌂</span><div><strong>About us</strong><small>กลับไปหน้า Home และดูข้อมูลหลักของโครงการ</small></div></a>
+          <a class="settings-item" href="./benefits.html"><span class="settings-icon">★</span><div><strong>Benefit for Member</strong><small>ดูสิทธิประโยชน์ทั้งหมดของสมาชิก</small></div></a>
+          <a class="settings-item" href="./news.html"><span class="settings-icon">i</span><div><strong>FAQ / News</strong><small>ใช้หน้า News สำหรับอัปเดตคำถามที่พบบ่อยและประกาศ</small></div></a>
+          <a class="settings-item" href="mailto:info@layaresortphuket.com"><span class="settings-icon">✉</span><div><strong>Contact us</strong><small>info@layaresortphuket.com</small></div></a>
+          <button class="settings-item button-like" type="button" id="changeLanguageBtn"><span class="settings-icon">A</span><div><strong>Change Language</strong><small>สลับไทย / English (placeholder)</small></div></button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav customer-nav">
+    <a class="nav-btn" data-page-link="home" href="./home.html">Home</a>
+    <a class="nav-btn" data-page-link="redemption" href="./redemption.html">Redemption</a>
+    <a class="nav-btn" data-page-link="member" href="./member.html">Member</a>
+    <a class="nav-btn" data-page-link="settings" href="./settings.html">Settings</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

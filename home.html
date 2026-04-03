@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Home</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident Elite Black Card home" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="home">
+  <div id="app" class="app-shell customer-shell">
+    <header class="topbar customer-topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./home.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions compact-actions">
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden compact-btn">Logout</button>
+      </div>
+    </header>
+    <main class="main-content">
+      <section class="panel home-hero-panel">
+        <div class="home-member-bar">
+          <div>
+            <div class="eyebrow gold">HOME</div>
+            <h2 id="memberName">Resident Member</h2>
+            <p class="readonly-note">ข่าว สิทธิพิเศษ และอัปเดตสำหรับเจ้าของห้อง LAYA Resident</p>
+          </div>
+          <div class="member-mini-stats">
+            <div class="mini-stat"><span>Point</span><strong id="memberPoints">42,580</strong></div>
+            <div class="mini-stat"><span>Residence</span><strong id="memberResidence">D-108</strong></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel home-card-strip">
+        <div class="card-strip-copy">
+          <div class="eyebrow gold">Elite Black Card</div>
+          <h3 style="margin:6px 0 8px">Member card ของ Resident</h3>
+          <p class="readonly-note">เปิดดูการ์ดเต็มและสลับด้านหน้า/หลังได้ในหน้า Member</p>
+        </div>
+        <a class="hero-card-link" href="./member.html">
+          <img class="hero-card-image" src="./assets/images/elite-black-card-front.png" alt="Elite Black Card front" />
+        </a>
+      </section>
+
+      <section class="grid-3 compact-grid">
+        <div class="panel">
+          <div class="section-head"><h3>News</h3><a class="text-link ghost-btn" href="./news.html">Open all</a></div>
+          <div id="newsList" class="card-list"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h3>Promotions</h3><a class="text-link ghost-btn" href="./promotions.html">Open all</a></div>
+          <div id="promoList" class="card-list"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h3>Benefits</h3><a class="text-link ghost-btn" href="./benefits.html">Open all</a></div>
+          <div id="benefitsList" class="card-list"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h3>Recent spend & points</h3><a class="text-link ghost-btn" href="./redemption.html">Open redemption</a></div>
+        <div id="transactionsTable"></div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav customer-nav">
+    <a class="nav-btn" data-page-link="home" href="./home.html">Home</a>
+    <a class="nav-btn" data-page-link="redemption" href="./redemption.html">Redemption</a>
+    <a class="nav-btn" data-page-link="member" href="./member.html">Member</a>
+    <a class="nav-btn" data-page-link="settings" href="./settings.html">Settings</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

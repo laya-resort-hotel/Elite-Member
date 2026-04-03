@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Redemption</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident rewards and redemption" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="redemption">
+  <div id="app" class="app-shell customer-shell">
+    <header class="topbar customer-topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./home.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions compact-actions">
+        <span class="badge-inline"><span>Points</span><strong id="memberPoints">42,580</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden compact-btn">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow gold">REDEMPTION</div>
+            <h2 style="margin:8px 0 4px">Reward for Elite Black Member</h2>
+            <p class="readonly-note">ใช้ point ที่สะสมไว้แลกรับสิทธิ์อาหาร เครื่องดื่ม และสิทธิประโยชน์ภายในรีสอร์ต</p>
+          </div>
+          <span class="badge-inline"><span>Available</span><strong id="redemptionPointsBadge">42,580 pts</strong></span>
+        </div>
+        <div id="rewardList" class="reward-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav customer-nav">
+    <a class="nav-btn" data-page-link="home" href="./home.html">Home</a>
+    <a class="nav-btn" data-page-link="redemption" href="./redemption.html">Redemption</a>
+    <a class="nav-btn" data-page-link="member" href="./member.html">Member</a>
+    <a class="nav-btn" data-page-link="settings" href="./settings.html">Settings</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

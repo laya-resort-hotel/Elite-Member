@@ -3,9 +3,13 @@ import { $$ } from './dom.js';
 export function highlightCurrentNav() {
   const page = document.body?.dataset?.page || '';
   const activeMap = {
-    'news-detail': 'news',
-    'promotions-detail': 'promotions',
-    'benefits-detail': 'benefits',
+    'news-detail': 'home',
+    'promotions-detail': 'redemption',
+    'benefits-detail': 'member',
+    'news': 'home',
+    'promotions': 'redemption',
+    'benefits': 'member',
+    'resident': 'member',
   };
   const activePage = activeMap[page] || page;
   $$('[data-page-link]').forEach((link) => {

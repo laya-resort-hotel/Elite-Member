@@ -32,10 +32,10 @@
       <section class="hero-card glass">
         <div class="hero-copy">
           <span class="eyebrow gold">Resident Privileges</span>
-          <h2>Multi-page static edition แยกหน้า HTML จริงแล้ว</h2>
-          <p>เวอร์ชันนี้ยังอัปขึ้น GitHub Pages ได้ตรง ๆ เหมือนเดิม แต่แยกหน้า News, Promotions, Benefits และ Members ออกเป็นไฟล์ HTML จริง เพื่อให้แก้ง่ายและขยายระบบต่อได้เป็นระเบียบกว่าเดิม</p>
+          <h2>แยกการใช้งานเป็น 2 path แล้ว: Resident path และ Admin path</h2>
+          <p>Resident path สำหรับแขก/เจ้าของห้อง ใช้เมนูด้านล่าง 4 ปุ่ม: Home, Redemption, Member, Settings ส่วน Admin path ใช้สำหรับทีมโรงแรมและ CMS หลังบ้าน</p>
           <div class="quick-links mt-md">
-            <a class="nav-link-card" href="./resident.html"><strong>Resident Home</strong><small>บัตรสมาชิก คะแนน และสรุปสิทธิ์</small></a>
+            <a class="nav-link-card" href="./home.html"><strong>Resident Home</strong><small>บัตรสมาชิก คะแนน และสรุปสิทธิ์</small></a>
             <a class="nav-link-card" href="./news.html"><strong>News</strong><small>ข่าวสาร Resident แยกหน้า</small></a>
             <a class="nav-link-card" href="./promotions.html"><strong>Promotions</strong><small>โปรโมชันแยกหน้า</small></a>
             <a class="nav-link-card" href="./benefits.html"><strong>Benefits</strong><small>สิทธิประโยชน์แยกหน้า</small></a>
@@ -97,12 +97,8 @@
 
   <nav class="bottom-nav">
     <a class="nav-btn" data-page-link="index" href="./index.html">Login</a>
-    <a class="nav-btn" data-page-link="resident" href="./resident.html">Resident</a>
-    <a class="nav-btn" data-page-link="news" href="./news.html">News</a>
-    <a class="nav-btn" data-page-link="promotions" href="./promotions.html">Promotions</a>
-    <a class="nav-btn" data-page-link="benefits" href="./benefits.html">Benefits</a>
-    <a class="nav-btn" data-page-link="admin" href="./admin.html">Admin</a>
-    <a class="nav-btn" data-page-link="members" href="./members.html">Members</a>
+    <a class="nav-btn" href="./home.html">Resident Path</a>
+    <a class="nav-btn" href="./admin.html">Admin Path</a>
   </nav>
   <div id="toast" class="toast hidden"></div>
 </body>

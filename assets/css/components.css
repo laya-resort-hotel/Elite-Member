@@ -719,3 +719,35 @@ body.lightbox-open {
     border-radius: 20px;
   }
 }
+
+.customer-shell .page-actions .badge-inline span:not(:first-child) { display: inline; }
+.customer-topbar { margin-bottom: 14px; }
+.compact-actions { gap: 10px; }
+.home-member-bar { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+.member-mini-stats { display:grid; grid-template-columns:repeat(2,minmax(140px,1fr)); gap:12px; }
+.mini-stat { border:1px solid rgba(216,188,124,.18); background:rgba(255,255,255,.04); border-radius:18px; padding:14px 16px; }
+.mini-stat span { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+.mini-stat strong { font-size:18px; color:#f4ead0; }
+.home-card-strip { display:grid; grid-template-columns: 1fr minmax(260px, 420px); align-items:center; gap:18px; }
+.hero-card-link { display:block; border-radius:28px; overflow:hidden; box-shadow:var(--shadow); border:1px solid rgba(216,188,124,.22); }
+.hero-card-image { display:block; width:100%; height:auto; }
+.customer-nav { gap: 8px; padding: 10px 12px; }
+.customer-nav > * { flex: 1 1 0; min-width: 0; }
+.customer-nav .nav-btn { text-align:center; padding:14px 10px; font-size:14px; }
+.settings-list { display:grid; gap:14px; }
+.settings-item { display:flex; align-items:center; gap:16px; padding:18px; border-radius:22px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); color:var(--text); text-decoration:none; text-align:left; }
+.settings-item.button-like { width:100%; border:none; cursor:pointer; }
+.settings-item strong { display:block; margin-bottom:4px; }
+.settings-item small { color:var(--muted); }
+.settings-icon { width:48px; height:48px; border-radius:16px; display:grid; place-items:center; background:rgba(216,188,124,.14); color:var(--gold); font-size:22px; flex:none; }
+.reward-list { display:grid; gap:16px; }
+.reward-card { display:grid; grid-template-columns: 120px minmax(0,1fr) 160px; align-items:center; gap:16px; padding:16px; }
+.reward-thumb { width:120px; height:120px; border-radius:20px; overflow:hidden; background:rgba(255,255,255,.05); }
+.reward-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.reward-thumb-placeholder { width:100%; height:100%; display:grid; place-items:center; color:var(--muted); }
+.reward-info h3 { margin:6px 0 6px; }
+.reward-info p { color:var(--muted); margin:0 0 8px; }
+.reward-meta { color:var(--gold); font-weight:700; }
+.reward-action { display:flex; justify-content:flex-end; }
+.member-links-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.member-page-panel .resident-card-hero { grid-template-columns: 1.15fr .85fr; }

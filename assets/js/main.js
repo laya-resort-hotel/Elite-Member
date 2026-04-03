@@ -10,6 +10,7 @@ import { showToast } from './ui/toast.js';
 import { updateStatusLabels } from './ui/renderers.js';
 import { bindAuthPage } from './pages/auth-page.js';
 import { bindResidentPage, loadResidentDashboard, openDemoResident } from './pages/resident-page.js';
+import { loadRedemptionPage } from './pages/redemption-page.js';
 import { bindAdminPage, loadAdminDashboard, openDemoAdmin } from './pages/admin-page.js';
 import { applyContentPageState, bindContentPage, loadContentPage } from './pages/content-page.js';
 import { bindDetailPage, loadDetailPage } from './pages/detail-page.js';
@@ -42,7 +43,7 @@ async function renderPageForRole(role, user) {
   setMode('resident-live');
   updateStatusLabels({ modeState: 'resident-live' });
   if (page === 'index') {
-    go('resident.html');
+    go('home.html');
     return;
   }
   await initCurrentPage(true);
@@ -53,9 +54,19 @@ async function initCurrentPage(isLive = false) {
     case 'index':
       break;
     case 'resident':
+    case 'home':
+    case 'member':
       bindResidentPage();
       if (isLive) await loadResidentDashboard();
       else openDemoResident();
+      break;
+    case 'redemption':
+      await loadRedemptionPage();
+      break;
+    case 'settings':
+      if ($('changeLanguageBtn')) {
+        $('changeLanguageBtn').addEventListener('click', () => showToast('ระบบสลับภาษาจะทำต่อได้ในรอบถัดไป'));
+      }
       break;
     case 'news':
     case 'promotions':
