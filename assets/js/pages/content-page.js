@@ -1,8 +1,8 @@
 import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
-import { deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
-import { uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
+import { createContentShell, deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
+import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
 
@@ -19,11 +19,11 @@ const labelMap = {
 };
 
 let editingItemId = '';
+let isDraftShell = false;
 let currentCoverImagePath = '';
 let currentCoverImageName = '';
 let currentGalleryImages = [];
 let uploadInProgress = false;
-let draggedGalleryIndex = null;
 
 function canManageContent() {
   return state.firebaseReady && state.currentMode.includes('live') && ['admin', 'manager', 'staff'].includes(state.currentRole);
@@ -49,12 +49,22 @@ function detailHref(type, item) {
 function normalizeGalleryImages(value = []) {
   const list = Array.isArray(value) ? value : [];
   return list
-    .map((item) => ({
+    .map((item, index) => ({
+      id: String(item?.id || '').trim() || `img_${Date.now()}_${index}`,
       url: String(item?.url || '').trim(),
       path: String(item?.path || '').trim(),
-      name: String(item?.name || '').trim(),
+      name: String(item?.name || item?.fileName || '').trim(),
+      fileName: String(item?.fileName || item?.name || '').trim(),
+      sortOrder: Number.isFinite(Number(item?.sortOrder)) ? Number(item.sortOrder) : index,
+      isCover: Boolean(item?.isCover),
     }))
-    .filter((item) => item.url);
+    .filter((item) => item.url)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((item, index) => ({ ...item, sortOrder: index }));
+}
+
+function resetSortOrders(items = []) {
+  return items.map((item, index) => ({ ...item, sortOrder: index }));
 }
 
 function getSelectedCoverFile() {
@@ -75,7 +85,7 @@ function getFormValues() {
     coverImageUrl: $('contentCoverImageUrl')?.value.trim() || '',
     coverImagePath: currentCoverImagePath || '',
     coverImageName: currentCoverImageName || '',
-    galleryImages: currentGalleryImages,
+    galleryImages: resetSortOrders(currentGalleryImages),
   };
 }
 
@@ -118,7 +128,7 @@ function updateCoverPreview() {
 
 function setUploadBusy(isBusy) {
   uploadInProgress = isBusy;
-  ['uploadCoverBtn', 'uploadGalleryBtn', 'saveContentBtn'].forEach((id) => {
+  ['uploadCoverBtn', 'uploadGalleryBtn', 'saveContentBtn', 'cancelContentEditBtn'].forEach((id) => {
     if ($(id)) $(id).disabled = isBusy;
   });
 }
@@ -145,38 +155,25 @@ function renderGalleryPreview() {
   const list = $('contentGalleryPreviewList');
   const count = $('contentGalleryCount')?.querySelector('strong') || $('contentGalleryCount');
   if (!list) return;
-  if (count) count.textContent = currentGalleryImages.length ? `${currentGalleryImages.length} images` : '0 images';
-  if (!currentGalleryImages.length) {
+  const gallery = resetSortOrders(currentGalleryImages);
+  if (count) count.textContent = gallery.length ? `${gallery.length} images` : '0 images';
+  if (!gallery.length) {
     list.innerHTML = '<div class="gallery-empty">ยังไม่มีรูป gallery สำหรับรายการนี้</div>';
     return;
   }
-  const currentCoverUrl = $('contentCoverImageUrl')?.value.trim() || '';
-  list.innerHTML = currentGalleryImages.map((item, index) => {
-    const isCover = currentCoverUrl && currentCoverUrl === item.url;
-    const badges = [
-      isCover ? '<span class="mini-badge gold">Cover</span>' : '',
-      index === 0 ? '<span class="mini-badge">First in set</span>' : '',
-      '<span class="mini-badge subtle">Drag</span>',
-    ].filter(Boolean).join('');
-    return `
-    <div class="gallery-preview-card" draggable="true" data-gallery-card data-gallery-index="${index}">
-      <div class="gallery-preview-image-wrap">
-        <img src="${escapeHtml(item.url)}" alt="Gallery ${index + 1}" loading="lazy" />
-        <div class="gallery-order-chip">#${index + 1}</div>
-      </div>
+  list.innerHTML = gallery.map((item, index) => `
+    <div class="gallery-preview-card ${item.isCover ? 'is-cover' : ''}">
+      <img src="${escapeHtml(item.url)}" alt="Gallery ${index + 1}" loading="lazy" />
       <div class="gallery-preview-meta">
-        <div class="gallery-badge-row">${badges}</div>
-        <strong>Image ${index + 1}</strong>
-        <small>${escapeHtml(item.name || 'uploaded-image')}</small>
+        <strong>${item.isCover ? 'Cover image' : `Image ${index + 1}`}</strong>
+        <small>${escapeHtml(item.name || item.fileName || 'uploaded-image')}</small>
       </div>
       <div class="gallery-preview-actions">
-        <button class="ghost-btn gallery-preview-btn" type="button" data-gallery-action="move-first" data-gallery-index="${index}">Move first</button>
         <button class="ghost-btn gallery-preview-btn" type="button" data-gallery-action="make-cover" data-gallery-index="${index}">Use as cover</button>
         <button class="danger-btn gallery-preview-btn" type="button" data-gallery-action="remove" data-gallery-index="${index}">Remove</button>
       </div>
     </div>
-  `;
-  }).join('');
+  `).join('');
 }
 
 function previewSelectedCoverFile() {
@@ -220,6 +217,14 @@ function previewSelectedGalleryFiles() {
   }
 }
 
+async function ensureWorkingDocId(type) {
+  if (editingItemId) return editingItemId;
+  editingItemId = createContentShell(type);
+  isDraftShell = true;
+  updateEditorUi(type);
+  return editingItemId;
+}
+
 async function uploadSelectedCover(type) {
   if (!canManageContent()) {
     showToast('ต้อง login เป็น admin/staff ก่อน', 'error');
@@ -238,18 +243,33 @@ async function uploadSelectedCover(type) {
     showToast('ไฟล์ใหญ่เกิน 5MB', 'error');
     return;
   }
+
   try {
     setUploadBusy(true);
     if ($('contentUploadStatus')) {
       $('contentUploadStatus').textContent = 'กำลังอัปโหลดรูปปกขึ้น Firebase Storage...';
       $('contentUploadStatus').classList.remove('hidden');
     }
-    const result = await uploadCmsCover(file, type);
+
+    const workingDocId = await ensureWorkingDocId(type);
+    const result = await uploadCmsCover(file, type, workingDocId);
+
     currentCoverImagePath = result.path || '';
     currentCoverImageName = result.name || file.name || '';
     if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = result.url || '';
+
+    currentGalleryImages = normalizeGalleryImages([
+      { ...result, isCover: true, sortOrder: 0 },
+      ...currentGalleryImages.filter((img) => img.path !== result.path),
+    ]).map((img) => ({
+      ...img,
+      isCover: img.path === result.path,
+    }));
+
     updateCoverPreview();
     updateCoverMeta();
+    renderGalleryPreview();
+
     if ($('contentUploadStatus')) $('contentUploadStatus').textContent = 'อัปโหลดรูปปกสำเร็จแล้ว';
     showToast('อัปโหลดรูปปกสำเร็จ');
   } catch (error) {
@@ -279,23 +299,35 @@ async function uploadSelectedGallery(type) {
     showToast('มีไฟล์อย่างน้อย 1 รูปใหญ่เกิน 5MB', 'error');
     return;
   }
+
   try {
     setUploadBusy(true);
     if ($('contentGalleryUploadStatus')) {
       $('contentGalleryUploadStatus').textContent = `กำลังอัปโหลด ${files.length} รูปขึ้น Firebase Storage...`;
       $('contentGalleryUploadStatus').classList.remove('hidden');
     }
-    const uploaded = await uploadCmsGallery(files, type);
-    currentGalleryImages = [...currentGalleryImages, ...uploaded];
-    if (!$('contentCoverImageUrl')?.value.trim() && uploaded[0]) {
-      currentCoverImagePath = uploaded[0].path || '';
-      currentCoverImageName = uploaded[0].name || '';
-      if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = uploaded[0].url || '';
-      updateCoverPreview();
-      updateCoverMeta();
+
+    const workingDocId = await ensureWorkingDocId(type);
+    const uploaded = await uploadCmsGallery(files, type, workingDocId);
+
+    currentGalleryImages = normalizeGalleryImages([...currentGalleryImages, ...uploaded]);
+
+    if (!$('contentCoverImageUrl')?.value.trim() && currentGalleryImages[0]) {
+      const firstImage = currentGalleryImages[0];
+      currentCoverImagePath = firstImage.path || '';
+      currentCoverImageName = firstImage.name || firstImage.fileName || '';
+      if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = firstImage.url || '';
+      currentGalleryImages = currentGalleryImages.map((img, index) => ({
+        ...img,
+        isCover: index === 0,
+      }));
     }
+
     if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
     renderGalleryPreview();
+    updateCoverPreview();
+    updateCoverMeta();
+
     if ($('contentGalleryUploadStatus')) $('contentGalleryUploadStatus').textContent = `อัปโหลด gallery สำเร็จ ${uploaded.length} รูป`;
     showToast(`อัปโหลด gallery สำเร็จ ${uploaded.length} รูป`);
   } catch (error) {
@@ -307,7 +339,10 @@ async function uploadSelectedGallery(type) {
   }
 }
 
-function clearCoverSelection() {
+async function clearCoverSelection() {
+  const pathsToDelete = [];
+  if (currentCoverImagePath && isDraftShell) pathsToDelete.push(currentCoverImagePath);
+
   currentCoverImagePath = '';
   currentCoverImageName = '';
   if ($('contentCoverFile')) $('contentCoverFile').value = '';
@@ -316,112 +351,101 @@ function clearCoverSelection() {
     $('contentUploadStatus').textContent = '';
     $('contentUploadStatus').classList.add('hidden');
   }
+
+  currentGalleryImages = currentGalleryImages.map((img) => ({ ...img, isCover: false }));
+  if (currentGalleryImages[0]) {
+    currentGalleryImages[0].isCover = true;
+    currentCoverImagePath = currentGalleryImages[0].path || '';
+    currentCoverImageName = currentGalleryImages[0].name || currentGalleryImages[0].fileName || '';
+    if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = currentGalleryImages[0].url || '';
+  }
+
   updateCoverPreview();
   updateCoverMeta();
+  renderGalleryPreview();
+
+  if (pathsToDelete.length) {
+    try {
+      await deleteStoragePaths(pathsToDelete);
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 }
 
-function clearGallerySelection() {
+async function clearGallerySelection() {
+  const pathsToDelete = isDraftShell
+    ? currentGalleryImages.map((img) => img.path)
+    : [];
+
   currentGalleryImages = [];
-  clearGalleryDragState();
   if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
   if ($('contentGalleryUploadStatus')) {
     $('contentGalleryUploadStatus').textContent = '';
     $('contentGalleryUploadStatus').classList.add('hidden');
   }
+  currentCoverImagePath = '';
+  currentCoverImageName = '';
+  if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = '';
+
+  updateCoverPreview();
+  updateCoverMeta();
   renderGalleryPreview();
+
+  if (pathsToDelete.length) {
+    try {
+      await deleteStoragePaths(pathsToDelete);
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 }
 
 function makeGalleryImageCover(index) {
   const item = currentGalleryImages[index];
   if (!item) return;
   currentCoverImagePath = item.path || '';
-  currentCoverImageName = item.name || '';
+  currentCoverImageName = item.name || item.fileName || '';
   if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = item.url || '';
+  currentGalleryImages = currentGalleryImages.map((img, itemIndex) => ({
+    ...img,
+    isCover: itemIndex === index,
+  }));
   updateCoverPreview();
   updateCoverMeta();
+  renderGalleryPreview();
   showToast('ตั้งรูปนี้เป็น cover แล้ว');
 }
 
-function removeGalleryImage(index) {
+async function removeGalleryImage(index) {
   const removed = currentGalleryImages[index];
+  if (!removed) return;
+
   currentGalleryImages = currentGalleryImages.filter((_, itemIndex) => itemIndex !== index);
-  if (removed && $('contentCoverImageUrl')?.value.trim() === removed.url) {
-    if (currentGalleryImages[0]) {
-      makeGalleryImageCover(0);
-    } else {
-      clearCoverSelection();
+  currentGalleryImages = resetSortOrders(currentGalleryImages);
+
+  if (removed.path && isDraftShell) {
+    try {
+      await deleteStoragePaths([removed.path]);
+    } catch (error) {
+      console.warn(error);
     }
   }
+
+  if (removed.isCover || $('contentCoverImageUrl')?.value.trim() === removed.url) {
+    if (currentGalleryImages[0]) {
+      makeGalleryImageCover(0);
+      return;
+    }
+    currentCoverImagePath = '';
+    currentCoverImageName = '';
+    if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = '';
+  }
+
+  updateCoverPreview();
+  updateCoverMeta();
   renderGalleryPreview();
   showToast('ลบรูปออกจากรายการในฟอร์มแล้ว');
-}
-
-function reorderGalleryImages(fromIndex, toIndex) {
-  if (fromIndex === toIndex) return;
-  if (fromIndex < 0 || toIndex < 0) return;
-  if (fromIndex >= currentGalleryImages.length || toIndex >= currentGalleryImages.length) return;
-  const next = [...currentGalleryImages];
-  const [moved] = next.splice(fromIndex, 1);
-  next.splice(toIndex, 0, moved);
-  currentGalleryImages = next;
-  renderGalleryPreview();
-  showToast(`ย้ายรูปเป็นลำดับที่ ${toIndex + 1} แล้ว`);
-}
-
-function moveGalleryImageFirst(index) {
-  reorderGalleryImages(index, 0);
-}
-
-function handleGalleryDragStart(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card) return;
-  draggedGalleryIndex = Number(card.dataset.galleryIndex || -1);
-  if (draggedGalleryIndex < 0) return;
-  card.classList.add('dragging');
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', String(draggedGalleryIndex));
-  }
-}
-
-function handleGalleryDragOver(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card) return;
-  event.preventDefault();
-  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
-}
-
-function handleGalleryDragEnter(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card) return;
-  const index = Number(card.dataset.galleryIndex || -1);
-  if (index === draggedGalleryIndex) return;
-  card.classList.add('drop-target');
-}
-
-function handleGalleryDragLeave(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card) return;
-  if (card.contains(event.relatedTarget)) return;
-  card.classList.remove('drop-target');
-}
-
-function handleGalleryDrop(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card) return;
-  event.preventDefault();
-  const toIndex = Number(card.dataset.galleryIndex || -1);
-  card.classList.remove('drop-target');
-  if (draggedGalleryIndex === null || toIndex < 0) return;
-  reorderGalleryImages(draggedGalleryIndex, toIndex);
-  draggedGalleryIndex = null;
-}
-
-function clearGalleryDragState() {
-  draggedGalleryIndex = null;
-  $$('.gallery-preview-card').forEach((card) => {
-    card.classList.remove('dragging', 'drop-target');
-  });
 }
 
 function updateEditorUi(type) {
@@ -429,21 +453,34 @@ function updateEditorUi(type) {
   const cancelBtn = $('cancelContentEditBtn');
   const note = $('editStateNote');
   const titleLabel = labelMap[type].slice(0, -1) || labelMap[type];
-  if (saveBtn) saveBtn.textContent = editingItemId ? `Update ${titleLabel}` : `Save ${titleLabel}`;
+  if (saveBtn) {
+    if (editingItemId && isDraftShell) saveBtn.textContent = `Create ${titleLabel}`;
+    else saveBtn.textContent = editingItemId ? `Update ${titleLabel}` : `Save ${titleLabel}`;
+  }
   if (cancelBtn) cancelBtn.classList.toggle('hidden', !editingItemId);
   if (note) {
     note.classList.toggle('hidden', !editingItemId);
-    note.textContent = editingItemId ? `กำลังแก้ไข ${titleLabel} item` : '';
+    note.textContent = editingItemId
+      ? (isDraftShell ? `กำลังสร้าง ${titleLabel} ใหม่ (draft media ready)` : `กำลังแก้ไข ${titleLabel} item`)
+      : '';
   }
   updateCoverMeta();
 }
 
-function resetEditor(type) {
+async function resetEditor(type, options = {}) {
+  const shouldCleanupDraft = Boolean(options.cleanupDraft && isDraftShell);
+  const draftPaths = shouldCleanupDraft
+    ? [
+        currentCoverImagePath,
+        ...currentGalleryImages.map((img) => img.path),
+      ].filter(Boolean)
+    : [];
+
   editingItemId = '';
+  isDraftShell = false;
   currentCoverImagePath = '';
   currentCoverImageName = '';
   currentGalleryImages = [];
-  clearGalleryDragState();
   setFormValues({});
   ['contentUploadStatus', 'contentGalleryUploadStatus'].forEach((id) => {
     if ($(id)) {
@@ -452,6 +489,14 @@ function resetEditor(type) {
     }
   });
   updateEditorUi(type);
+
+  if (draftPaths.length) {
+    try {
+      await deleteStoragePaths(draftPaths);
+    } catch (error) {
+      console.warn(error);
+    }
+  }
 }
 
 async function startEdit(type, id) {
@@ -470,6 +515,7 @@ async function startEdit(type, id) {
       return;
     }
     editingItemId = id;
+    isDraftShell = false;
     setFormValues(item);
     updateEditorUi(type);
     $('contentTitle')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -493,7 +539,7 @@ async function confirmDelete(type, id) {
   if (!ok) return;
   try {
     await deleteCMSItem(type, id);
-    if (editingItemId === id) resetEditor(type);
+    if (editingItemId === id) await resetEditor(type);
     showToast(`Deleted ${labelMap[type].slice(0, -1)}`);
     await loadContentPage(type);
   } catch (error) {
@@ -577,31 +623,26 @@ export function bindContentPage(type) {
   $('contentCoverImageUrl')?.addEventListener('input', () => {
     currentCoverImagePath = '';
     currentCoverImageName = '';
+    currentGalleryImages = currentGalleryImages.map((img) => ({ ...img, isCover: false }));
     updateCoverPreview();
     updateCoverMeta();
+    renderGalleryPreview();
   });
   $('contentCoverFile')?.addEventListener('change', previewSelectedCoverFile);
   $('contentGalleryFiles')?.addEventListener('change', previewSelectedGalleryFiles);
   $('uploadCoverBtn')?.addEventListener('click', () => uploadSelectedCover(type));
   $('uploadGalleryBtn')?.addEventListener('click', () => uploadSelectedGallery(type));
-  $('clearCoverBtn')?.addEventListener('click', clearCoverSelection);
-  $('clearGalleryBtn')?.addEventListener('click', clearGallerySelection);
+  $('clearCoverBtn')?.addEventListener('click', () => clearCoverSelection());
+  $('clearGalleryBtn')?.addEventListener('click', () => clearGallerySelection());
 
-  $('contentGalleryPreviewList')?.addEventListener('click', (event) => {
+  $('contentGalleryPreviewList')?.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-gallery-action]');
     if (!button) return;
     const index = Number(button.dataset.galleryIndex || -1);
     if (index < 0) return;
-    if (button.dataset.galleryAction === 'move-first') moveGalleryImageFirst(index);
     if (button.dataset.galleryAction === 'make-cover') makeGalleryImageCover(index);
-    if (button.dataset.galleryAction === 'remove') removeGalleryImage(index);
+    if (button.dataset.galleryAction === 'remove') await removeGalleryImage(index);
   });
-  $('contentGalleryPreviewList')?.addEventListener('dragstart', handleGalleryDragStart);
-  $('contentGalleryPreviewList')?.addEventListener('dragover', handleGalleryDragOver);
-  $('contentGalleryPreviewList')?.addEventListener('dragenter', handleGalleryDragEnter);
-  $('contentGalleryPreviewList')?.addEventListener('dragleave', handleGalleryDragLeave);
-  $('contentGalleryPreviewList')?.addEventListener('drop', handleGalleryDrop);
-  $('contentGalleryPreviewList')?.addEventListener('dragend', clearGalleryDragState);
 
   if ($('saveContentBtn')) {
     $('saveContentBtn').addEventListener('click', async () => {
@@ -619,14 +660,15 @@ export function bindContentPage(type) {
         return;
       }
       try {
-        if (editingItemId) {
+        if (editingItemId && !isDraftShell) {
           await updateStructuredCMS(type, editingItemId, payload);
           showToast(`Updated ${labelMap[type].slice(0, -1)}`);
         } else {
-          await saveStructuredCMS(type, payload);
+          const docId = editingItemId || createContentShell(type);
+          await saveStructuredCMS(type, payload, { docId });
           showToast(`Saved ${labelMap[type].slice(0, -1)}`);
         }
-        resetEditor(type);
+        await resetEditor(type);
         await loadContentPage(type);
       } catch (error) {
         console.error(error);
@@ -636,8 +678,9 @@ export function bindContentPage(type) {
   }
 
   if ($('cancelContentEditBtn')) {
-    $('cancelContentEditBtn').addEventListener('click', () => {
-      resetEditor(type);
+    $('cancelContentEditBtn').addEventListener('click', async () => {
+      const cleanupDraft = isDraftShell && currentGalleryImages.length > 0;
+      await resetEditor(type, { cleanupDraft });
       showToast('ยกเลิกโหมดแก้ไขแล้ว');
     });
   }

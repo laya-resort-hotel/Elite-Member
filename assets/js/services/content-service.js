@@ -9,6 +9,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
   updateDoc,
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
@@ -34,14 +35,57 @@ function normalizeGalleryImages(value = []) {
       id: stringValue(item?.id) || `img_${Date.now()}_${index}`,
       url: stringValue(item?.url),
       path: stringValue(item?.path),
-      name: stringValue(item?.name) || stringValue(item?.fileName),
-      fileName: stringValue(item?.fileName) || stringValue(item?.name),
-      sortOrder: Number.isFinite(item?.sortOrder) ? Number(item.sortOrder) : index,
-      isCover: !!item?.isCover,
+      name: stringValue(item?.name || item?.fileName),
+      fileName: stringValue(item?.fileName || item?.name),
+      sortOrder: Number.isFinite(Number(item?.sortOrder)) ? Number(item.sortOrder) : index,
+      isCover: Boolean(item?.isCover),
     }))
     .filter((item) => item.url)
     .sort((a, b) => a.sortOrder - b.sortOrder)
     .map((item, index) => ({ ...item, sortOrder: index }));
+}
+
+function pickCoverFromGallery(galleryImages = [], fallbackUrl = '', fallbackPath = '', fallbackName = '') {
+  const explicitCover = galleryImages.find((item) => item.isCover);
+  if (explicitCover) {
+    return {
+      coverImageUrl: explicitCover.url,
+      coverImagePath: explicitCover.path,
+      coverImageName: explicitCover.name || explicitCover.fileName,
+      galleryImages: galleryImages.map((item) => ({
+        ...item,
+        isCover: item.id === explicitCover.id,
+      })),
+    };
+  }
+
+  if (fallbackUrl) {
+    return {
+      coverImageUrl: fallbackUrl,
+      coverImagePath: fallbackPath,
+      coverImageName: fallbackName,
+      galleryImages,
+    };
+  }
+
+  if (galleryImages.length) {
+    return {
+      coverImageUrl: galleryImages[0].url,
+      coverImagePath: galleryImages[0].path,
+      coverImageName: galleryImages[0].name || galleryImages[0].fileName,
+      galleryImages: galleryImages.map((item, index) => ({
+        ...item,
+        isCover: index === 0,
+      })),
+    };
+  }
+
+  return {
+    coverImageUrl: '',
+    coverImagePath: '',
+    coverImageName: '',
+    galleryImages,
+  };
 }
 
 function normalizeContentPayload(payload = {}) {
@@ -50,25 +94,14 @@ function normalizeContentPayload(payload = {}) {
   const fullDetails = stringValue(payload.fullDetails);
   const termsText = stringValue(payload.terms);
   const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
-  let galleryImages = normalizeGalleryImages(payload.galleryImages);
-  let coverImageUrl = stringValue(payload.coverImageUrl);
-  let coverImagePath = stringValue(payload.coverImagePath);
-  let coverImageName = stringValue(payload.coverImageName);
 
-  if (!coverImageUrl && galleryImages.length) {
-    coverImageUrl = galleryImages[0].url;
-    coverImagePath = galleryImages[0].path;
-    coverImageName = galleryImages[0].name || galleryImages[0].fileName || '';
-    galleryImages = galleryImages.map((item, index) => ({
-      ...item,
-      isCover: index === 0,
-    }));
-  } else if (coverImagePath) {
-    galleryImages = galleryImages.map((item) => ({
-      ...item,
-      isCover: item.path === coverImagePath,
-    }));
-  }
+  const galleryImages = normalizeGalleryImages(payload.galleryImages);
+  const coverFields = pickCoverFromGallery(
+    galleryImages,
+    stringValue(payload.coverImageUrl),
+    stringValue(payload.coverImagePath),
+    stringValue(payload.coverImageName)
+  );
 
   return {
     title,
@@ -78,12 +111,16 @@ function normalizeContentPayload(payload = {}) {
     details: linesValue(fullDetails),
     terms: linesValue(termsText),
     ctaLabel,
-    coverImageUrl,
-    coverImagePath,
-    coverImageName,
-    galleryImages,
-    imageCount: galleryImages.length,
+    coverImageUrl: coverFields.coverImageUrl,
+    coverImagePath: coverFields.coverImagePath,
+    coverImageName: coverFields.coverImageName,
+    galleryImages: coverFields.galleryImages,
+    imageCount: coverFields.galleryImages.length,
   };
+}
+
+export function createContentShell(collectionName) {
+  return doc(collection(state.db, collectionName)).id;
 }
 
 export async function loadCollectionSafe(name, options = {}) {
@@ -94,7 +131,9 @@ export async function loadCollectionSafe(name, options = {}) {
   if (options.limit) clauses.push(limit(options.limit));
   const qRef = clauses.length ? query(colRef, ...clauses) : colRef;
   const snap = await getDocs(qRef);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data(), createdLabel: formatDate(d.data().createdAt) }));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data(), createdLabel: formatDate(d.data().createdAt) }))
+    .filter((row) => row.title || row.summary || row.coverImageUrl || row.imageCount);
 }
 
 export async function loadDocumentById(collectionName, id) {
@@ -105,16 +144,29 @@ export async function loadDocumentById(collectionName, id) {
   return { id: snap.id, ...data, createdLabel: formatDate(data.createdAt), updatedLabel: formatDate(data.updatedAt) };
 }
 
-export async function saveStructuredCMS(collectionName, payload) {
+export async function saveStructuredCMS(collectionName, payload, options = {}) {
   const normalized = normalizeContentPayload(payload);
-  const ref = await addDoc(collection(state.db, collectionName), {
+  const author = state.currentUser?.email || 'manual-admin';
+
+  if (options.docId) {
+    const ref = doc(state.db, collectionName, options.docId);
+    await setDoc(ref, {
+      ...normalized,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      createdBy: author,
+      updatedBy: author,
+    });
+    return ref;
+  }
+
+  return addDoc(collection(state.db, collectionName), {
     ...normalized,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    createdBy: state.currentUser?.email || 'manual-admin',
-    updatedBy: state.currentUser?.email || 'manual-admin',
+    createdBy: author,
+    updatedBy: author,
   });
-  return ref;
 }
 
 export async function updateStructuredCMS(collectionName, id, payload) {
@@ -152,32 +204,4 @@ export async function deleteCMSItem(collectionName, id) {
     ]);
   }
   await deleteDoc(ref);
-}
-
-export async function saveSimpleCMS(collectionName, title, body) {
-  return saveStructuredCMS(collectionName, {
-    title,
-    summary: body,
-    fullDetails: body,
-    terms: '',
-    ctaLabel: 'Learn more',
-    coverImageUrl: '',
-    coverImagePath: '',
-    coverImageName: '',
-    galleryImages: [],
-  });
-}
-
-export async function updateSimpleCMS(collectionName, id, title, body) {
-  return updateStructuredCMS(collectionName, id, {
-    title,
-    summary: body,
-    fullDetails: body,
-    terms: '',
-    ctaLabel: 'Learn more',
-    coverImageUrl: '',
-    coverImagePath: '',
-    coverImageName: '',
-    galleryImages: [],
-  });
 }
