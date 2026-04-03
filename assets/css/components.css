@@ -238,3 +238,13 @@
   min-height: 220px;
   max-height: 320px;
 }
+
+.upload-note {
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+  font-size: 13px;
+}
+.hidden { display: none !important; }

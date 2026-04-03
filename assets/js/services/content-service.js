@@ -14,6 +14,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
 import { formatDate } from '../core/format.js';
+import { deleteStoragePath } from './storage-service.js';
 
 function stringValue(value = '') {
   return String(value || '').trim();
@@ -33,6 +34,8 @@ function normalizeContentPayload(payload = {}) {
   const termsText = stringValue(payload.terms);
   const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
   const coverImageUrl = stringValue(payload.coverImageUrl);
+  const coverImagePath = stringValue(payload.coverImagePath);
+  const coverImageName = stringValue(payload.coverImageName);
 
   return {
     title,
@@ -43,6 +46,8 @@ function normalizeContentPayload(payload = {}) {
     terms: linesValue(termsText),
     ctaLabel,
     coverImageUrl,
+    coverImagePath,
+    coverImageName,
   };
 }
 
@@ -79,7 +84,13 @@ export async function saveStructuredCMS(collectionName, payload) {
 
 export async function updateStructuredCMS(collectionName, id, payload) {
   const normalized = normalizeContentPayload(payload);
-  await updateDoc(doc(state.db, collectionName, id), {
+  const ref = doc(state.db, collectionName, id);
+  const current = await getDoc(ref);
+  const currentData = current.exists() ? current.data() : null;
+  if (currentData?.coverImagePath && currentData.coverImagePath !== normalized.coverImagePath) {
+    await deleteStoragePath(currentData.coverImagePath);
+  }
+  await updateDoc(ref, {
     ...normalized,
     updatedAt: serverTimestamp(),
     updatedBy: state.currentUser?.email || 'manual-admin',
@@ -87,7 +98,13 @@ export async function updateStructuredCMS(collectionName, id, payload) {
 }
 
 export async function deleteCMSItem(collectionName, id) {
-  await deleteDoc(doc(state.db, collectionName, id));
+  const ref = doc(state.db, collectionName, id);
+  const current = await getDoc(ref);
+  if (current.exists()) {
+    const data = current.data();
+    if (data?.coverImagePath) await deleteStoragePath(data.coverImagePath);
+  }
+  await deleteDoc(ref);
 }
 
 // Backward-compatible wrappers
@@ -99,6 +116,8 @@ export async function saveSimpleCMS(collectionName, title, body) {
     terms: '',
     ctaLabel: 'Learn more',
     coverImageUrl: '',
+    coverImagePath: '',
+    coverImageName: '',
   });
 }
 
@@ -110,5 +129,7 @@ export async function updateSimpleCMS(collectionName, id, title, body) {
     terms: '',
     ctaLabel: 'Learn more',
     coverImageUrl: '',
+    coverImagePath: '',
+    coverImageName: '',
   });
 }

@@ -48,3 +48,32 @@ Admin pages for News, Promotions, and Benefits now support:
 - terms
 - CTA label
 - cover image URL
+
+
+## Firebase Storage cover upload
+Admin pages for News / Promotions / Benefits now support real image upload to **Firebase Storage**.
+
+How it works:
+- Choose an image file
+- Click **Upload to Firebase Storage**
+- The app stores the file under `cms-covers/<collection>/...`
+- The download URL is written back to the CMS form automatically
+- Then click **Save** to save the content item
+
+New file included:
+- `storage.rules`
+
+Suggested Firebase Storage rules for this version:
+- public read for cover images
+- authenticated write for uploads
+
+In Firebase Console:
+1. Open **Storage**
+2. Go to **Rules**
+3. Paste the contents of `storage.rules`
+4. Publish rules
+
+Notes:
+- Max upload size in this app is 5MB per image
+- When you upload a new cover over an existing live item, the old Storage file is removed automatically
+- When you delete a live News / Promotion / Benefit item, its Storage cover file is removed automatically too

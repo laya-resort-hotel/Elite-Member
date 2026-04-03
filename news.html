@@ -68,8 +68,17 @@
             <label class="field-label" for="contentCtaLabel">CTA label</label>
             <input id="contentCtaLabel" class="input" type="text" placeholder="Example: Book now / Contact team" />
 
+            <label class="field-label" for="contentCoverFile">Cover image upload</label>
+            <input id="contentCoverFile" class="input" type="file" accept="image/*" />
+            <div class="row gap wrap mt-sm">
+              <button id="uploadCoverBtn" class="ghost-btn" type="button">Upload to Firebase Storage</button>
+              <button id="clearCoverBtn" class="ghost-btn" type="button">Clear cover</button>
+            </div>
+            <div id="contentUploadStatus" class="upload-note hidden mt-sm"></div>
+            <div id="contentCoverMeta" class="muted hidden mt-sm"></div>
+
             <label class="field-label" for="contentCoverImageUrl">Cover image URL</label>
-            <input id="contentCoverImageUrl" class="input" type="url" placeholder="https://..." />
+            <input id="contentCoverImageUrl" class="input" type="url" placeholder="URL จะถูกใส่ให้อัตโนมัติหลังอัปโหลด หรือวางเองได้" />
 
             <div class="cms-cover-preview-wrap mt-sm">
               <div class="small-label">Cover preview</div>

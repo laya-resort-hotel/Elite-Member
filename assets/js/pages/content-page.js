@@ -2,6 +2,7 @@ import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
 import { deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
+import { uploadCmsCover } from '../services/storage-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
 
@@ -18,6 +19,9 @@ const labelMap = {
 };
 
 let editingItemId = '';
+let currentCoverImagePath = '';
+let currentCoverImageName = '';
+let uploadInProgress = false;
 
 function canManageContent() {
   return state.firebaseReady && state.currentMode.includes('live') && ['admin', 'manager', 'staff'].includes(state.currentRole);
@@ -48,10 +52,14 @@ function getFormValues() {
     terms: $('contentTerms')?.value.trim() || '',
     ctaLabel: $('contentCtaLabel')?.value.trim() || '',
     coverImageUrl: $('contentCoverImageUrl')?.value.trim() || '',
+    coverImagePath: currentCoverImagePath || '',
+    coverImageName: currentCoverImageName || '',
   };
 }
 
 function setFormValues(item = {}) {
+  currentCoverImagePath = item.coverImagePath || '';
+  currentCoverImageName = item.coverImageName || '';
   if ($('contentTitle')) $('contentTitle').value = item.title || '';
   if ($('contentSummary')) $('contentSummary').value = item.summary || item.body || '';
   if ($('contentFullDetails')) {
@@ -62,7 +70,9 @@ function setFormValues(item = {}) {
   }
   if ($('contentCtaLabel')) $('contentCtaLabel').value = item.ctaLabel || '';
   if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = item.coverImageUrl || '';
+  if ($('contentCoverFile')) $('contentCoverFile').value = '';
   updateCoverPreview();
+  updateCoverMeta();
 }
 
 function updateCoverPreview() {
@@ -81,6 +91,111 @@ function updateCoverPreview() {
   }
 }
 
+function setUploadBusy(isBusy) {
+  uploadInProgress = isBusy;
+  if ($('uploadCoverBtn')) $('uploadCoverBtn').disabled = isBusy;
+  if ($('saveContentBtn')) $('saveContentBtn').disabled = isBusy;
+}
+
+function updateCoverMeta() {
+  const meta = $('contentCoverMeta');
+  if (!meta) return;
+  if (currentCoverImageName) {
+    meta.textContent = `ไฟล์ที่ผูกกับรายการ: ${currentCoverImageName}`;
+    meta.classList.remove('hidden');
+    return;
+  }
+  if ($('contentCoverImageUrl')?.value.trim()) {
+    meta.textContent = 'รูปนี้พร้อมใช้งานและจะถูกบันทึกไปพร้อมรายการ';
+    meta.classList.remove('hidden');
+    return;
+  }
+  meta.textContent = '';
+  meta.classList.add('hidden');
+}
+
+function getSelectedCoverFile() {
+  return $('contentCoverFile')?.files?.[0] || null;
+}
+
+function previewSelectedFile() {
+  const file = getSelectedCoverFile();
+  if (!file) {
+    updateCoverPreview();
+    updateCoverMeta();
+    return;
+  }
+  const img = $('contentCoverPreview');
+  const empty = $('contentCoverPreviewEmpty');
+  if (!img || !empty) return;
+  const meta = $('contentCoverMeta');
+  if (meta) {
+    meta.textContent = `เลือกรูปแล้ว: ${file.name} — กด Upload to Firebase Storage`;
+    meta.classList.remove('hidden');
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    img.src = String(reader.result || '');
+    img.classList.remove('hidden');
+    empty.classList.add('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadSelectedCover(type) {
+  if (!canManageContent()) {
+    showToast('ต้อง login เป็น admin/staff ก่อน', 'error');
+    return;
+  }
+  const file = getSelectedCoverFile();
+  if (!file) {
+    showToast('เลือกรูปก่อนอัปโหลด', 'error');
+    return;
+  }
+  if (!file.type.startsWith('image/')) {
+    showToast('อัปโหลดได้เฉพาะไฟล์รูป', 'error');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('ไฟล์ใหญ่เกิน 5MB', 'error');
+    return;
+  }
+  try {
+    setUploadBusy(true);
+    if ($('contentUploadStatus')) {
+      $('contentUploadStatus').textContent = 'กำลังอัปโหลดรูปขึ้น Firebase Storage...';
+      $('contentUploadStatus').classList.remove('hidden');
+    }
+    const result = await uploadCmsCover(file, type);
+    currentCoverImagePath = result.path || '';
+    currentCoverImageName = result.name || file.name || '';
+    if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = result.url || '';
+    updateCoverPreview();
+    updateCoverMeta();
+    if ($('contentUploadStatus')) $('contentUploadStatus').textContent = 'อัปโหลดรูปสำเร็จแล้ว';
+    showToast('อัปโหลดรูปสำเร็จ');
+  } catch (error) {
+    console.error(error);
+    if ($('contentUploadStatus')) $('contentUploadStatus').textContent = error.message || 'อัปโหลดรูปไม่สำเร็จ';
+    showToast(error.message || 'อัปโหลดรูปไม่สำเร็จ', 'error');
+  } finally {
+    setUploadBusy(false);
+  }
+}
+
+function clearCoverSelection() {
+  currentCoverImagePath = '';
+  currentCoverImageName = '';
+  if ($('contentCoverFile')) $('contentCoverFile').value = '';
+  if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = '';
+  if ($('contentUploadStatus')) {
+    $('contentUploadStatus').textContent = '';
+    $('contentUploadStatus').classList.add('hidden');
+  }
+  updateCoverPreview();
+  updateCoverMeta();
+}
+
 function updateEditorUi(type) {
   const saveBtn = $('saveContentBtn');
   const cancelBtn = $('cancelContentEditBtn');
@@ -92,11 +207,18 @@ function updateEditorUi(type) {
     note.classList.toggle('hidden', !editingItemId);
     note.textContent = editingItemId ? `กำลังแก้ไข ${titleLabel} item` : '';
   }
+  updateCoverMeta();
 }
 
 function resetEditor(type) {
   editingItemId = '';
+  currentCoverImagePath = '';
+  currentCoverImageName = '';
   setFormValues({});
+  if ($('contentUploadStatus')) {
+    $('contentUploadStatus').textContent = '';
+    $('contentUploadStatus').classList.add('hidden');
+  }
   updateEditorUi(type);
 }
 
@@ -214,7 +336,10 @@ export function applyContentPageState(type) {
 }
 
 export function bindContentPage(type) {
-  $('contentCoverImageUrl')?.addEventListener('input', updateCoverPreview);
+  $('contentCoverImageUrl')?.addEventListener('input', () => { currentCoverImagePath = ''; currentCoverImageName = ''; updateCoverPreview(); updateCoverMeta(); });
+  $('contentCoverFile')?.addEventListener('change', previewSelectedFile);
+  $('uploadCoverBtn')?.addEventListener('click', () => uploadSelectedCover(type));
+  $('clearCoverBtn')?.addEventListener('click', clearCoverSelection);
 
   if ($('saveContentBtn')) {
     $('saveContentBtn').addEventListener('click', async () => {
@@ -225,6 +350,10 @@ export function bindContentPage(type) {
       const payload = getFormValues();
       if (!payload.title || !payload.summary || !payload.fullDetails) {
         showToast('กรอก title, summary และ full details ก่อนบันทึก', 'error');
+        return;
+      }
+      if (uploadInProgress) {
+        showToast('รอให้อัปโหลดรูปเสร็จก่อน', 'error');
         return;
       }
       try {
