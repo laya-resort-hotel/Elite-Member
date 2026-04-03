@@ -1842,3 +1842,24 @@ body.lightbox-open {
   margin: 0;
   font-size: 15px;
 }
+
+
+/* Members focus mode */
+body.members-focus #adminHeroMetrics,
+body.members-focus #adminHeroActions,
+body.members-focus #adminOverviewGrid,
+body.members-focus .admin-content-layout:not(#adminMembersLayout) {
+  display: none !important;
+}
+
+body.members-focus #adminHeroSection {
+  padding-bottom: 18px;
+}
+
+body.members-focus #adminHeroSection .page-intro {
+  margin-bottom: 0;
+}
+
+#memberSignupPanel {
+  scroll-margin-top: 24px;
+}

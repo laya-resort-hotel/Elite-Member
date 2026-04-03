@@ -30,23 +30,23 @@
     </header>
 
     <main class="main-content">
-      <section class="panel page-hero">
+      <section id="adminHeroSection" class="panel page-hero">
         <div class="eyebrow gold">Admin Dashboard</div>
         <h2>Single-page CMS</h2>
         <p class="page-intro">รวมการจัดการ News / Promotions / Benefits ไว้ในหน้าเดียวแบบแท็บ เพื่อให้ทำงานหลังบ้านง่ายขึ้น ไม่ต้องสลับหลายหน้า</p>
-        <div class="grid-3 compact-grid">
+        <div id="adminHeroMetrics" class="grid-3 compact-grid">
           <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
           <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
           <div class="metric-card"><span>Total Spend</span><strong id="kpiSpend">฿0</strong></div>
         </div>
-        <div class="row gap wrap mt-md">
+        <div id="adminHeroActions" class="row gap wrap mt-md">
           <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
           <a class="ghost-btn" href="./admin.html?tab=members">Open Members Tab</a>
           <a class="ghost-btn" href="./home.html">Resident Path</a>
         </div>
       </section>
 
-      <section class="admin-grid mt-lg">
+      <section id="adminOverviewGrid" class="admin-grid mt-lg">
         <div class="panel">
           <div class="section-head">
             <h3>Member Preview</h3>
@@ -254,7 +254,7 @@
               </div>
             </div>
 
-            <div class="member-auth-panel mt-md">
+            <div id="memberSignupPanel" class="member-auth-panel mt-md">
               <div class="panel-title-row compact-row">
                 <div>
                   <div class="eyebrow gold">Resident Login Account</div>

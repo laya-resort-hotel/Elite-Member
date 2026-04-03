@@ -912,6 +912,7 @@ async function ensureEditingDocId(type = getActiveType()) {
 function toggleAdminPanels(type) {
   $('adminContentLayout')?.classList.toggle('hidden', type === 'members');
   $('adminMembersLayout')?.classList.toggle('hidden', type !== 'members');
+  document.body?.classList.toggle('members-focus', type === 'members');
 }
 
 function setTab(type) {
@@ -951,6 +952,16 @@ function setTab(type) {
     updateMemberReadonlyNote();
     hydrateMemberEditorFromState();
     renderMembersList();
+    const signupPanel = $('memberSignupPanel');
+    if (signupPanel) {
+      requestAnimationFrame(() => {
+        signupPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    const nameInput = $('memberFullNameInput');
+    if (nameInput) {
+      setTimeout(() => nameInput.focus(), 50);
+    }
     return;
   }
 
