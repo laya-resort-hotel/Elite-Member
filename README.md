@@ -90,3 +90,6 @@ Notes:
 - Admin can drag & drop gallery images to control display order on detail pages.
 - The first image in the gallery becomes the first image of the set on the detail page.
 - Cover image can still be set independently with `Use as cover`.
+
+## New in this build
+- Detail pages support fullscreen lightbox viewing for gallery images.

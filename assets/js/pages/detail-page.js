@@ -25,6 +25,8 @@ const pageTitleMap = {
 
 let currentItem = null;
 let currentType = '';
+let lightboxGallery = [];
+let currentLightboxIndex = 0;
 
 function canManageContent() {
   return state.firebaseReady && state.currentMode.includes('live') && ['admin', 'manager', 'staff'].includes(state.currentRole);
@@ -131,6 +133,8 @@ function renderGallery(item) {
   const target = $('detailCoverWrap');
   if (!target) return;
   const images = item.galleryImages || [];
+  lightboxGallery = images;
+  currentLightboxIndex = 0;
   if (!images.length) {
     target.innerHTML = `<div class="detail-cover detail-cover-fallback"><span>${escapeHtml(labelMap[currentType])}</span></div>`;
     return;
@@ -138,7 +142,10 @@ function renderGallery(item) {
   const mainImage = images[0];
   target.innerHTML = `
     <div class="detail-gallery-shell">
-      <img id="detailMainImage" class="detail-cover" src="${escapeHtml(mainImage.url)}" alt="${escapeHtml(item.title || labelMap[currentType])}" loading="lazy">
+      <button id="detailMainImageBtn" class="detail-main-image-btn" type="button" data-lightbox-index="0" aria-label="Open image fullscreen">
+        <img id="detailMainImage" class="detail-cover" src="${escapeHtml(mainImage.url)}" alt="${escapeHtml(item.title || labelMap[currentType])}" loading="lazy">
+        <span class="detail-zoom-chip">Tap to view full screen</span>
+      </button>
       ${images.length > 1 ? `
         <div id="detailThumbList" class="detail-thumb-grid">
           ${images.map((image, index) => `
@@ -150,6 +157,58 @@ function renderGallery(item) {
       ` : ''}
     </div>
   `;
+}
+
+function ensureLightbox() {
+  if ($('detailLightbox')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'detailLightbox';
+  overlay.className = 'detail-lightbox hidden';
+  overlay.innerHTML = `
+    <div class="detail-lightbox-backdrop" data-lightbox-close></div>
+    <div class="detail-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image preview">
+      <button class="detail-lightbox-close" type="button" data-lightbox-close aria-label="Close fullscreen image">×</button>
+      <button class="detail-lightbox-nav prev" type="button" data-lightbox-nav="prev" aria-label="Previous image">‹</button>
+      <div class="detail-lightbox-stage">
+        <img id="detailLightboxImage" class="detail-lightbox-image" src="" alt="Fullscreen preview">
+        <div id="detailLightboxCaption" class="detail-lightbox-caption">1 / 1</div>
+      </div>
+      <button class="detail-lightbox-nav next" type="button" data-lightbox-nav="next" aria-label="Next image">›</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function updateLightbox() {
+  const image = $('detailLightboxImage');
+  const caption = $('detailLightboxCaption');
+  if (!image || !lightboxGallery.length) return;
+  const safeIndex = Math.max(0, Math.min(currentLightboxIndex, lightboxGallery.length - 1));
+  currentLightboxIndex = safeIndex;
+  const entry = lightboxGallery[safeIndex];
+  image.src = entry.url;
+  image.alt = `${currentType} image ${safeIndex + 1}`;
+  if (caption) caption.textContent = `${safeIndex + 1} / ${lightboxGallery.length}`;
+}
+
+function openLightbox(index = 0) {
+  if (!lightboxGallery.length) return;
+  ensureLightbox();
+  currentLightboxIndex = Number(index) || 0;
+  updateLightbox();
+  $('detailLightbox')?.classList.remove('hidden');
+  document.body.classList.add('lightbox-open');
+}
+
+function closeLightbox() {
+  $('detailLightbox')?.classList.add('hidden');
+  document.body.classList.remove('lightbox-open');
+}
+
+function stepLightbox(direction = 1) {
+  if (!lightboxGallery.length) return;
+  currentLightboxIndex = (currentLightboxIndex + direction + lightboxGallery.length) % lightboxGallery.length;
+  updateLightbox();
 }
 
 function renderDetail(type, item) {
@@ -177,7 +236,7 @@ function renderDetail(type, item) {
         <div class="section-head"><h3>Photo Gallery</h3><span class="eyebrow">${safe.galleryImages.length} images</span></div>
         <div class="detail-gallery-grid">
           ${safe.galleryImages.map((image, index) => `
-            <button class="detail-gallery-card" type="button" data-image-url="${escapeHtml(image.url)}" data-image-index="${index}">
+            <button class="detail-gallery-card" type="button" data-image-url="${escapeHtml(image.url)}" data-image-index="${index}" data-lightbox-index="${index}">
               <img src="${escapeHtml(image.url)}" alt="Gallery image ${index + 1}" loading="lazy">
             </button>
           `).join('')}
@@ -229,7 +288,9 @@ async function loadRelatedItems(type, current) {
 
 function switchMainImage(url, index) {
   const mainImage = $('detailMainImage');
+  const mainButton = $('detailMainImageBtn');
   if (mainImage && url) mainImage.src = url;
+  if (mainButton) mainButton.dataset.lightboxIndex = String(index);
   $$('[data-image-index]').forEach((el) => {
     el.classList.toggle('active', String(el.dataset.imageIndex) === String(index));
   });
@@ -260,10 +321,33 @@ export function bindDetailPage(type) {
       showToast(`${labelMap[type]} action is ready for next step`);
     });
   }
+  ensureLightbox();
   document.addEventListener('click', (event) => {
-    const trigger = event.target.closest('[data-image-url]');
-    if (!trigger) return;
-    switchMainImage(trigger.dataset.imageUrl || '', trigger.dataset.imageIndex || '0');
+    const thumbTrigger = event.target.closest('.detail-thumb');
+    if (thumbTrigger) {
+      switchMainImage(thumbTrigger.dataset.imageUrl || '', thumbTrigger.dataset.imageIndex || '0');
+      return;
+    }
+    const lightboxTrigger = event.target.closest('[data-lightbox-index]');
+    if (lightboxTrigger) {
+      openLightbox(lightboxTrigger.dataset.lightboxIndex || lightboxTrigger.dataset.imageIndex || '0');
+      return;
+    }
+    const closeBtn = event.target.closest('[data-lightbox-close]');
+    if (closeBtn) {
+      closeLightbox();
+      return;
+    }
+    const navBtn = event.target.closest('[data-lightbox-nav]');
+    if (navBtn) {
+      stepLightbox(navBtn.dataset.lightboxNav === 'prev' ? -1 : 1);
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if ($('detailLightbox')?.classList.contains('hidden')) return;
+    if (event.key === 'Escape') closeLightbox();
+    if (event.key === 'ArrowRight') stepLightbox(1);
+    if (event.key === 'ArrowLeft') stepLightbox(-1);
   });
   if ($('detailDeleteBtn')) {
     $('detailDeleteBtn').addEventListener('click', async () => {
