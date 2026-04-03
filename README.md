@@ -93,3 +93,9 @@ Notes:
 
 ## New in this build
 - Detail pages support fullscreen lightbox viewing for gallery images.
+
+
+## Card UI update
+- Premium smooth flip effect
+- White background removed from card artwork
+- Download current card side from Home and Resident pages
