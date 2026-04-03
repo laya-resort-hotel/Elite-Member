@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -8,6 +9,7 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
@@ -32,14 +34,42 @@ export async function loadDocumentById(collectionName, id) {
   return { id: snap.id, ...data, createdLabel: formatDate(data.createdAt), updatedLabel: formatDate(data.updatedAt) };
 }
 
+function normalizeBody(body) {
+  return String(body || '').trim();
+}
+
+function toDetails(body) {
+  return normalizeBody(body).split('
+').map((line) => line.trim()).filter(Boolean);
+}
+
 export async function saveSimpleCMS(collectionName, title, body) {
-  await addDoc(collection(state.db, collectionName), {
+  const normalizedBody = normalizeBody(body);
+  const ref = await addDoc(collection(state.db, collectionName), {
     title,
-    body,
-    summary: body,
-    details: [body],
+    body: normalizedBody,
+    summary: normalizedBody,
+    details: toDetails(normalizedBody),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     createdBy: state.currentUser?.email || 'manual-admin',
+    updatedBy: state.currentUser?.email || 'manual-admin',
   });
+  return ref;
+}
+
+export async function updateSimpleCMS(collectionName, id, title, body) {
+  const normalizedBody = normalizeBody(body);
+  await updateDoc(doc(state.db, collectionName, id), {
+    title,
+    body: normalizedBody,
+    summary: normalizedBody,
+    details: toDetails(normalizedBody),
+    updatedAt: serverTimestamp(),
+    updatedBy: state.currentUser?.email || 'manual-admin',
+  });
+}
+
+export async function deleteCMSItem(collectionName, id) {
+  await deleteDoc(doc(state.db, collectionName, id));
 }

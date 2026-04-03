@@ -178,3 +178,21 @@
 .text-link { color: var(--gold); font-size: 13px; font-weight: 700; letter-spacing: .04em; }
 .detail-link-card { display: block; text-decoration: none; color: inherit; }
 .full-btn { width: 100%; }
+
+.danger-btn {
+  border: 1px solid rgba(208,109,109,.28);
+  background: rgba(97, 34, 34, .24);
+  color: #ffd9d9;
+  border-radius: 16px;
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+.danger-btn:hover { transform: translateY(-1px); }
+.danger-btn:disabled,
+.ghost-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+.mt-sm { margin-top: 10px; }

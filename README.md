@@ -31,3 +31,10 @@
 - news-detail.html
 - promotions-detail.html
 - benefits-detail.html
+
+
+## Admin content editing
+- Login with an admin/staff account to manage News, Promotions, and Benefits.
+- Open each list page and use **Edit** or **Delete** on live Firebase items.
+- Detail pages now include **Admin Tools** with an edit shortcut and delete button for live items.
+- Demo items are view-only and cannot be edited or deleted.
