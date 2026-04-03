@@ -14,7 +14,6 @@ import { loadRedemptionPage } from './pages/redemption-page.js';
 import { bindAdminPage, loadAdminDashboard, openDemoAdmin } from './pages/admin-page.js';
 import { applyContentPageState, bindContentPage, loadContentPage } from './pages/content-page.js';
 import { bindDetailPage, loadDetailPage } from './pages/detail-page.js';
-import { bindMembersPage, loadMembersPage } from './pages/members-page.js';
 import { bindFlipCards } from './ui/card-flip.js';
 import { demoResident } from './data/demo.js';
 
@@ -94,9 +93,8 @@ async function initCurrentPage(isLive = false) {
       else openDemoAdmin();
       break;
     case 'members':
-      bindMembersPage();
-      await loadMembersPage();
-      break;
+      go('admin.html?tab=members');
+      return;
     default:
       break;
   }

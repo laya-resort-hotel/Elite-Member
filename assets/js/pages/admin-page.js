@@ -63,7 +63,7 @@ const demoMembers = [
 ];
 
 const adminContentState = {
-  activeType: 'news',
+  activeType: 'members',
   cache: {
     news: [],
     promotions: [],
@@ -161,6 +161,17 @@ function getActiveType() {
 
 function isMembersTab(type = getActiveType()) {
   return type === 'members';
+}
+
+function resolveInitialAdminTab() {
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    const tab = (params.get('tab') || window.location.hash.replace('#', '') || '').trim();
+    if (['news', 'promotions', 'benefits', 'members'].includes(tab)) return tab;
+  } catch (error) {
+    console.warn('resolveInitialAdminTab failed', error);
+  }
+  return 'members';
 }
 
 function getContentEditorState(type = getActiveType()) {
@@ -906,6 +917,13 @@ function toggleAdminPanels(type) {
 function setTab(type) {
   syncCurrentEditorFromDom();
   adminContentState.activeType = type;
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', type);
+    history.replaceState({}, '', url.toString());
+  } catch (error) {
+    console.warn('setTab replaceState failed', error);
+  }
 
   $$('.admin-tab-btn').forEach((btn) => {
     const active = btn.dataset.adminTab === type;
@@ -1638,6 +1656,7 @@ function bindSpendForm() {
 }
 
 export async function loadAdminDashboard() {
+  adminContentState.activeType = resolveInitialAdminTab();
   await loadAdminOverview();
   updateReadonlyNote();
   updateMemberReadonlyNote();
@@ -1651,8 +1670,10 @@ export async function loadAdminDashboard() {
 }
 
 export function bindAdminPage() {
+  adminContentState.activeType = resolveInitialAdminTab();
   bindSpendForm();
   bindAdminContentTabs();
+  setTab(getActiveType());
 
   if ($('loadAdminDataBtn')) {
     $('loadAdminDataBtn').addEventListener('click', async () => {
