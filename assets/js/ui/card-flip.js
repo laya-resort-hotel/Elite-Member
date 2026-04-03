@@ -7,11 +7,15 @@ function setSide(card, side) {
   const backBtn = card.querySelector('[data-card-side="back"]');
   const label = card.querySelector('[data-card-label]');
   const downloadBtn = card.querySelector('[data-card-download]');
+  const frontFace = card.querySelector('.elite-card-front');
+  const backFace = card.querySelector('.elite-card-back');
   const isBack = side === 'back';
 
   scene?.classList.toggle('is-flipped', isBack);
   frontBtn?.classList.toggle('active', !isBack);
   backBtn?.classList.toggle('active', isBack);
+  frontFace?.setAttribute('aria-hidden', isBack ? 'true' : 'false');
+  backFace?.setAttribute('aria-hidden', isBack ? 'false' : 'true');
 
   if (label) label.textContent = isBack ? 'Back view' : 'Front view';
   if (downloadBtn) downloadBtn.textContent = isBack ? 'Download back image' : 'Download front image';
@@ -56,8 +60,8 @@ function bindSwipe(scene, card) {
   let dragging = false;
   let recentSwipeAt = 0;
 
-  const swipeThreshold = 36;
-  const verticalTolerance = 28;
+  const swipeThreshold = 28;
+  const verticalTolerance = 46;
   const clickSuppressMs = 420;
 
   const handleSwipeResult = (deltaX, deltaY) => {
@@ -65,12 +69,7 @@ function bindSwipe(scene, card) {
     if (Math.abs(deltaY) > verticalTolerance && Math.abs(deltaY) > Math.abs(deltaX)) return false;
 
     recentSwipeAt = Date.now();
-
-    if (deltaX < 0) {
-      setSide(card, 'back');
-    } else {
-      setSide(card, 'front');
-    }
+    setSide(card, deltaX < 0 ? 'back' : 'front');
     return true;
   };
 
@@ -95,6 +94,22 @@ function bindSwipe(scene, card) {
   scene.addEventListener('touchcancel', () => {
     dragging = false;
   }, { passive: true });
+
+  // Fallback for browsers/devices where touchend swipe is unreliable
+  scene.addEventListener('pointerdown', (event) => {
+    if (event.pointerType !== 'touch') return;
+    startX = event.clientX;
+    startY = event.clientY;
+    dragging = true;
+  });
+
+  scene.addEventListener('pointerup', (event) => {
+    if (!dragging || event.pointerType !== 'touch') return;
+    const deltaX = event.clientX - startX;
+    const deltaY = event.clientY - startY;
+    handleSwipeResult(deltaX, deltaY);
+    dragging = false;
+  });
 
   scene.addEventListener('click', () => {
     if (Date.now() - recentSwipeAt < clickSuppressMs) return;
