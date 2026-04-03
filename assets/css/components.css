@@ -1794,3 +1794,22 @@ body.lightbox-open {
     margin: 0 auto;
   }
 }
+
+
+.member-qr-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.member-qr-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .member-qr-panel {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}

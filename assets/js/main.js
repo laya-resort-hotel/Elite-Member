@@ -140,7 +140,7 @@ async function initApp() {
 
       clearDemoMode();
       const profile = await loadUserProfile(user.uid, user.email);
-      state.memberCode = profile.memberCode || '';
+      state.memberCode = profile.publicCardCode || profile.memberCode || profile.memberId || '';
       await renderPageForRole(profile.role, user);
     });
   } catch (error) {

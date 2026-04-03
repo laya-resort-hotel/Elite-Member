@@ -88,16 +88,18 @@ export function renderTable(container, rows = [], emptyText = 'No transactions y
 export function renderResidentCard(resident) {
   const fullName = resident.fullName || 'Resident Member';
   const initials = fullName.trim().charAt(0).toUpperCase() || 'R';
+  const qrCode = resident.publicCardCode || resident.memberCode || resident.memberId || 'LAYA-0001';
   if ($('memberName')) $('memberName').textContent = fullName;
   if ($('vaultMemberName')) $('vaultMemberName').textContent = fullName;
   if ($('memberTier')) $('memberTier').textContent = resident.tier || 'Elite Black';
   if ($('memberStatusPill')) $('memberStatusPill').textContent = resident.status || 'ACTIVE';
-  if ($('memberCode')) $('memberCode').textContent = resident.memberCode || 'LAYA-0001';
+  if ($('memberCode')) $('memberCode').textContent = qrCode;
   if ($('memberResidence')) $('memberResidence').textContent = resident.residence || '-';
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(resident.points || 0);
   if ($('memberSpend')) $('memberSpend').textContent = formatTHB(resident.totalSpend || 0);
   if ($('memberAvatarLetter')) $('memberAvatarLetter').textContent = initials;
-  renderQr(resident.memberCode || 'LAYA-0001');
+  if ($('memberQrCodeText')) $('memberQrCodeText').textContent = qrCode;
+  renderQr(qrCode);
 }
 
 export function renderResidentSearchResults(container, residents = []) {

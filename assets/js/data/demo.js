@@ -1,5 +1,7 @@
 export const demoResident = {
   id: 'demo-resident-001',
+  memberId: 'ECB000001',
+  publicCardCode: 'LAYA-0001',
   memberCode: 'LAYA-0001',
   fullName: 'Noi Resident',
   tier: 'Elite Black',
