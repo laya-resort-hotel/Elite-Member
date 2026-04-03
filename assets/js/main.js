@@ -14,6 +14,7 @@ import { bindAdminPage, loadAdminDashboard, openDemoAdmin } from './pages/admin-
 import { applyContentPageState, bindContentPage, loadContentPage } from './pages/content-page.js';
 import { bindDetailPage, loadDetailPage } from './pages/detail-page.js';
 import { bindMembersPage, loadMembersPage } from './pages/members-page.js';
+import { bindFlipCards } from './ui/card-flip.js';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
@@ -91,6 +92,7 @@ async function initCurrentPage(isLive = false) {
 async function initApp() {
   highlightCurrentNav();
   bindAuthPage();
+  bindFlipCards();
 
   try {
     initFirebaseServices();
