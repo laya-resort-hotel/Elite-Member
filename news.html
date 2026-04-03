@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – News</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident Elite Black Card web app" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="news" data-content-type="news">
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
+    <main class="main-content">
+      <section class="content-two-col">
+        <div class="content-main">
+          <div class="panel page-hero">
+            <div class="eyebrow gold">Separated HTML Page</div>
+            <h2 id="contentHeading">Content</h2>
+            <p class="page-intro">หน้านี้ถูกแยกเป็นไฟล์ HTML จริงแล้ว เพื่อให้แก้เนื้อหาเฉพาะส่วนได้ง่ายกว่าเดิม โดยไม่ต้องเปิดไฟล์ index เดียวที่ยาวมาก</p>
+            <div class="subnav">
+              <a class="nav-btn" href="./resident.html">Resident</a>
+              <a class="nav-btn" href="./news.html">News</a>
+              <a class="nav-btn" href="./promotions.html">Promotions</a>
+              <a class="nav-btn" href="./benefits.html">Benefits</a>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="section-head"><h3 id="contentSubheading">All items</h3><span class="eyebrow">Live / Demo</span></div>
+            <div id="contentList" class="card-list"></div>
+          </div>
+        </div>
+        <aside class="sticky-col">
+          <div class="panel">
+            <div class="section-head"><h3>CMS Quick Add</h3><span class="eyebrow">Admin use</span></div>
+            <p id="cmsReadOnlyNote" class="readonly-note">หน้านี้อ่านข้อมูลได้ แต่การบันทึกจะใช้ได้เมื่อ login เป็น admin/staff</p>
+            <label class="field-label" data-content-label for="contentTitle">Content</label>
+            <input id="contentTitle" class="input" type="text" placeholder="Title" />
+            <label class="field-label" for="contentBody">Details</label>
+            <textarea id="contentBody" class="input textarea" placeholder="Details"></textarea>
+            <div class="row gap wrap mt-md">
+              <button id="saveContentBtn" class="secondary-btn">Save <span data-content-label>Content</span></button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="section-head"><h3>Why this page?</h3><span class="eyebrow">Structure</span></div>
+            <div class="info-note">ตอนนี้ News / Promotions / Benefits ไม่ได้เป็น section ซ้อนอยู่ในหน้าเดียวแล้ว แต่แยกเป็นไฟล์จริง เพื่อให้ต่อระบบหลังบ้านและตกแต่งแต่ละหน้าต่างกันได้ง่ายขึ้น</div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" data-page-link="index" href="./index.html">Login</a>
+    <a class="nav-btn" data-page-link="resident" href="./resident.html">Resident</a>
+    <a class="nav-btn" data-page-link="news" href="./news.html">News</a>
+    <a class="nav-btn" data-page-link="promotions" href="./promotions.html">Promotions</a>
+    <a class="nav-btn" data-page-link="benefits" href="./benefits.html">Benefits</a>
+    <a class="nav-btn" data-page-link="admin" href="./admin.html">Admin</a>
+    <a class="nav-btn" data-page-link="members" href="./members.html">Members</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

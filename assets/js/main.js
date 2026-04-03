@@ -1,32 +1,89 @@
+
 import { $ } from './core/dom.js';
 import { state, setMode } from './core/state.js';
+import { getDemoMode, clearDemoMode } from './core/session.js';
+import { highlightCurrentNav } from './core/app-shell.js';
 import { initFirebaseServices } from './services/firebase-service.js';
 import { subscribeAuth } from './services/auth-service.js';
 import { loadResidentForUser, loadUserProfile } from './services/member-service.js';
-import { bindScreenButtons, setScreen } from './ui/navigation.js';
 import { showToast } from './ui/toast.js';
-import { renderCards, renderResidentCard, renderTable, updateStatusLabels } from './ui/renderers.js';
-import { demoBenefits, demoNews, demoPromotions, demoResident, demoTransactions } from './data/demo.js';
+import { updateStatusLabels } from './ui/renderers.js';
 import { bindAuthPage } from './pages/auth-page.js';
 import { bindResidentPage, loadResidentDashboard, openDemoResident } from './pages/resident-page.js';
 import { bindAdminPage, loadAdminDashboard, openDemoAdmin } from './pages/admin-page.js';
+import { applyContentPageState, bindContentPage, loadContentPage } from './pages/content-page.js';
+import { bindMembersPage, loadMembersPage } from './pages/members-page.js';
 
-function bootstrapStaticData() {
-  renderResidentCard(demoResident);
-  renderCards($('benefitsList'), demoBenefits);
-  renderCards($('newsList'), demoNews);
-  renderCards($('promoList'), demoPromotions);
-  renderTable($('transactionsTable'), demoTransactions);
-  setScreen('screen-auth');
-  updateStatusLabels({ modeState: 'Auth' });
+const page = document.body?.dataset?.page || 'index';
+const contentType = document.body?.dataset?.contentType || '';
+
+function go(url) {
+  if (window.location.pathname.endsWith(url)) return;
+  window.location.href = `./${url}`;
+}
+
+async function renderPageForRole(role, user) {
+  if (['admin', 'manager', 'staff'].includes(role)) {
+    state.currentRole = role;
+    setMode('admin-live');
+    updateStatusLabels({ modeState: 'admin-live' });
+    if (page === 'index') {
+      go('admin.html');
+      return;
+    }
+    await initCurrentPage(true);
+    return;
+  }
+
+  state.currentRole = role || 'resident';
+  state.currentResident = await loadResidentForUser(user.uid, user.email, state.memberCode);
+  setMode('resident-live');
+  updateStatusLabels({ modeState: 'resident-live' });
+  if (page === 'index') {
+    go('resident.html');
+    return;
+  }
+  await initCurrentPage(true);
+}
+
+async function initCurrentPage(isLive = false) {
+  switch (page) {
+    case 'index':
+      break;
+    case 'resident':
+      bindResidentPage();
+      if (isLive) await loadResidentDashboard();
+      else openDemoResident();
+      break;
+    case 'news':
+    case 'promotions':
+    case 'benefits':
+      applyContentPageState(contentType);
+      bindContentPage(contentType);
+      await loadContentPage(contentType);
+      if ($('cmsReadOnlyNote')) {
+        $('cmsReadOnlyNote').textContent = isLive && ['admin', 'manager', 'staff'].includes(state.currentRole)
+          ? 'คุณกำลังอยู่ในโหมดแก้ไขข้อมูลจริงผ่าน Firebase'
+          : 'หน้านี้อ่านข้อมูลได้ แต่การบันทึกจะใช้ได้เมื่อ login เป็น admin/staff';
+      }
+      break;
+    case 'admin':
+      bindAdminPage();
+      if (isLive) await loadAdminDashboard();
+      else openDemoAdmin();
+      break;
+    case 'members':
+      bindMembersPage();
+      await loadMembersPage();
+      break;
+    default:
+      break;
+  }
 }
 
 async function initApp() {
-  bootstrapStaticData();
-  bindScreenButtons();
-  bindAuthPage({ onDemoResident: openDemoResident, onDemoAdmin: openDemoAdmin });
-  bindResidentPage();
-  bindAdminPage();
+  highlightCurrentNav();
+  bindAuthPage();
 
   try {
     initFirebaseServices();
@@ -35,38 +92,40 @@ async function initApp() {
     subscribeAuth(async (user) => {
       state.currentUser = user;
       updateStatusLabels({ authState: user?.email || 'Not signed in' });
-      $('loginBtn').classList.toggle('hidden', !!user);
-      $('logoutBtn').classList.toggle('hidden', !user);
+      if ($('logoutBtn')) $('logoutBtn').classList.toggle('hidden', !user && !getDemoMode());
 
       if (!user) {
-        if (state.currentMode.includes('live')) {
-          setMode('auth');
-          updateStatusLabels({ modeState: 'auth' });
-          setScreen('screen-auth');
+        const demoMode = getDemoMode();
+        if (demoMode === 'admin') {
+          state.currentRole = 'admin';
+          setMode('demo-admin');
+          updateStatusLabels({ modeState: 'demo-admin' });
+          await initCurrentPage(false);
+          return;
         }
+        if (demoMode === 'resident') {
+          state.currentRole = 'resident';
+          setMode('demo-resident');
+          updateStatusLabels({ modeState: 'demo-resident' });
+          await initCurrentPage(false);
+          return;
+        }
+        setMode(page === 'index' ? 'auth' : 'guest');
+        updateStatusLabels({ modeState: page === 'index' ? 'auth' : 'guest' });
+        await initCurrentPage(false);
         return;
       }
 
+      clearDemoMode();
       const profile = await loadUserProfile(user.uid, user.email);
-      if (['admin', 'manager', 'staff'].includes(profile.role)) {
-        state.currentRole = profile.role;
-        setMode('admin-live');
-        updateStatusLabels({ modeState: 'admin-live' });
-        setScreen('screen-admin');
-        await loadAdminDashboard();
-      } else {
-        state.currentRole = profile.role || 'resident';
-        state.currentResident = await loadResidentForUser(user.uid, user.email, profile.memberCode);
-        setMode('resident-live');
-        updateStatusLabels({ modeState: 'resident-live' });
-        setScreen('screen-resident');
-        await loadResidentDashboard();
-      }
+      state.memberCode = profile.memberCode || '';
+      await renderPageForRole(profile.role, user);
     });
   } catch (error) {
     console.error(error);
     updateStatusLabels({ firebaseState: 'Error' });
     showToast('Firebase init failed, using demo mode', 'error');
+    await initCurrentPage(false);
   }
 }
 

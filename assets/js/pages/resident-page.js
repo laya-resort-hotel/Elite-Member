@@ -1,10 +1,10 @@
+
 import { state, setMode } from '../core/state.js';
 import { $ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions, demoResident, demoTransactions } from '../data/demo.js';
 import { loadCollectionSafe } from '../services/content-service.js';
 import { loadTransactions } from '../services/transaction-service.js';
 import { renderCards, renderResidentCard, renderTable, updateStatusLabels } from '../ui/renderers.js';
-import { setScreen } from '../ui/navigation.js';
 import { showToast } from '../ui/toast.js';
 
 export async function loadResidentDashboard() {
@@ -12,9 +12,9 @@ export async function loadResidentDashboard() {
   renderResidentCard(resident);
   try {
     const [benefits, news, promotions, transactions] = await Promise.all([
-      loadCollectionSafe('benefits', { limit: 6 }),
-      loadCollectionSafe('news', { limit: 5 }),
-      loadCollectionSafe('promotions', { limit: 5 }),
+      loadCollectionSafe('benefits', { limit: 3 }),
+      loadCollectionSafe('news', { limit: 3 }),
+      loadCollectionSafe('promotions', { limit: 3 }),
       loadTransactions({ limit: 10, whereMemberCode: resident.memberCode, orderBy: false }),
     ]);
     renderCards($('benefitsList'), benefits.length ? benefits : demoBenefits, 'No benefits yet');
@@ -40,15 +40,16 @@ export function openDemoResident() {
   renderTable($('transactionsTable'), demoTransactions);
   setMode('demo-resident');
   updateStatusLabels({ modeState: 'demo-resident' });
-  setScreen('screen-resident');
 }
 
 export function bindResidentPage() {
-  $('refreshResidentBtn').addEventListener('click', async () => {
-    if (state.currentMode.includes('live')) {
-      await loadResidentDashboard();
-      return;
-    }
-    openDemoResident();
-  });
+  if ($('refreshResidentBtn')) {
+    $('refreshResidentBtn').addEventListener('click', async () => {
+      if (state.currentMode.includes('live')) {
+        await loadResidentDashboard();
+        return;
+      }
+      openDemoResident();
+    });
+  }
 }

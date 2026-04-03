@@ -1,10 +1,11 @@
+
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js';
 
 export function updateStatusLabels({ firebaseState, authState, modeState }) {
-  if (firebaseState !== undefined) $('firebaseState').textContent = firebaseState;
-  if (authState !== undefined) $('authState').textContent = authState;
-  if (modeState !== undefined) $('modeState').textContent = modeState;
+  if (firebaseState !== undefined && $('firebaseState')) $('firebaseState').textContent = firebaseState;
+  if (authState !== undefined && $('authState')) $('authState').textContent = authState;
+  if (modeState !== undefined && $('modeState')) $('modeState').textContent = modeState;
 }
 
 export function renderCards(listEl, items = [], emptyText = 'No data') {
@@ -16,7 +17,7 @@ export function renderCards(listEl, items = [], emptyText = 'No data') {
   listEl.innerHTML = items.map((item) => `
     <div class="card-item">
       <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
-      <p>${escapeHtml(item.body || '')}</p>
+      <p>${escapeHtml(item.body || item.description || '')}</p>
       ${item.createdLabel ? `<small>${escapeHtml(item.createdLabel)}</small>` : ''}
     </div>
   `).join('');
@@ -57,13 +58,13 @@ export function renderTable(container, rows = [], emptyText = 'No transactions y
 }
 
 export function renderResidentCard(resident) {
-  $('memberName').textContent = resident.fullName || 'Resident Member';
-  $('memberTier').textContent = resident.tier || 'Elite Black';
-  $('memberStatusPill').textContent = resident.status || 'ACTIVE';
-  $('memberCode').textContent = resident.memberCode || 'LAYA-0001';
-  $('memberResidence').textContent = resident.residence || '-';
-  $('memberPoints').textContent = formatNumber(resident.points || 0);
-  $('memberSpend').textContent = formatTHB(resident.totalSpend || 0);
+  if ($('memberName')) $('memberName').textContent = resident.fullName || 'Resident Member';
+  if ($('memberTier')) $('memberTier').textContent = resident.tier || 'Elite Black';
+  if ($('memberStatusPill')) $('memberStatusPill').textContent = resident.status || 'ACTIVE';
+  if ($('memberCode')) $('memberCode').textContent = resident.memberCode || 'LAYA-0001';
+  if ($('memberResidence')) $('memberResidence').textContent = resident.residence || '-';
+  if ($('memberPoints')) $('memberPoints').textContent = formatNumber(resident.points || 0);
+  if ($('memberSpend')) $('memberSpend').textContent = formatTHB(resident.totalSpend || 0);
   renderQr(resident.memberCode || 'LAYA-0001');
 }
 
@@ -84,9 +85,9 @@ export function renderResidentSearchResults(container, residents = []) {
 }
 
 export function renderAdminKpis({ residents = 0, points = 0, spend = 0 }) {
-  $('kpiResidents').textContent = formatNumber(residents);
-  $('kpiPoints').textContent = formatNumber(points);
-  $('kpiSpend').textContent = formatTHB(spend);
+  if ($('kpiResidents')) $('kpiResidents').textContent = formatNumber(residents);
+  if ($('kpiPoints')) $('kpiPoints').textContent = formatNumber(points);
+  if ($('kpiSpend')) $('kpiSpend').textContent = formatTHB(spend);
 }
 
 function renderQr(text) {

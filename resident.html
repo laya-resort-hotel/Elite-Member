@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Resident Home</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident Elite Black Card web app" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="resident">
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
+    <main class="main-content">
+      <section class="page-hero panel black-card-large">
+        <div class="card-top-row">
+          <div>
+            <div class="eyebrow gold">Resident Home</div>
+            <h2 id="memberName">Resident Member</h2>
+            <p id="memberTier" class="muted-light">Elite Black</p>
+          </div>
+          <span id="memberStatusPill" class="pill gold-pill">ACTIVE</span>
+        </div>
+        <div class="card-middle-row">
+          <div>
+            <div class="small-label">Member ID</div>
+            <div id="memberCode" class="big-mono">LAYA-0001</div>
+          </div>
+          <div>
+            <div class="small-label">Owned Residence</div>
+            <div id="memberResidence" class="big-text">D-108</div>
+          </div>
+          <div class="qr-wrap">
+            <canvas id="memberQrCanvas" width="124" height="124"></canvas>
+          </div>
+        </div>
+        <div class="grid-2 mt-lg">
+          <div class="metric-card dark-tile">
+            <span class="small-label">Available Points</span>
+            <strong id="memberPoints">42,580</strong>
+          </div>
+          <div class="metric-card dark-tile">
+            <span class="small-label">Total Spend</span>
+            <strong id="memberSpend">฿238,900</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <div>
+            <h3 style="margin:0">Resident Navigation</h3>
+            <p class="readonly-note">Quick links ไปยังหน้าที่แยกจริง</p>
+          </div>
+          <button id="refreshResidentBtn" class="ghost-btn">Refresh Data</button>
+        </div>
+        <div class="quick-links">
+          <a class="nav-link-card" href="./news.html"><strong>News Page</strong><small>ข่าวสารแยกเป็นไฟล์ HTML จริง</small></a>
+          <a class="nav-link-card" href="./promotions.html"><strong>Promotions Page</strong><small>โปรโมชันแยกเป็นไฟล์ HTML จริง</small></a>
+          <a class="nav-link-card" href="./benefits.html"><strong>Benefits Page</strong><small>สิทธิประโยชน์แยกเป็นไฟล์ HTML จริง</small></a>
+          <a class="nav-link-card" href="./admin.html"><strong>Admin Dashboard</strong><small>ฝั่งโรงแรมสำหรับบันทึก spend และ dashboard</small></a>
+        </div>
+      </section>
+
+      <section class="grid-3">
+        <div class="panel">
+          <div class="section-head"><h3>Benefits Preview</h3><a class="text-link ghost-btn" href="./benefits.html">Open page</a></div>
+          <div id="benefitsList" class="card-list"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h3>News Preview</h3><a class="text-link ghost-btn" href="./news.html">Open page</a></div>
+          <div id="newsList" class="card-list"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h3>Promotions Preview</h3><a class="text-link ghost-btn" href="./promotions.html">Open page</a></div>
+          <div id="promoList" class="card-list"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head"><h3>Spending & Point History</h3><span class="eyebrow">Recent transactions</span></div>
+        <div id="transactionsTable"></div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" data-page-link="index" href="./index.html">Login</a>
+    <a class="nav-btn" data-page-link="resident" href="./resident.html">Resident</a>
+    <a class="nav-btn" data-page-link="news" href="./news.html">News</a>
+    <a class="nav-btn" data-page-link="promotions" href="./promotions.html">Promotions</a>
+    <a class="nav-btn" data-page-link="benefits" href="./benefits.html">Benefits</a>
+    <a class="nav-btn" data-page-link="admin" href="./admin.html">Admin</a>
+    <a class="nav-btn" data-page-link="members" href="./members.html">Members</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>
