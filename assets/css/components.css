@@ -517,6 +517,7 @@ body.lightbox-open {
   gap: 12px;
 }
 
+
 .elite-card-toolbar {
   display: flex;
   justify-content: space-between;
@@ -555,8 +556,7 @@ body.lightbox-open {
   width: 100%;
   aspect-ratio: 1.6 / 1;
   border-radius: 32px;
-  transform-style: preserve-3d;
-  perspective: 2200px;
+  perspective: 2400px;
   cursor: pointer;
   transform: translateY(0) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transition: transform .35s ease, filter .35s ease;
@@ -580,10 +580,9 @@ body.lightbox-open {
   inset: 0;
   border-radius: 32px;
   background:
-    radial-gradient(circle at top right, rgba(255,240,188,.18), transparent 22%),
-    linear-gradient(120deg, transparent 12%, rgba(255,255,255,.11) 50%, transparent 82%);
-  opacity: .55;
-  transform: translateZ(16px);
+    radial-gradient(circle at top right, rgba(255,240,188,.10), transparent 22%),
+    linear-gradient(120deg, transparent 10%, rgba(255,255,255,.07) 48%, transparent 78%);
+  opacity: .75;
   pointer-events: none;
   mix-blend-mode: screen;
 }
@@ -591,13 +590,25 @@ body.lightbox-open {
 .elite-card-scene::after {
   content: '';
   position: absolute;
-  inset: 4% 3% -2% 3%;
+  inset: 7% 4% -2% 4%;
   border-radius: 40px;
   background: radial-gradient(circle at center, rgba(216,188,124,.18), rgba(0,0,0,0) 66%);
-  filter: blur(22px);
-  opacity: .9;
+  filter: blur(24px);
+  opacity: .85;
   pointer-events: none;
   z-index: -1;
+}
+
+.elite-card-flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .95s cubic-bezier(.22, 1, .36, 1);
+}
+
+.elite-card-scene.is-flipped .elite-card-flipper {
+  transform: rotateY(180deg);
 }
 
 .elite-card-face {
@@ -606,10 +617,11 @@ body.lightbox-open {
   border-radius: 32px;
   overflow: hidden;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
-  transition: transform 1s cubic-bezier(.22, 1, .36, 1), filter .45s ease;
-  border: none;
   background: transparent;
+  display: grid;
+  place-items: center;
 }
 
 .elite-card-face img {
@@ -617,21 +629,17 @@ body.lightbox-open {
   height: 100%;
   display: block;
   object-fit: contain;
-  filter: drop-shadow(0 18px 32px rgba(0,0,0,.28));
   user-select: none;
   -webkit-user-drag: none;
+  filter: drop-shadow(0 16px 26px rgba(0,0,0,.18));
+}
+
+.elite-card-front {
+  transform: rotateY(0deg);
 }
 
 .elite-card-back {
   transform: rotateY(180deg);
-}
-
-.elite-card-scene.is-flipped .elite-card-front {
-  transform: rotateY(180deg);
-}
-
-.elite-card-scene.is-flipped .elite-card-back {
-  transform: rotateY(360deg);
 }
 
 .resident-card-panel {
@@ -673,6 +681,7 @@ body.lightbox-open {
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.08);
 }
+
 @media (max-width: 980px) {
   .resident-card-hero {
     grid-template-columns: 1fr;
