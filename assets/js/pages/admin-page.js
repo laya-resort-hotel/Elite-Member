@@ -12,9 +12,17 @@ import {
   updateStructuredCMS,
 } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
+import {
+  createMemberShell,
+  deleteMemberRecord,
+  loadMemberById,
+  loadMembersSafe,
+  saveMemberRecord,
+  updateMemberRecord,
+} from '../services/member-admin-service.js';
 import { renderAdminKpis, renderResidentSearchResults, renderTable, updateStatusLabels } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
-import { escapeHtml, formatDate, formatTHB } from '../core/format.js';
+import { escapeHtml, formatTHB } from '../core/format.js';
 
 const demoContentMap = {
   news: demoNews,
@@ -26,7 +34,31 @@ const labelMap = {
   news: 'News',
   promotions: 'Promotions',
   benefits: 'Benefits',
+  members: 'Members',
 };
+
+const demoMembers = [
+  {
+    id: demoResident.memberId || 'ECB000001',
+    memberId: demoResident.memberId || 'ECB000001',
+    publicCardCode: demoResident.memberCode || 'LAYA-DEMO01',
+    fullName: demoResident.name || 'Demo Resident',
+    firstName: 'Demo',
+    lastName: 'Resident',
+    email: demoResident.email || 'resident@example.com',
+    phone: demoResident.phone || '',
+    status: 'active',
+    tier: 'elite_black',
+    ownerType: 'resident_owner',
+    preferredLanguage: 'en',
+    authUid: '',
+    avatarUrl: '',
+    notes: 'Demo member',
+    ownedUnits: [{ unitNo: demoResident.roomNo || 'A101', roomType: '1BR', ownershipStatus: 'owned' }],
+    createdLabel: 'Demo member',
+    updatedLabel: 'Demo member',
+  },
+];
 
 const adminContentState = {
   activeType: 'news',
@@ -36,15 +68,20 @@ const adminContentState = {
     benefits: [],
   },
   editors: {
-    news: blankEditorState(),
-    promotions: blankEditorState(),
-    benefits: blankEditorState(),
+    news: blankContentEditorState(),
+    promotions: blankContentEditorState(),
+    benefits: blankContentEditorState(),
   },
+};
+
+const adminMembersState = {
+  cache: [],
+  editor: blankMemberEditorState(),
 };
 
 let dragImageId = '';
 
-function blankEditorState() {
+function blankContentEditorState() {
   return {
     docId: '',
     isExisting: false,
@@ -60,6 +97,27 @@ function blankEditorState() {
   };
 }
 
+function blankMemberEditorState() {
+  return {
+    memberId: '',
+    publicCardCode: '',
+    authUid: '',
+    fullName: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    status: 'active',
+    tier: 'elite_black',
+    ownerType: 'resident_owner',
+    preferredLanguage: 'en',
+    avatarUrl: '',
+    ownedUnitsText: '',
+    notes: '',
+    isExisting: false,
+  };
+}
+
 function canManageContent() {
   return state.firebaseReady && ['admin', 'manager', 'staff'].includes(state.currentRole || '');
 }
@@ -68,15 +126,30 @@ function getActiveType() {
   return adminContentState.activeType;
 }
 
-function getEditorState(type = getActiveType()) {
+function isMembersTab(type = getActiveType()) {
+  return type === 'members';
+}
+
+function getContentEditorState(type = getActiveType()) {
   return adminContentState.editors[type];
 }
 
-function setEditorState(type, nextState) {
+function setContentEditorState(type, nextState) {
   adminContentState.editors[type] = {
-    ...blankEditorState(),
+    ...blankContentEditorState(),
     ...nextState,
     galleryImages: normalizeGalleryImages(nextState?.galleryImages || []),
+  };
+}
+
+function getMemberEditorState() {
+  return adminMembersState.editor;
+}
+
+function setMemberEditorState(nextState) {
+  adminMembersState.editor = {
+    ...blankMemberEditorState(),
+    ...nextState,
   };
 }
 
@@ -97,10 +170,47 @@ function normalizeGalleryImages(value = []) {
     .map((item, index) => ({ ...item, sortOrder: index }));
 }
 
+function unitsToText(ownedUnits = []) {
+  return (Array.isArray(ownedUnits) ? ownedUnits : [])
+    .map((row) => [row?.unitNo || '', row?.roomType || '', row?.ownershipStatus || 'owned'].join('|'))
+    .join('\n');
+}
+
+function parseUnitsText(text = '') {
+  return String(text || '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [unitNo = '', roomType = '', ownershipStatus = 'owned'] = line.split('|').map((part) => part.trim());
+      return {
+        unitNo,
+        roomType,
+        ownershipStatus: ownershipStatus || 'owned',
+      };
+    })
+    .filter((row) => row.unitNo);
+}
+
+function makeCardCodeFromMemberId(memberId = '') {
+  const suffix = String(memberId || '').replace(/[^A-Z0-9]/gi, '').slice(-6).toUpperCase();
+  return `LAYA-${suffix || Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+}
+
+function syncCurrentEditorFromDom() {
+  if (isMembersTab()) {
+    syncMemberEditorFromDom();
+  } else {
+    syncContentEditorFromDom(getActiveType());
+  }
+}
+
 function updateEditorHeader() {
   const type = getActiveType();
+  if (isMembersTab(type)) return;
+
   const label = labelMap[type];
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   if ($('editorTypeLabel')) $('editorTypeLabel').textContent = label;
   if ($('adminTabEyebrow')) $('adminTabEyebrow').textContent = label;
   if ($('adminTabTitle')) $('adminTabTitle').textContent = `${label} items`;
@@ -118,19 +228,49 @@ function updateReadonlyNote() {
   note.textContent = 'โหมดนี้ใช้ดูตัวอย่างข้อมูลได้ แต่การอัปโหลด/บันทึกจะใช้ได้เมื่อ login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จ';
 }
 
-function syncEditorStateFromDom(type = getActiveType()) {
-  const editor = getEditorState(type);
+function updateMemberReadonlyNote() {
+  const note = $('memberReadOnlyNote');
+  if (!note) return;
+  if (canManageContent()) {
+    note.textContent = 'แท็บ Members จะบันทึกข้อมูลสมาชิกจริงไปที่ Firestore collection: members และ point_wallets';
+    return;
+  }
+  note.textContent = 'โหมดนี้ใช้ดูตัวอย่างสมาชิกได้ แต่การบันทึก/ลบจะใช้ได้เมื่อ login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จ';
+}
+
+function syncContentEditorFromDom(type = getActiveType()) {
+  const editor = getContentEditorState(type);
   editor.title = $('contentTitle')?.value.trim() || '';
   editor.summary = $('contentSummary')?.value.trim() || '';
   editor.fullDetails = $('contentFullDetails')?.value.trim() || '';
   editor.terms = $('contentTerms')?.value.trim() || '';
   editor.ctaLabel = $('contentCtaLabel')?.value.trim() || '';
-  editor.coverImageUrl = $('contentCoverImageUrl')?.value.trim() || '';
-  setEditorState(type, editor);
+  editor.coverImageUrl = $('contentCoverImageUrl')?.value.trim() || editor.coverImageUrl || '';
+  setContentEditorState(type, editor);
 }
 
-function hydrateEditorFromState(type = getActiveType()) {
-  const editor = getEditorState(type);
+function syncMemberEditorFromDom() {
+  const editor = getMemberEditorState();
+  editor.memberId = $('memberIdInput')?.value.trim() || editor.memberId || '';
+  editor.publicCardCode = $('memberCardCodeInput')?.value.trim() || '';
+  editor.authUid = $('memberAuthUidInput')?.value.trim() || '';
+  editor.fullName = $('memberFullNameInput')?.value.trim() || '';
+  editor.firstName = $('memberFirstNameInput')?.value.trim() || '';
+  editor.lastName = $('memberLastNameInput')?.value.trim() || '';
+  editor.email = $('memberEmailInput')?.value.trim() || '';
+  editor.phone = $('memberPhoneInput')?.value.trim() || '';
+  editor.status = $('memberStatusInput')?.value || 'active';
+  editor.tier = $('memberTierInput')?.value || 'elite_black';
+  editor.ownerType = $('memberOwnerTypeInput')?.value || 'resident_owner';
+  editor.preferredLanguage = $('memberPreferredLanguageInput')?.value || 'en';
+  editor.avatarUrl = $('memberAvatarUrlInput')?.value.trim() || '';
+  editor.ownedUnitsText = $('memberOwnedUnitsInput')?.value || '';
+  editor.notes = $('memberNotesInput')?.value || '';
+  setMemberEditorState(editor);
+}
+
+function hydrateContentEditorFromState(type = getActiveType()) {
+  const editor = getContentEditorState(type);
   if ($('contentTitle')) $('contentTitle').value = editor.title || '';
   if ($('contentSummary')) $('contentSummary').value = editor.summary || '';
   if ($('contentFullDetails')) $('contentFullDetails').value = editor.fullDetails || '';
@@ -145,8 +285,30 @@ function hydrateEditorFromState(type = getActiveType()) {
   renderGalleryPreview();
 }
 
+function hydrateMemberEditorFromState() {
+  const editor = getMemberEditorState();
+  if ($('memberIdInput')) $('memberIdInput').value = editor.memberId || '';
+  if ($('memberCardCodeInput')) $('memberCardCodeInput').value = editor.publicCardCode || '';
+  if ($('memberAuthUidInput')) $('memberAuthUidInput').value = editor.authUid || '';
+  if ($('memberFullNameInput')) $('memberFullNameInput').value = editor.fullName || '';
+  if ($('memberFirstNameInput')) $('memberFirstNameInput').value = editor.firstName || '';
+  if ($('memberLastNameInput')) $('memberLastNameInput').value = editor.lastName || '';
+  if ($('memberEmailInput')) $('memberEmailInput').value = editor.email || '';
+  if ($('memberPhoneInput')) $('memberPhoneInput').value = editor.phone || '';
+  if ($('memberStatusInput')) $('memberStatusInput').value = editor.status || 'active';
+  if ($('memberTierInput')) $('memberTierInput').value = editor.tier || 'elite_black';
+  if ($('memberOwnerTypeInput')) $('memberOwnerTypeInput').value = editor.ownerType || 'resident_owner';
+  if ($('memberPreferredLanguageInput')) $('memberPreferredLanguageInput').value = editor.preferredLanguage || 'en';
+  if ($('memberAvatarUrlInput')) $('memberAvatarUrlInput').value = editor.avatarUrl || '';
+  if ($('memberOwnedUnitsInput')) $('memberOwnedUnitsInput').value = editor.ownedUnitsText || '';
+  if ($('memberNotesInput')) $('memberNotesInput').value = editor.notes || '';
+
+  if ($('memberEditorModeLabel')) $('memberEditorModeLabel').textContent = editor.isExisting ? 'Editing member' : 'Create new member';
+  if ($('memberEditorDocIdLabel')) $('memberEditorDocIdLabel').textContent = editor.memberId || 'Not created';
+}
+
 function updateCoverPreview() {
-  const editor = getEditorState();
+  const editor = getContentEditorState();
   const img = $('contentCoverPreview');
   const empty = $('contentCoverPreviewEmpty');
   if (!img || !empty) return;
@@ -162,7 +324,7 @@ function updateCoverPreview() {
 }
 
 function updateCoverMeta() {
-  const editor = getEditorState();
+  const editor = getContentEditorState();
   const meta = $('contentCoverMeta');
   if (!meta) return;
   if (editor.coverImageName) {
@@ -187,7 +349,7 @@ function updateUploadStatus(id, text = '') {
 }
 
 function renderGalleryPreview() {
-  const editor = getEditorState();
+  const editor = getContentEditorState();
   const list = $('contentGalleryPreviewList');
   const countEl = $('contentGalleryCount');
   if (countEl) countEl.textContent = `${editor.galleryImages.length} images`;
@@ -241,7 +403,7 @@ function renderContentList() {
   container.innerHTML = items.map((item) => {
     const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
     return `
-      <article class="content-admin-card ${getEditorState(type).docId === item.id ? 'active' : ''}">
+      <article class="content-admin-card ${getContentEditorState(type).docId === item.id ? 'active' : ''}">
         ${image ? `<img class="content-admin-card-image" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || '')}" loading="lazy">` : '<div class="content-admin-card-image fallback">No image</div>'}
         <div class="content-admin-card-body">
           <div class="content-admin-card-top">
@@ -252,6 +414,46 @@ function renderContentList() {
           <div class="content-admin-card-actions">
             <button class="ghost-btn" type="button" data-content-action="edit" data-item-id="${escapeHtml(item.id)}">Edit</button>
             <a class="ghost-btn" href="./${type}-detail.html?id=${encodeURIComponent(item.id)}">Open detail</a>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function renderMembersList() {
+  const items = adminMembersState.cache || [];
+  const container = $('adminMembersList');
+  if (!container) return;
+  if ($('memberItemCount')) $('memberItemCount').textContent = String(items.length);
+
+  if (!items.length) {
+    container.innerHTML = '<div class="card-item"><p>ยังไม่มีสมาชิกในระบบ</p></div>';
+    return;
+  }
+
+  container.innerHTML = items.map((item) => {
+    const active = getMemberEditorState().memberId === item.memberId || getMemberEditorState().memberId === item.id;
+    const units = Array.isArray(item.ownedUnits) ? item.ownedUnits.length : 0;
+    return `
+      <article class="content-admin-card ${active ? 'active' : ''}">
+        <div class="content-admin-card-image fallback">${escapeHtml((item.fullName || 'M').slice(0, 1).toUpperCase())}</div>
+        <div class="content-admin-card-body">
+          <div class="content-admin-card-top">
+            <div class="member-admin-meta">
+              <strong>${escapeHtml(item.fullName || '(No name)')}</strong>
+              <small>${escapeHtml(item.memberId || item.id || '')}</small>
+            </div>
+            <small>${escapeHtml(item.updatedLabel || item.createdLabel || '')}</small>
+          </div>
+          <div class="member-admin-card-topline">
+            <span class="mini-badge gold">${escapeHtml(item.tier || 'elite_black')}</span>
+            <span class="mini-badge subtle">${escapeHtml(item.status || 'active')}</span>
+            <span class="mini-badge">${units} unit${units === 1 ? '' : 's'}</span>
+          </div>
+          <p>${escapeHtml(item.email || item.phone || item.publicCardCode || '')}</p>
+          <div class="content-admin-card-actions">
+            <button class="ghost-btn" type="button" data-member-action="edit" data-member-id="${escapeHtml(item.memberId || item.id)}">Edit</button>
           </div>
         </div>
       </article>
@@ -279,6 +481,22 @@ async function loadAdminContent(type, { force = false } = {}) {
   return adminContentState.cache[type];
 }
 
+async function loadMembersTab({ force = false } = {}) {
+  if (!force && adminMembersState.cache?.length) {
+    renderMembersList();
+    return adminMembersState.cache;
+  }
+
+  if (canManageContent()) {
+    adminMembersState.cache = await loadMembersSafe({ limit: 50 });
+  } else {
+    adminMembersState.cache = demoMembers;
+  }
+
+  renderMembersList();
+  return adminMembersState.cache;
+}
+
 async function loadEditorItem(type, itemId) {
   const item = canManageContent()
     ? await loadDocumentById(type, itemId)
@@ -289,7 +507,7 @@ async function loadEditorItem(type, itemId) {
     return;
   }
 
-  setEditorState(type, {
+  setContentEditorState(type, {
     docId: item.id,
     isExisting: canManageContent(),
     title: item.title || '',
@@ -303,36 +521,108 @@ async function loadEditorItem(type, itemId) {
     galleryImages: normalizeGalleryImages(item.galleryImages || []),
   });
 
-  hydrateEditorFromState(type);
+  hydrateContentEditorFromState(type);
   renderContentList();
 }
 
-function resetEditor(type = getActiveType()) {
-  setEditorState(type, blankEditorState());
-  hydrateEditorFromState(type);
+async function loadMemberEditorItem(memberId) {
+  const item = canManageContent()
+    ? await loadMemberById(memberId)
+    : (demoMembers.find((row) => row.memberId === memberId || row.id === memberId) || null);
+
+  if (!item) {
+    showToast('ไม่พบสมาชิกที่ต้องการเปิด', 'error');
+    return;
+  }
+
+  setMemberEditorState({
+    memberId: item.memberId || item.id || '',
+    publicCardCode: item.publicCardCode || '',
+    authUid: item.authUid || '',
+    fullName: item.fullName || '',
+    firstName: item.firstName || '',
+    lastName: item.lastName || '',
+    email: item.email || '',
+    phone: item.phone || '',
+    status: item.status || 'active',
+    tier: item.tier || 'elite_black',
+    ownerType: item.ownerType || 'resident_owner',
+    preferredLanguage: item.preferredLanguage || 'en',
+    avatarUrl: item.avatarUrl || '',
+    ownedUnitsText: unitsToText(item.ownedUnits || []),
+    notes: item.notes || '',
+    isExisting: canManageContent(),
+  });
+
+  hydrateMemberEditorFromState();
+  renderMembersList();
+}
+
+function resetContentEditor(type = getActiveType()) {
+  setContentEditorState(type, blankContentEditorState());
+  hydrateContentEditorFromState(type);
   updateUploadStatus('contentUploadStatus', '');
   updateUploadStatus('contentGalleryUploadStatus', '');
 }
 
+function resetMemberEditor() {
+  const memberId = createMemberShell();
+  setMemberEditorState({
+    ...blankMemberEditorState(),
+    memberId,
+    publicCardCode: makeCardCodeFromMemberId(memberId),
+  });
+  hydrateMemberEditorFromState();
+}
+
 async function ensureEditingDocId(type = getActiveType()) {
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   if (editor.docId) return editor.docId;
   editor.docId = createContentShell(type);
-  setEditorState(type, editor);
+  setContentEditorState(type, editor);
   updateEditorHeader();
   return editor.docId;
 }
 
+function toggleAdminPanels(type) {
+  $('adminContentLayout')?.classList.toggle('hidden', type === 'members');
+  $('adminMembersLayout')?.classList.toggle('hidden', type !== 'members');
+}
+
 function setTab(type) {
-  syncEditorStateFromDom(getActiveType());
+  syncCurrentEditorFromDom();
   adminContentState.activeType = type;
+
   $$('.admin-tab-btn').forEach((btn) => {
     const active = btn.dataset.adminTab === type;
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
   });
-  if ($('adminContentNote')) $('adminContentNote').textContent = `ตอนนี้กำลังจัดการ ${labelMap[type]} ข้อมูลที่แก้ค้างไว้ของแต่ละแท็บจะถูกจำแยกกัน`; 
-  hydrateEditorFromState(type);
+
+  toggleAdminPanels(type);
+
+  if ($('adminContentNote')) {
+    $('adminContentNote').textContent = type === 'members'
+      ? 'แท็บ Members ใช้สร้าง แก้ไข และลบข้อมูลสมาชิกได้จากหน้าเดียว โดยแยก state ออกจากแท็บคอนเทนต์'
+      : `ตอนนี้กำลังจัดการ ${labelMap[type]} ข้อมูลที่แก้ค้างไว้ของแต่ละแท็บจะถูกจำแยกกัน`;
+  }
+
+  if ($('newContentItemBtn')) {
+    $('newContentItemBtn').textContent = type === 'members' ? 'New member' : 'New item';
+  }
+
+  if ($('refreshContentBtn')) {
+    $('refreshContentBtn').textContent = type === 'members' ? 'Refresh members' : 'Refresh current tab';
+  }
+
+  if (type === 'members') {
+    updateMemberReadonlyNote();
+    hydrateMemberEditorFromState();
+    renderMembersList();
+    return;
+  }
+
+  hydrateContentEditorFromState(type);
   renderContentList();
   updateReadonlyNote();
 }
@@ -354,7 +644,7 @@ async function handleUploadCover() {
     const type = getActiveType();
     const docId = await ensureEditingDocId(type);
     const uploaded = await uploadCmsCover(file, type, docId);
-    const editor = getEditorState(type);
+    const editor = getContentEditorState(type);
 
     const filteredGallery = editor.galleryImages.filter((img) => !String(img.path || '').includes(`/${docId}/cover/`));
     const galleryImages = normalizeGalleryImages([
@@ -362,7 +652,7 @@ async function handleUploadCover() {
       ...filteredGallery.map((img) => ({ ...img, isCover: false })),
     ]);
 
-    setEditorState(type, {
+    setContentEditorState(type, {
       ...editor,
       docId,
       coverImageUrl: uploaded.url,
@@ -371,7 +661,7 @@ async function handleUploadCover() {
       galleryImages,
     });
 
-    hydrateEditorFromState(type);
+    hydrateContentEditorFromState(type);
     updateUploadStatus('contentUploadStatus', 'อัปโหลดรูปปกสำเร็จแล้ว');
     showToast('อัปโหลดรูปปกสำเร็จ');
   } catch (error) {
@@ -398,7 +688,7 @@ async function handleUploadGallery() {
     const type = getActiveType();
     const docId = await ensureEditingDocId(type);
     const uploaded = await uploadCmsGallery(files, type, docId);
-    const editor = getEditorState(type);
+    const editor = getContentEditorState(type);
 
     let galleryImages = normalizeGalleryImages([
       ...editor.galleryImages,
@@ -416,7 +706,7 @@ async function handleUploadGallery() {
       coverImageName = galleryImages[0].name || galleryImages[0].fileName;
     }
 
-    setEditorState(type, {
+    setContentEditorState(type, {
       ...editor,
       docId,
       coverImageUrl,
@@ -425,7 +715,7 @@ async function handleUploadGallery() {
       galleryImages,
     });
 
-    hydrateEditorFromState(type);
+    hydrateContentEditorFromState(type);
     updateUploadStatus('contentGalleryUploadStatus', `อัปโหลด gallery สำเร็จ ${uploaded.length} รูป`);
     showToast(`อัปโหลด gallery สำเร็จ ${uploaded.length} รูป`);
   } catch (error) {
@@ -437,7 +727,7 @@ async function handleUploadGallery() {
 
 function handleSetCover(imageId) {
   const type = getActiveType();
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   const target = editor.galleryImages.find((img) => img.id === imageId);
   if (!target) return;
 
@@ -446,7 +736,7 @@ function handleSetCover(imageId) {
     isCover: img.id === imageId,
   }));
 
-  setEditorState(type, {
+  setContentEditorState(type, {
     ...editor,
     coverImageUrl: target.url,
     coverImagePath: target.path,
@@ -454,12 +744,12 @@ function handleSetCover(imageId) {
     galleryImages,
   });
 
-  hydrateEditorFromState(type);
+  hydrateContentEditorFromState(type);
 }
 
 async function handleRemoveGalleryImage(imageId) {
   const type = getActiveType();
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   const target = editor.galleryImages.find((img) => img.id === imageId);
   if (!target) return;
 
@@ -495,37 +785,39 @@ async function handleRemoveGalleryImage(imageId) {
     }
   }
 
-  setEditorState(type, {
+  setContentEditorState(type, {
     ...editor,
     coverImageUrl,
     coverImagePath,
     coverImageName,
     galleryImages,
   });
-  hydrateEditorFromState(type);
+  hydrateContentEditorFromState(type);
   showToast('ลบรูปออกจากรายการแล้ว');
 }
 
 function handleMoveFirst(imageId) {
   const type = getActiveType();
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   const target = editor.galleryImages.find((img) => img.id === imageId);
   if (!target) return;
 
   const galleryImages = [
     target,
     ...editor.galleryImages.filter((img) => img.id !== imageId),
-  ].map((img, index) => ({ ...img, sortOrder: index }));
+  ].map((img, index) => ({
+    ...img,
+    sortOrder: index,
+  }));
 
-  setEditorState(type, { ...editor, galleryImages });
-  hydrateEditorFromState(type);
+  setContentEditorState(type, { ...editor, galleryImages });
+  hydrateContentEditorFromState(type);
 }
 
 function clearCoverSelection() {
   const type = getActiveType();
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   const currentCoverPath = editor.coverImagePath;
-
   let galleryImages = editor.galleryImages.map((img) => ({ ...img, isCover: false }));
   let coverImageUrl = '';
   let coverImagePath = '';
@@ -541,14 +833,14 @@ function clearCoverSelection() {
     }
   }
 
-  setEditorState(type, {
+  setContentEditorState(type, {
     ...editor,
     coverImageUrl,
     coverImagePath,
     coverImageName,
     galleryImages,
   });
-  hydrateEditorFromState(type);
+  hydrateContentEditorFromState(type);
 }
 
 async function saveCurrentEditor() {
@@ -557,9 +849,14 @@ async function saveCurrentEditor() {
     return;
   }
 
+  if (isMembersTab()) {
+    await saveCurrentMember();
+    return;
+  }
+
   const type = getActiveType();
-  syncEditorStateFromDom(type);
-  const editor = getEditorState(type);
+  syncContentEditorFromDom(type);
+  const editor = getContentEditorState(type);
 
   if (!editor.title) {
     showToast('กรอก title ก่อนบันทึก', 'error');
@@ -586,8 +883,8 @@ async function saveCurrentEditor() {
       await saveStructuredCMS(type, payload, { docId });
     }
 
-    setEditorState(type, { ...editor, docId, isExisting: true });
-    hydrateEditorFromState(type);
+    setContentEditorState(type, { ...editor, docId, isExisting: true });
+    hydrateContentEditorFromState(type);
     await loadAdminContent(type, { force: true });
     showToast(`${labelMap[type]} saved`);
   } catch (error) {
@@ -596,12 +893,75 @@ async function saveCurrentEditor() {
   }
 }
 
+async function saveCurrentMember() {
+  if (!canManageContent()) {
+    showToast('ต้อง login เป็น admin / manager / staff ก่อน', 'error');
+    return;
+  }
+
+  syncMemberEditorFromDom();
+  const editor = getMemberEditorState();
+
+  if (!editor.fullName) {
+    showToast('กรอก Full name ก่อนบันทึก', 'error');
+    return;
+  }
+
+  const memberId = editor.memberId || createMemberShell();
+  const publicCardCode = editor.publicCardCode || makeCardCodeFromMemberId(memberId);
+
+  const payload = {
+    memberId,
+    publicCardCode,
+    authUid: editor.authUid,
+    fullName: editor.fullName,
+    firstName: editor.firstName,
+    lastName: editor.lastName,
+    email: editor.email,
+    phone: editor.phone,
+    status: editor.status,
+    tier: editor.tier,
+    ownerType: editor.ownerType,
+    preferredLanguage: editor.preferredLanguage,
+    avatarUrl: editor.avatarUrl,
+    ownedUnits: parseUnitsText(editor.ownedUnitsText),
+    notes: editor.notes,
+  };
+
+  try {
+    if (editor.isExisting) {
+      await updateMemberRecord(memberId, payload);
+    } else {
+      await saveMemberRecord(payload, { memberId });
+    }
+
+    setMemberEditorState({
+      ...editor,
+      memberId,
+      publicCardCode,
+      isExisting: true,
+    });
+    hydrateMemberEditorFromState();
+    await loadMembersTab({ force: true });
+    await loadAdminOverview();
+    showToast('Member saved');
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'บันทึก member ไม่สำเร็จ', 'error');
+  }
+}
+
 async function deleteCurrentEditor() {
+  if (isMembersTab()) {
+    await deleteCurrentMember();
+    return;
+  }
+
   const type = getActiveType();
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
 
   if (!editor.docId && !editor.galleryImages.length && !editor.coverImagePath) {
-    resetEditor(type);
+    resetContentEditor(type);
     return;
   }
 
@@ -620,12 +980,36 @@ async function deleteCurrentEditor() {
       }
     }
 
-    resetEditor(type);
+    resetContentEditor(type);
     await loadAdminContent(type, { force: true });
     showToast(`${labelMap[type]} deleted`);
   } catch (error) {
     console.error(error);
     showToast(error.message || 'ลบรายการไม่สำเร็จ', 'error');
+  }
+}
+
+async function deleteCurrentMember() {
+  const editor = getMemberEditorState();
+  if (!editor.memberId && !editor.fullName) {
+    resetMemberEditor();
+    return;
+  }
+
+  const ok = window.confirm('Delete this member?');
+  if (!ok) return;
+
+  try {
+    if (canManageContent() && editor.isExisting && editor.memberId) {
+      await deleteMemberRecord(editor.memberId);
+    }
+    resetMemberEditor();
+    await loadMembersTab({ force: true });
+    await loadAdminOverview();
+    showToast('Member deleted');
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'ลบ member ไม่สำเร็จ', 'error');
   }
 }
 
@@ -635,6 +1019,14 @@ function handleListClick(event) {
   const itemId = button.dataset.itemId;
   if (!itemId) return;
   loadEditorItem(getActiveType(), itemId);
+}
+
+function handleMembersListClick(event) {
+  const button = event.target.closest('[data-member-action="edit"]');
+  if (!button) return;
+  const memberId = button.dataset.memberId;
+  if (!memberId) return;
+  loadMemberEditorItem(memberId);
 }
 
 function handleGalleryAction(event) {
@@ -656,20 +1048,20 @@ function handleGalleryDragStart(event) {
 }
 
 function handleGalleryDragOver(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card) return;
+  if (!dragImageId) return;
   event.preventDefault();
 }
 
 function handleGalleryDrop(event) {
-  const card = event.target.closest('[data-gallery-card]');
-  if (!card || !dragImageId) return;
+  if (!dragImageId) return;
   event.preventDefault();
-  const dropImageId = card.dataset.imageId || '';
+  const card = event.target.closest('[data-gallery-card]');
+  if (!card) return;
+  const dropImageId = card.dataset.imageId;
   if (!dropImageId || dropImageId === dragImageId) return;
 
   const type = getActiveType();
-  const editor = getEditorState(type);
+  const editor = getContentEditorState(type);
   const dragged = editor.galleryImages.find((img) => img.id === dragImageId);
   const others = editor.galleryImages.filter((img) => img.id !== dragImageId);
   const dropIndex = others.findIndex((img) => img.id === dropImageId);
@@ -677,8 +1069,8 @@ function handleGalleryDrop(event) {
 
   others.splice(dropIndex, 0, dragged);
   const galleryImages = others.map((img, index) => ({ ...img, sortOrder: index }));
-  setEditorState(type, { ...editor, galleryImages });
-  hydrateEditorFromState(type);
+  setContentEditorState(type, { ...editor, galleryImages });
+  hydrateContentEditorFromState(type);
   dragImageId = '';
 }
 
@@ -719,6 +1111,10 @@ function openDemoAdmin() {
 }
 
 async function refreshCurrentTab(force = true) {
+  if (isMembersTab()) {
+    await loadMembersTab({ force });
+    return;
+  }
   await loadAdminContent(getActiveType(), { force });
 }
 
@@ -728,24 +1124,40 @@ function bindAdminContentTabs() {
       const type = btn.dataset.adminTab;
       if (!type || type === getActiveType()) return;
       setTab(type);
+      if (type === 'members') {
+        await loadMembersTab({ force: false });
+        return;
+      }
       await loadAdminContent(type);
     });
   });
 
   $('adminContentList')?.addEventListener('click', handleListClick);
+  $('adminMembersList')?.addEventListener('click', handleMembersListClick);
   $('contentGalleryPreviewList')?.addEventListener('click', handleGalleryAction);
   $('contentGalleryPreviewList')?.addEventListener('dragstart', handleGalleryDragStart);
   $('contentGalleryPreviewList')?.addEventListener('dragover', handleGalleryDragOver);
   $('contentGalleryPreviewList')?.addEventListener('drop', handleGalleryDrop);
 
-  $('newContentItemBtn')?.addEventListener('click', () => resetEditor(getActiveType()));
+  $('newContentItemBtn')?.addEventListener('click', () => {
+    if (isMembersTab()) {
+      resetMemberEditor();
+    } else {
+      resetContentEditor(getActiveType());
+    }
+  });
+
   $('refreshContentBtn')?.addEventListener('click', () => refreshCurrentTab(true));
   $('uploadCoverBtn')?.addEventListener('click', handleUploadCover);
   $('uploadGalleryBtn')?.addEventListener('click', handleUploadGallery);
   $('saveContentBtn')?.addEventListener('click', saveCurrentEditor);
-  $('cancelContentEditBtn')?.addEventListener('click', () => resetEditor(getActiveType()));
+  $('cancelContentEditBtn')?.addEventListener('click', () => resetContentEditor(getActiveType()));
   $('deleteContentBtn')?.addEventListener('click', deleteCurrentEditor);
   $('clearCoverBtn')?.addEventListener('click', clearCoverSelection);
+
+  $('saveMemberBtn')?.addEventListener('click', saveCurrentMember);
+  $('cancelMemberEditBtn')?.addEventListener('click', resetMemberEditor);
+  $('deleteMemberBtn')?.addEventListener('click', deleteCurrentMember);
 
   $('contentCoverFile')?.addEventListener('change', () => {
     const file = $('contentCoverFile')?.files?.[0];
@@ -756,6 +1168,15 @@ function bindAdminContentTabs() {
   $('contentGalleryFiles')?.addEventListener('change', () => {
     const count = Array.from($('contentGalleryFiles')?.files || []).length;
     updateUploadStatus('contentGalleryUploadStatus', count ? `เลือกรูป gallery แล้ว ${count} รูป — กด Upload Gallery Images` : '');
+  });
+
+  $('memberIdInput')?.addEventListener('blur', () => {
+    const memberIdInput = $('memberIdInput');
+    const cardCodeInput = $('memberCardCodeInput');
+    if (!memberIdInput || !cardCodeInput) return;
+    if (memberIdInput.value.trim() && !cardCodeInput.value.trim()) {
+      cardCodeInput.value = makeCardCodeFromMemberId(memberIdInput.value.trim());
+    }
   });
 }
 
@@ -792,7 +1213,13 @@ function bindSpendForm() {
 export async function loadAdminDashboardPage() {
   await loadAdminOverview();
   updateReadonlyNote();
+  updateMemberReadonlyNote();
+  if (!getMemberEditorState().memberId) resetMemberEditor();
   setTab(getActiveType());
+  if (isMembersTab()) {
+    await loadMembersTab({ force: true });
+    return;
+  }
   await loadAdminContent(getActiveType(), { force: true });
 }
 
@@ -812,5 +1239,3 @@ export function bindAdminPage() {
     });
   }
 }
-
-export { loadAdminDashboardPage as loadAdminDashboard, openDemoAdmin };
