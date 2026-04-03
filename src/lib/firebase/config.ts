@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
@@ -15,9 +15,15 @@ const firebaseConfig = {
 
 export const firebaseEnabled =
   enableFirebase &&
-  Object.values(firebaseConfig).every((value) => String(value).trim().length > 0);
+  Object.values(firebaseConfig).every(
+    (value) => String(value).trim().length > 0
+  );
 
-const app = firebaseEnabled ? initializeApp(firebaseConfig) : null;
+export const firebaseApp: FirebaseApp | null = firebaseEnabled
+  ? initializeApp(firebaseConfig)
+  : null;
 
-export const auth: Auth | null = app ? getAuth(app) : null;
-export const db: Firestore | null = app ? getFirestore(app) : null;
+export const auth: Auth | null = firebaseApp ? getAuth(firebaseApp) : null;
+export const db: Firestore | null = firebaseApp
+  ? getFirestore(firebaseApp)
+  : null;

@@ -13,8 +13,12 @@ export interface NewsItem {
   body: string;
   coverImage: string;
   publishDate: string;
+  expireDate?: string;
   status: PublishStatus;
   featured?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface PromotionItem {
@@ -29,6 +33,10 @@ export interface PromotionItem {
   endDate: string;
   status: PublishStatus;
   featured?: boolean;
+  terms?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
 export interface BenefitItem {
@@ -42,4 +50,7 @@ export interface BenefitItem {
   status: "active" | "inactive";
   sortOrder: number;
   featured?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: string;
 }

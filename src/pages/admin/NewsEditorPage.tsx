@@ -1,7 +1,58 @@
+import { useState } from "react";
 import { AdminShell } from "../../components/admin/AdminShell";
 import { ImageUploadBlock } from "../../components/admin/ImageUploadBlock";
+import { createNews } from "../../services/content.service";
+import { uploadContentImage } from "../../services/media.service";
 
 export default function NewsEditorPage() {
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [summary, setSummary] = useState("");
+  const [body, setBody] = useState("");
+  const [publishDate, setPublishDate] = useState("");
+  const [status, setStatus] = useState("draft");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState("");
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit() {
+    setSaving(true);
+    setMessage("");
+    try {
+      const created = await createNews({
+        title,
+        subtitle,
+        summary,
+        body,
+        publishDate,
+        status,
+        coverImage: "",
+      });
+
+      let coverImage = "";
+      if (coverFile) {
+        coverImage = await uploadContentImage({
+          file: coverFile,
+          contentType: "news",
+          docId: created.id,
+          slot: "cover",
+        });
+      }
+
+      if (coverImage) {
+        const { updateNews } = await import("../../services/content.service");
+        await updateNews(created.id, { coverImage });
+      }
+
+      setMessage("News saved successfully.");
+    } catch (error) {
+      setMessage("Unable to save news.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <AdminShell title="News Editor">
       <div className="content-editor-layout">
@@ -11,68 +62,63 @@ export default function NewsEditorPage() {
             <div className="form-stack">
               <label className="field-stack">
                 <span>News Title</span>
-                <input placeholder="Enter news title" />
+                <input value={title} onChange={(e) => setTitle(e.target.value)} />
               </label>
-
               <label className="field-stack">
                 <span>Subtitle</span>
-                <input placeholder="Optional subtitle" />
+                <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
               </label>
-
               <label className="field-stack">
                 <span>Summary</span>
-                <input placeholder="Short summary for news card" />
+                <input value={summary} onChange={(e) => setSummary(e.target.value)} />
               </label>
-
               <label className="field-stack">
                 <span>Body</span>
-                <textarea rows={8} placeholder="Full news content" />
+                <textarea rows={8} value={body} onChange={(e) => setBody(e.target.value)} />
               </label>
-            </div>
-          </div>
-
-          <ImageUploadBlock
-            label="News Cover Image"
-            previewUrl="https://placehold.co/1200x675"
-            recommendedSize="1200 × 675 px"
-            minimumSize="960 × 540 px"
-            ratio="16:9"
-            acceptedTypes="JPG, PNG, WEBP"
-            maxFileSize="1.5 MB"
-            note="Best for featured news card and detail page cover."
-          />
-
-          <div className="form-section-card">
-            <h2>Publish Settings</h2>
-            <div className="form-stack">
+              <label className="field-stack">
+                <span>Publish Date</span>
+                <input type="date" value={publishDate} onChange={(e) => setPublishDate(e.target.value)} />
+              </label>
               <label className="field-stack">
                 <span>Status</span>
-                <select defaultValue="draft">
+                <select value={status} onChange={(e) => setStatus(e.target.value)}>
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
                   <option value="scheduled">Scheduled</option>
                   <option value="archived">Archived</option>
                 </select>
               </label>
-
-              <label className="field-stack">
-                <span>Publish Date</span>
-                <input type="date" />
-              </label>
-
-              <label className="field-stack">
-                <span>Expire Date</span>
-                <input type="date" />
-              </label>
             </div>
           </div>
 
+          <div className="form-section-card">
+            <ImageUploadBlock
+              label="News Cover Image"
+              previewUrl={coverPreview}
+              recommendedSize="1200 × 675 px"
+              minimumSize="960 × 540 px"
+              ratio="16:9"
+              acceptedTypes="JPG, PNG, WEBP"
+              maxFileSize="1.5 MB"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setCoverFile(file);
+                setCoverPreview(file ? URL.createObjectURL(file) : "");
+              }}
+            />
+          </div>
+
+          {message ? <div className="success-panel">{message}</div> : null}
+
           <div className="button-row">
-            <button type="button">Save Draft</button>
-            <button type="button" className="button-secondary">
-              Preview
+            <button type="button" onClick={handleSubmit} disabled={saving}>
+              {saving ? "Saving..." : "Save News"}
             </button>
-            <button type="button">Publish News</button>
           </div>
         </section>
 

@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isImageUpload() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isAllowedSize() {
+      return request.resource.size < 2 * 1024 * 1024;
+    }
+
+    match /resident-content/{contentType}/{docId}/{fileName} {
+      allow read: if true;
+      allow write: if signedIn() && isImageUpload() && isAllowedSize();
+    }
+  }
+}
