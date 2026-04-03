@@ -28,45 +28,32 @@
         <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
       </div>
     </header>
+
     <main class="main-content">
       <section class="panel page-hero">
         <div class="eyebrow gold">Admin Dashboard</div>
-        <h2>Operations overview</h2>
-        <p class="page-intro">หน้านี้ใช้เป็นศูนย์กลางของฝั่งโรงแรม ส่วน Members / News / Promotions / Benefits ถูกแยกออกไปเป็นไฟล์ HTML จริงแล้วเพื่อให้แต่ละส่วนมีหน้าของตัวเอง</p>
-        <div class="quick-links">
-          <a class="nav-link-card" href="./members.html"><strong>Members Page</strong><small>ค้นหาและดูรายชื่อสมาชิก</small></a>
-          <a class="nav-link-card" href="./news.html"><strong>News Page</strong><small>จัดการข่าวสารแยกหน้า</small></a>
-          <a class="nav-link-card" href="./promotions.html"><strong>Promotions Page</strong><small>จัดการโปรโมชันแยกหน้า</small></a>
-          <a class="nav-link-card" href="./benefits.html"><strong>Benefits Page</strong><small>จัดการสิทธิประโยชน์แยกหน้า</small></a>
+        <h2>Single-page CMS</h2>
+        <p class="page-intro">รวมการจัดการ News / Promotions / Benefits ไว้ในหน้าเดียวแบบแท็บ เพื่อให้ทำงานหลังบ้านง่ายขึ้น ไม่ต้องสลับหลายหน้า</p>
+        <div class="grid-3 compact-grid">
+          <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
+          <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
+          <div class="metric-card"><span>Total Spend</span><strong id="kpiSpend">฿0</strong></div>
         </div>
-      </section>
-
-      <section class="admin-grid">
-        <div class="panel">
-          <div class="section-head">
-            <h3>Dashboard</h3>
-            <span class="eyebrow">Operations</span>
-          </div>
-          <div class="grid-3 compact-grid">
-            <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
-            <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
-            <div class="metric-card"><span>Total Spend</span><strong id="kpiSpend">฿0</strong></div>
-          </div>
-          <div class="row gap wrap mt-md">
-            <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="section-head">
-            <h3>Member Preview</h3>
-            <a class="ghost-btn" href="./members.html">Open Members Page</a>
-          </div>
-          <div id="residentSearchResults" class="card-list"></div>
+        <div class="row gap wrap mt-md">
+          <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
+          <a class="ghost-btn" href="./members.html">Open Members Page</a>
+          <a class="ghost-btn" href="./home.html">Resident Path</a>
         </div>
       </section>
 
       <section class="admin-grid mt-lg">
+        <div class="panel">
+          <div class="section-head">
+            <h3>Member Preview</h3>
+            <span class="eyebrow">Recent members</span>
+          </div>
+          <div id="residentSearchResults" class="card-list"></div>
+        </div>
         <div class="panel">
           <div class="section-head">
             <h3>Add Spend & Points</h3>
@@ -92,14 +79,119 @@
             <button id="addSpendBtn" class="primary-btn">Save Transaction</button>
           </div>
         </div>
+      </section>
 
-        <div class="panel">
-          <div class="section-head">
-            <h3>Recent Transactions</h3>
-            <span class="eyebrow">Admin view</span>
+      <section class="panel mt-lg admin-cms-panel">
+        <div class="section-head admin-cms-head">
+          <div>
+            <div class="eyebrow gold">Content Manager</div>
+            <h3>News / Promotions / Benefits</h3>
           </div>
-          <div id="adminTransactionsTable"></div>
+          <div class="row gap wrap">
+            <button id="newContentItemBtn" class="primary-btn">New item</button>
+            <button id="refreshContentBtn" class="ghost-btn">Refresh current tab</button>
+          </div>
         </div>
+
+        <div class="admin-tabbar" role="tablist" aria-label="Admin content tabs">
+          <button class="admin-tab-btn active" data-admin-tab="news" role="tab" aria-selected="true">News</button>
+          <button class="admin-tab-btn" data-admin-tab="promotions" role="tab" aria-selected="false">Promotions</button>
+          <button class="admin-tab-btn" data-admin-tab="benefits" role="tab" aria-selected="false">Benefits</button>
+        </div>
+
+        <div class="info-note mt-sm" id="adminContentNote">เลือกแท็บเพื่อจัดการรายการในหมวดนั้น ๆ ข้อมูลที่แก้ค้างไว้ของแต่ละแท็บจะถูกจำไว้ในหน้าเดียวนี้</div>
+
+        <div class="admin-content-layout mt-md">
+          <aside class="panel admin-side-list">
+            <div class="panel-title-row">
+              <div>
+                <div class="eyebrow" id="adminTabEyebrow">News</div>
+                <h4 id="adminTabTitle">News items</h4>
+              </div>
+              <span class="badge-inline"><span>Items</span><strong id="adminItemCount">0</strong></span>
+            </div>
+            <div id="adminContentList" class="admin-content-list"></div>
+          </aside>
+
+          <section class="panel admin-editor-panel">
+            <div class="panel-title-row">
+              <div>
+                <div class="eyebrow gold" id="editorTypeLabel">News</div>
+                <h4 id="editorModeLabel">Create new item</h4>
+              </div>
+              <span class="badge-inline"><span>Doc ID</span><strong id="editorDocIdLabel">Not created</strong></span>
+            </div>
+
+            <div class="readonly-note" id="cmsReadOnlyNote">หน้านี้จะบันทึกได้เมื่อ login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จ</div>
+
+            <div class="grid-2 mt-md admin-editor-grid">
+              <div>
+                <label class="field-label" for="contentTitle">Title</label>
+                <input id="contentTitle" class="input" type="text" placeholder="Title" />
+              </div>
+              <div>
+                <label class="field-label" for="contentCtaLabel">CTA label</label>
+                <input id="contentCtaLabel" class="input" type="text" placeholder="Learn more" />
+              </div>
+            </div>
+
+            <label class="field-label" for="contentSummary">Summary</label>
+            <textarea id="contentSummary" class="input textarea textarea-sm" placeholder="Short summary"></textarea>
+
+            <label class="field-label" for="contentFullDetails">Full details</label>
+            <textarea id="contentFullDetails" class="input textarea" placeholder="Full details"></textarea>
+
+            <label class="field-label" for="contentTerms">Terms</label>
+            <textarea id="contentTerms" class="input textarea textarea-sm" placeholder="One term per line"></textarea>
+
+            <div class="admin-editor-grid mt-md">
+              <div class="cms-cover-preview-wrap">
+                <div class="panel-title-row compact-row">
+                  <h5>Cover image</h5>
+                  <button id="clearCoverBtn" class="ghost-btn" type="button">Clear cover</button>
+                </div>
+                <div class="cms-cover-preview">
+                  <img id="contentCoverPreview" class="hidden" alt="Cover preview" />
+                  <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No cover selected</div>
+                </div>
+                <input id="contentCoverFile" class="input" type="file" accept="image/*" />
+                <div class="row gap wrap">
+                  <button id="uploadCoverBtn" class="primary-btn" type="button">Upload Cover</button>
+                </div>
+                <input id="contentCoverImageUrl" class="input" type="text" placeholder="Cover image URL (auto-filled after upload)" />
+                <div id="contentCoverMeta" class="upload-note hidden"></div>
+                <div id="contentUploadStatus" class="upload-note hidden"></div>
+              </div>
+
+              <div>
+                <div class="panel-title-row compact-row">
+                  <h5>Gallery images</h5>
+                  <span id="contentGalleryCount" class="muted">0 images</span>
+                </div>
+                <input id="contentGalleryFiles" class="input" type="file" accept="image/*" multiple />
+                <div class="row gap wrap mt-sm">
+                  <button id="uploadGalleryBtn" class="primary-btn" type="button">Upload Gallery Images</button>
+                </div>
+                <div id="contentGalleryUploadStatus" class="upload-note hidden"></div>
+                <div id="contentGalleryPreviewList" class="gallery-preview-list admin-gallery-list"></div>
+              </div>
+            </div>
+
+            <div class="row gap wrap mt-lg">
+              <button id="saveContentBtn" class="primary-btn" type="button">Save Content</button>
+              <button id="cancelContentEditBtn" class="ghost-btn" type="button">Cancel edit</button>
+              <button id="deleteContentBtn" class="danger-btn" type="button">Delete Item</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel mt-lg">
+        <div class="section-head">
+          <h3>Recent Transactions</h3>
+          <span class="eyebrow">Admin view</span>
+        </div>
+        <div id="adminTransactionsTable"></div>
       </section>
     </main>
   </div>
@@ -107,9 +199,6 @@
   <nav class="bottom-nav">
     <a class="nav-btn" href="./admin.html">Admin</a>
     <a class="nav-btn" href="./members.html">Members</a>
-    <a class="nav-btn" href="./news.html">News</a>
-    <a class="nav-btn" href="./promotions.html">Promotions</a>
-    <a class="nav-btn" href="./benefits.html">Benefits</a>
     <a class="nav-btn" href="./home.html">Resident Path</a>
   </nav>
   <div id="toast" class="toast hidden"></div>
