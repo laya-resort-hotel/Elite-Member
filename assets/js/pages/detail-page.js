@@ -46,6 +46,22 @@ function normalizeContent(item = {}) {
   const terms = Array.isArray(item.terms)
     ? item.terms
     : String(item.terms || '').split('\n').map((x) => x.trim()).filter(Boolean);
+  const galleryImages = Array.isArray(item.galleryImages)
+    ? item.galleryImages.filter((entry) => entry?.url)
+    : [];
+  const primaryImage = item.coverImageUrl || galleryImages[0]?.url || '';
+  const mergedGallery = [];
+  const pushUnique = (entry) => {
+    if (!entry?.url) return;
+    if (mergedGallery.some((existing) => existing.url === entry.url)) return;
+    mergedGallery.push({
+      url: entry.url,
+      path: entry.path || '',
+      name: entry.name || '',
+    });
+  };
+  pushUnique({ url: primaryImage, path: item.coverImagePath || '', name: item.coverImageName || '' });
+  galleryImages.forEach(pushUnique);
   return {
     ...item,
     summary: item.summary || item.body || '',
@@ -54,7 +70,8 @@ function normalizeContent(item = {}) {
     details,
     terms,
     ctaLabel: item.ctaLabel || 'Contact team',
-    coverImageUrl: item.coverImageUrl || '',
+    coverImageUrl: primaryImage,
+    galleryImages: mergedGallery,
   };
 }
 
@@ -83,7 +100,8 @@ function renderRelated(type, items = []) {
       <p>${escapeHtml(item.summary || item.body || '')}</p>
       <span class="text-link">Open detail</span>
     </a>
-  `}).join('');
+  `;
+  }).join('');
 }
 
 function renderAdminTools(type, item) {
@@ -109,19 +127,41 @@ function renderAdminTools(type, item) {
   }
 }
 
+function renderGallery(item) {
+  const target = $('detailCoverWrap');
+  if (!target) return;
+  const images = item.galleryImages || [];
+  if (!images.length) {
+    target.innerHTML = `<div class="detail-cover detail-cover-fallback"><span>${escapeHtml(labelMap[currentType])}</span></div>`;
+    return;
+  }
+  const mainImage = images[0];
+  target.innerHTML = `
+    <div class="detail-gallery-shell">
+      <img id="detailMainImage" class="detail-cover" src="${escapeHtml(mainImage.url)}" alt="${escapeHtml(item.title || labelMap[currentType])}" loading="lazy">
+      ${images.length > 1 ? `
+        <div id="detailThumbList" class="detail-thumb-grid">
+          ${images.map((image, index) => `
+            <button class="detail-thumb ${index === 0 ? 'active' : ''}" type="button" data-image-url="${escapeHtml(image.url)}" data-image-index="${index}">
+              <img src="${escapeHtml(image.url)}" alt="Thumbnail ${index + 1}" loading="lazy">
+            </button>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
 function renderDetail(type, item) {
   const safe = normalizeContent(item);
   if ($('detailEyebrow')) $('detailEyebrow').textContent = labelMap[type];
   if ($('detailHeading')) $('detailHeading').textContent = safe.title || pageTitleMap[type];
   if ($('detailSummary')) $('detailSummary').textContent = safe.summary || safe.body || '';
-  if ($('detailMeta')) $('detailMeta').textContent = safe.createdLabel && safe.createdLabel !== '-' ? `Published ${safe.createdLabel}` : `Demo ${labelMap[type]} detail`;
-  if ($('detailCoverWrap')) {
-    if (safe.coverImageUrl) {
-      $('detailCoverWrap').innerHTML = `<img class="detail-cover" src="${escapeHtml(safe.coverImageUrl)}" alt="${escapeHtml(safe.title || labelMap[type])}" loading="lazy">`;
-    } else {
-      $('detailCoverWrap').innerHTML = `<div class="detail-cover detail-cover-fallback"><span>${escapeHtml(labelMap[type])}</span></div>`;
-    }
+  if ($('detailMeta')) {
+    const galleryCount = safe.galleryImages?.length ? ` • ${safe.galleryImages.length} photos` : '';
+    $('detailMeta').textContent = safe.createdLabel && safe.createdLabel !== '-' ? `Published ${safe.createdLabel}${galleryCount}` : `Demo ${labelMap[type]} detail${galleryCount}`;
   }
+  renderGallery(safe);
   if ($('detailBody')) {
     $('detailBody').innerHTML = `
       <section class="detail-section">
@@ -132,6 +172,17 @@ function renderDetail(type, item) {
         <div class="section-head"><h3>Full Details</h3><span class="eyebrow">Expanded content</span></div>
         <p class="detail-paragraph">${escapeHtml(safe.fullDetails || '').replaceAll('\n', '<br>')}</p>
       </section>
+      ${safe.galleryImages?.length ? `
+      <section class="detail-section">
+        <div class="section-head"><h3>Photo Gallery</h3><span class="eyebrow">${safe.galleryImages.length} images</span></div>
+        <div class="detail-gallery-grid">
+          ${safe.galleryImages.map((image, index) => `
+            <button class="detail-gallery-card" type="button" data-image-url="${escapeHtml(image.url)}" data-image-index="${index}">
+              <img src="${escapeHtml(image.url)}" alt="Gallery image ${index + 1}" loading="lazy">
+            </button>
+          `).join('')}
+        </div>
+      </section>` : ''}
       <section class="detail-section">
         <div class="section-head"><h3>Key Points</h3><span class="eyebrow">Highlights</span></div>
         ${renderList(safe.details)}
@@ -176,6 +227,14 @@ async function loadRelatedItems(type, current) {
   return getRelated(demoMap[type], current?.id);
 }
 
+function switchMainImage(url, index) {
+  const mainImage = $('detailMainImage');
+  if (mainImage && url) mainImage.src = url;
+  $$('[data-image-index]').forEach((el) => {
+    el.classList.toggle('active', String(el.dataset.imageIndex) === String(index));
+  });
+}
+
 export async function loadDetailPage(type) {
   currentType = type;
   const item = await resolveItem(type);
@@ -201,6 +260,11 @@ export function bindDetailPage(type) {
       showToast(`${labelMap[type]} action is ready for next step`);
     });
   }
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-image-url]');
+    if (!trigger) return;
+    switchMainImage(trigger.dataset.imageUrl || '', trigger.dataset.imageIndex || '0');
+  });
   if ($('detailDeleteBtn')) {
     $('detailDeleteBtn').addEventListener('click', async () => {
       if (!canManageContent() || !currentItem?.id || !currentItem?.createdLabel) {

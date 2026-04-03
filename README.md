@@ -77,3 +77,10 @@ Notes:
 - Max upload size in this app is 5MB per image
 - When you upload a new cover over an existing live item, the old Storage file is removed automatically
 - When you delete a live News / Promotion / Benefit item, its Storage cover file is removed automatically too
+
+
+## Multi-image content
+- News / Promotions / Benefits now support multiple gallery images per item.
+- In the admin form, upload a primary cover image and also upload multiple gallery images.
+- Gallery images are saved in Firestore as `galleryImages` and uploaded to Firebase Storage.
+- On the detail page, users can tap thumbnails to switch the main image.

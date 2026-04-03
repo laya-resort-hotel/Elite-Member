@@ -2,7 +2,7 @@ import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
 import { deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
-import { uploadCmsCover } from '../services/storage-service.js';
+import { uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
 
@@ -21,6 +21,7 @@ const labelMap = {
 let editingItemId = '';
 let currentCoverImagePath = '';
 let currentCoverImageName = '';
+let currentGalleryImages = [];
 let uploadInProgress = false;
 
 function canManageContent() {
@@ -44,6 +45,25 @@ function detailHref(type, item) {
   return `./${type}-detail.html?demo=${encodeURIComponent(demoId)}`;
 }
 
+function normalizeGalleryImages(value = []) {
+  const list = Array.isArray(value) ? value : [];
+  return list
+    .map((item) => ({
+      url: String(item?.url || '').trim(),
+      path: String(item?.path || '').trim(),
+      name: String(item?.name || '').trim(),
+    }))
+    .filter((item) => item.url);
+}
+
+function getSelectedCoverFile() {
+  return $('contentCoverFile')?.files?.[0] || null;
+}
+
+function getSelectedGalleryFiles() {
+  return Array.from($('contentGalleryFiles')?.files || []);
+}
+
 function getFormValues() {
   return {
     title: $('contentTitle')?.value.trim() || '',
@@ -54,12 +74,14 @@ function getFormValues() {
     coverImageUrl: $('contentCoverImageUrl')?.value.trim() || '',
     coverImagePath: currentCoverImagePath || '',
     coverImageName: currentCoverImageName || '',
+    galleryImages: currentGalleryImages,
   };
 }
 
 function setFormValues(item = {}) {
   currentCoverImagePath = item.coverImagePath || '';
   currentCoverImageName = item.coverImageName || '';
+  currentGalleryImages = normalizeGalleryImages(item.galleryImages || []);
   if ($('contentTitle')) $('contentTitle').value = item.title || '';
   if ($('contentSummary')) $('contentSummary').value = item.summary || item.body || '';
   if ($('contentFullDetails')) {
@@ -71,8 +93,10 @@ function setFormValues(item = {}) {
   if ($('contentCtaLabel')) $('contentCtaLabel').value = item.ctaLabel || '';
   if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = item.coverImageUrl || '';
   if ($('contentCoverFile')) $('contentCoverFile').value = '';
+  if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
   updateCoverPreview();
   updateCoverMeta();
+  renderGalleryPreview();
 }
 
 function updateCoverPreview() {
@@ -93,20 +117,22 @@ function updateCoverPreview() {
 
 function setUploadBusy(isBusy) {
   uploadInProgress = isBusy;
-  if ($('uploadCoverBtn')) $('uploadCoverBtn').disabled = isBusy;
-  if ($('saveContentBtn')) $('saveContentBtn').disabled = isBusy;
+  ['uploadCoverBtn', 'uploadGalleryBtn', 'saveContentBtn'].forEach((id) => {
+    if ($(id)) $(id).disabled = isBusy;
+  });
 }
 
 function updateCoverMeta() {
   const meta = $('contentCoverMeta');
   if (!meta) return;
+  const coverUrl = $('contentCoverImageUrl')?.value.trim() || '';
   if (currentCoverImageName) {
-    meta.textContent = `ไฟล์ที่ผูกกับรายการ: ${currentCoverImageName}`;
+    meta.textContent = `ไฟล์ปกหลัก: ${currentCoverImageName}`;
     meta.classList.remove('hidden');
     return;
   }
-  if ($('contentCoverImageUrl')?.value.trim()) {
-    meta.textContent = 'รูปนี้พร้อมใช้งานและจะถูกบันทึกไปพร้อมรายการ';
+  if (coverUrl) {
+    meta.textContent = 'รูปปกพร้อมใช้งานและจะถูกบันทึกไปพร้อมรายการ';
     meta.classList.remove('hidden');
     return;
   }
@@ -114,11 +140,31 @@ function updateCoverMeta() {
   meta.classList.add('hidden');
 }
 
-function getSelectedCoverFile() {
-  return $('contentCoverFile')?.files?.[0] || null;
+function renderGalleryPreview() {
+  const list = $('contentGalleryPreviewList');
+  const count = $('contentGalleryCount')?.querySelector('strong') || $('contentGalleryCount');
+  if (!list) return;
+  if (count) count.textContent = currentGalleryImages.length ? `${currentGalleryImages.length} images` : '0 images';
+  if (!currentGalleryImages.length) {
+    list.innerHTML = '<div class="gallery-empty">ยังไม่มีรูป gallery สำหรับรายการนี้</div>';
+    return;
+  }
+  list.innerHTML = currentGalleryImages.map((item, index) => `
+    <div class="gallery-preview-card">
+      <img src="${escapeHtml(item.url)}" alt="Gallery ${index + 1}" loading="lazy" />
+      <div class="gallery-preview-meta">
+        <strong>Image ${index + 1}</strong>
+        <small>${escapeHtml(item.name || 'uploaded-image')}</small>
+      </div>
+      <div class="gallery-preview-actions">
+        <button class="ghost-btn gallery-preview-btn" type="button" data-gallery-action="make-cover" data-gallery-index="${index}">Use as cover</button>
+        <button class="danger-btn gallery-preview-btn" type="button" data-gallery-action="remove" data-gallery-index="${index}">Remove</button>
+      </div>
+    </div>
+  `).join('');
 }
 
-function previewSelectedFile() {
+function previewSelectedCoverFile() {
   const file = getSelectedCoverFile();
   if (!file) {
     updateCoverPreview();
@@ -130,7 +176,7 @@ function previewSelectedFile() {
   if (!img || !empty) return;
   const meta = $('contentCoverMeta');
   if (meta) {
-    meta.textContent = `เลือกรูปแล้ว: ${file.name} — กด Upload to Firebase Storage`;
+    meta.textContent = `เลือกรูปปกแล้ว: ${file.name} — กด Upload cover`;
     meta.classList.remove('hidden');
   }
   const reader = new FileReader();
@@ -142,6 +188,23 @@ function previewSelectedFile() {
   reader.readAsDataURL(file);
 }
 
+function previewSelectedGalleryFiles() {
+  const files = getSelectedGalleryFiles();
+  const status = $('contentGalleryUploadStatus');
+  if (!files.length) {
+    if (status) {
+      status.textContent = '';
+      status.classList.add('hidden');
+    }
+    renderGalleryPreview();
+    return;
+  }
+  if (status) {
+    status.textContent = `เลือกรูป gallery แล้ว ${files.length} รูป — กด Upload gallery images`;
+    status.classList.remove('hidden');
+  }
+}
+
 async function uploadSelectedCover(type) {
   if (!canManageContent()) {
     showToast('ต้อง login เป็น admin/staff ก่อน', 'error');
@@ -149,7 +212,7 @@ async function uploadSelectedCover(type) {
   }
   const file = getSelectedCoverFile();
   if (!file) {
-    showToast('เลือกรูปก่อนอัปโหลด', 'error');
+    showToast('เลือกรูปปกก่อนอัปโหลด', 'error');
     return;
   }
   if (!file.type.startsWith('image/')) {
@@ -163,7 +226,7 @@ async function uploadSelectedCover(type) {
   try {
     setUploadBusy(true);
     if ($('contentUploadStatus')) {
-      $('contentUploadStatus').textContent = 'กำลังอัปโหลดรูปขึ้น Firebase Storage...';
+      $('contentUploadStatus').textContent = 'กำลังอัปโหลดรูปปกขึ้น Firebase Storage...';
       $('contentUploadStatus').classList.remove('hidden');
     }
     const result = await uploadCmsCover(file, type);
@@ -172,12 +235,58 @@ async function uploadSelectedCover(type) {
     if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = result.url || '';
     updateCoverPreview();
     updateCoverMeta();
-    if ($('contentUploadStatus')) $('contentUploadStatus').textContent = 'อัปโหลดรูปสำเร็จแล้ว';
-    showToast('อัปโหลดรูปสำเร็จ');
+    if ($('contentUploadStatus')) $('contentUploadStatus').textContent = 'อัปโหลดรูปปกสำเร็จแล้ว';
+    showToast('อัปโหลดรูปปกสำเร็จ');
   } catch (error) {
     console.error(error);
-    if ($('contentUploadStatus')) $('contentUploadStatus').textContent = error.message || 'อัปโหลดรูปไม่สำเร็จ';
-    showToast(error.message || 'อัปโหลดรูปไม่สำเร็จ', 'error');
+    if ($('contentUploadStatus')) $('contentUploadStatus').textContent = error.message || 'อัปโหลดรูปปกไม่สำเร็จ';
+    showToast(error.message || 'อัปโหลดรูปปกไม่สำเร็จ', 'error');
+  } finally {
+    setUploadBusy(false);
+  }
+}
+
+async function uploadSelectedGallery(type) {
+  if (!canManageContent()) {
+    showToast('ต้อง login เป็น admin/staff ก่อน', 'error');
+    return;
+  }
+  const files = getSelectedGalleryFiles();
+  if (!files.length) {
+    showToast('เลือกรูป gallery ก่อนอัปโหลด', 'error');
+    return;
+  }
+  if (files.some((file) => !file.type.startsWith('image/'))) {
+    showToast('อัปโหลด gallery ได้เฉพาะไฟล์รูป', 'error');
+    return;
+  }
+  if (files.some((file) => file.size > 5 * 1024 * 1024)) {
+    showToast('มีไฟล์อย่างน้อย 1 รูปใหญ่เกิน 5MB', 'error');
+    return;
+  }
+  try {
+    setUploadBusy(true);
+    if ($('contentGalleryUploadStatus')) {
+      $('contentGalleryUploadStatus').textContent = `กำลังอัปโหลด ${files.length} รูปขึ้น Firebase Storage...`;
+      $('contentGalleryUploadStatus').classList.remove('hidden');
+    }
+    const uploaded = await uploadCmsGallery(files, type);
+    currentGalleryImages = [...currentGalleryImages, ...uploaded];
+    if (!$('contentCoverImageUrl')?.value.trim() && uploaded[0]) {
+      currentCoverImagePath = uploaded[0].path || '';
+      currentCoverImageName = uploaded[0].name || '';
+      if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = uploaded[0].url || '';
+      updateCoverPreview();
+      updateCoverMeta();
+    }
+    if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
+    renderGalleryPreview();
+    if ($('contentGalleryUploadStatus')) $('contentGalleryUploadStatus').textContent = `อัปโหลด gallery สำเร็จ ${uploaded.length} รูป`;
+    showToast(`อัปโหลด gallery สำเร็จ ${uploaded.length} รูป`);
+  } catch (error) {
+    console.error(error);
+    if ($('contentGalleryUploadStatus')) $('contentGalleryUploadStatus').textContent = error.message || 'อัปโหลด gallery ไม่สำเร็จ';
+    showToast(error.message || 'อัปโหลด gallery ไม่สำเร็จ', 'error');
   } finally {
     setUploadBusy(false);
   }
@@ -194,6 +303,41 @@ function clearCoverSelection() {
   }
   updateCoverPreview();
   updateCoverMeta();
+}
+
+function clearGallerySelection() {
+  currentGalleryImages = [];
+  if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
+  if ($('contentGalleryUploadStatus')) {
+    $('contentGalleryUploadStatus').textContent = '';
+    $('contentGalleryUploadStatus').classList.add('hidden');
+  }
+  renderGalleryPreview();
+}
+
+function makeGalleryImageCover(index) {
+  const item = currentGalleryImages[index];
+  if (!item) return;
+  currentCoverImagePath = item.path || '';
+  currentCoverImageName = item.name || '';
+  if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = item.url || '';
+  updateCoverPreview();
+  updateCoverMeta();
+  showToast('ตั้งรูปนี้เป็น cover แล้ว');
+}
+
+function removeGalleryImage(index) {
+  const removed = currentGalleryImages[index];
+  currentGalleryImages = currentGalleryImages.filter((_, itemIndex) => itemIndex !== index);
+  if (removed && $('contentCoverImageUrl')?.value.trim() === removed.url) {
+    if (currentGalleryImages[0]) {
+      makeGalleryImageCover(0);
+    } else {
+      clearCoverSelection();
+    }
+  }
+  renderGalleryPreview();
+  showToast('ลบรูปออกจากรายการในฟอร์มแล้ว');
 }
 
 function updateEditorUi(type) {
@@ -214,11 +358,14 @@ function resetEditor(type) {
   editingItemId = '';
   currentCoverImagePath = '';
   currentCoverImageName = '';
+  currentGalleryImages = [];
   setFormValues({});
-  if ($('contentUploadStatus')) {
-    $('contentUploadStatus').textContent = '';
-    $('contentUploadStatus').classList.add('hidden');
-  }
+  ['contentUploadStatus', 'contentGalleryUploadStatus'].forEach((id) => {
+    if ($(id)) {
+      $(id).textContent = '';
+      $(id).classList.add('hidden');
+    }
+  });
   updateEditorUi(type);
 }
 
@@ -279,6 +426,7 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
   const manage = canManageContent();
   listEl.innerHTML = items.map((item) => {
     const liveItem = Boolean(item.id && item.createdLabel);
+    const galleryCount = Array.isArray(item.galleryImages) ? item.galleryImages.length : 0;
     const adminButtons = manage ? `
       <button class="ghost-btn" data-action="edit" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Edit' : 'Demo only'}</button>
       <button class="danger-btn" data-action="delete" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Delete' : 'Demo only'}</button>
@@ -294,7 +442,10 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
           <div class="eyebrow gold">${escapeHtml(labelMap[type].slice(0, -1) || labelMap[type])}</div>
           <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
         </div>
-        ${item.createdLabel && item.createdLabel !== '-' ? `<small>${escapeHtml(item.createdLabel)}</small>` : '<small>Demo content</small>'}
+        <div class="content-entry-side">
+          ${galleryCount ? `<span class="badge-inline photo-badge"><span>Photos</span><strong>${galleryCount}</strong></span>` : ''}
+          ${item.createdLabel && item.createdLabel !== '-' ? `<small>${escapeHtml(item.createdLabel)}</small>` : '<small>Demo content</small>'}
+        </div>
       </div>
       <p>${escapeHtml(item.summary || item.body || item.description || '')}</p>
       <div class="row gap wrap mt-md">
@@ -302,7 +453,8 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
         ${adminButtons}
       </div>
     </article>
-  `}).join('');
+  `;
+  }).join('');
 }
 
 async function hydrateEditRequest(type) {
@@ -333,13 +485,31 @@ export function applyContentPageState(type) {
   $$('[data-content-label]').forEach((el) => el.textContent = labelMap[type]);
   updateEditorUi(type);
   updateCoverPreview();
+  renderGalleryPreview();
 }
 
 export function bindContentPage(type) {
-  $('contentCoverImageUrl')?.addEventListener('input', () => { currentCoverImagePath = ''; currentCoverImageName = ''; updateCoverPreview(); updateCoverMeta(); });
-  $('contentCoverFile')?.addEventListener('change', previewSelectedFile);
+  $('contentCoverImageUrl')?.addEventListener('input', () => {
+    currentCoverImagePath = '';
+    currentCoverImageName = '';
+    updateCoverPreview();
+    updateCoverMeta();
+  });
+  $('contentCoverFile')?.addEventListener('change', previewSelectedCoverFile);
+  $('contentGalleryFiles')?.addEventListener('change', previewSelectedGalleryFiles);
   $('uploadCoverBtn')?.addEventListener('click', () => uploadSelectedCover(type));
+  $('uploadGalleryBtn')?.addEventListener('click', () => uploadSelectedGallery(type));
   $('clearCoverBtn')?.addEventListener('click', clearCoverSelection);
+  $('clearGalleryBtn')?.addEventListener('click', clearGallerySelection);
+
+  $('contentGalleryPreviewList')?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-gallery-action]');
+    if (!button) return;
+    const index = Number(button.dataset.galleryIndex || -1);
+    if (index < 0) return;
+    if (button.dataset.galleryAction === 'make-cover') makeGalleryImageCover(index);
+    if (button.dataset.galleryAction === 'remove') removeGalleryImage(index);
+  });
 
   if ($('saveContentBtn')) {
     $('saveContentBtn').addEventListener('click', async () => {

@@ -68,10 +68,10 @@
             <label class="field-label" for="contentCtaLabel">CTA label</label>
             <input id="contentCtaLabel" class="input" type="text" placeholder="Example: Book now / Contact team" />
 
-            <label class="field-label" for="contentCoverFile">Cover image upload</label>
+            <label class="field-label" for="contentCoverFile">Primary cover image</label>
             <input id="contentCoverFile" class="input" type="file" accept="image/*" />
             <div class="row gap wrap mt-sm">
-              <button id="uploadCoverBtn" class="ghost-btn" type="button">Upload to Firebase Storage</button>
+              <button id="uploadCoverBtn" class="ghost-btn" type="button">Upload cover</button>
               <button id="clearCoverBtn" class="ghost-btn" type="button">Clear cover</button>
             </div>
             <div id="contentUploadStatus" class="upload-note hidden mt-sm"></div>
@@ -85,6 +85,23 @@
               <div class="cms-cover-preview">
                 <img id="contentCoverPreview" class="hidden" alt="Cover preview" />
                 <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No cover image URL yet</div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <label class="field-label" for="contentGalleryFiles">Gallery images (multiple)</label>
+            <input id="contentGalleryFiles" class="input" type="file" accept="image/*" multiple />
+            <div class="row gap wrap mt-sm">
+              <button id="uploadGalleryBtn" class="ghost-btn" type="button">Upload gallery images</button>
+              <button id="clearGalleryBtn" class="ghost-btn" type="button">Clear gallery list</button>
+              <span id="contentGalleryCount" class="badge-inline"><span>Gallery</span><strong>0 images</strong></span>
+            </div>
+            <div id="contentGalleryUploadStatus" class="upload-note hidden mt-sm"></div>
+            <div class="cms-gallery-preview-wrap mt-sm">
+              <div class="small-label">Gallery preview</div>
+              <div id="contentGalleryPreviewList" class="cms-gallery-preview-list">
+                <div class="gallery-empty">ยังไม่มีรูป gallery สำหรับรายการนี้</div>
               </div>
             </div>
 

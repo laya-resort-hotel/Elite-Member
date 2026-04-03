@@ -248,3 +248,100 @@
   font-size: 13px;
 }
 .hidden { display: none !important; }
+
+
+.content-entry-side {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+.photo-badge strong { color: var(--text); }
+.gallery-preview-btn {
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.cms-gallery-preview-wrap {
+  display: grid;
+  gap: 8px;
+}
+.cms-gallery-preview-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.gallery-preview-card {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  display: grid;
+}
+.gallery-preview-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+.gallery-preview-meta {
+  padding: 12px 12px 4px;
+  display: grid;
+  gap: 4px;
+}
+.gallery-preview-meta small {
+  color: var(--muted);
+  word-break: break-word;
+}
+.gallery-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.gallery-empty {
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,.15);
+  padding: 16px;
+  color: var(--muted);
+  background: rgba(255,255,255,.03);
+  grid-column: 1 / -1;
+}
+.detail-gallery-shell {
+  display: grid;
+  gap: 12px;
+}
+.detail-thumb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: 10px;
+}
+.detail-thumb,
+.detail-gallery-card {
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+}
+.detail-thumb.active,
+.detail-gallery-card.active,
+.detail-thumb:hover,
+.detail-gallery-card:hover {
+  border-color: rgba(216,188,124,.45);
+  box-shadow: 0 0 0 3px rgba(216,188,124,.08);
+}
+.detail-thumb img,
+.detail-gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.detail-thumb img { height: 76px; }
+.detail-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.detail-gallery-card img { height: 130px; }

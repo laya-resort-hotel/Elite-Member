@@ -14,7 +14,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
 import { formatDate } from '../core/format.js';
-import { deleteStoragePath } from './storage-service.js';
+import { deleteStoragePaths } from './storage-service.js';
 
 function stringValue(value = '') {
   return String(value || '').trim();
@@ -27,15 +27,33 @@ function linesValue(value = '') {
     .filter(Boolean);
 }
 
+function normalizeGalleryImages(value = []) {
+  const list = Array.isArray(value) ? value : [];
+  return list
+    .map((item) => ({
+      url: stringValue(item?.url),
+      path: stringValue(item?.path),
+      name: stringValue(item?.name),
+    }))
+    .filter((item) => item.url);
+}
+
 function normalizeContentPayload(payload = {}) {
   const title = stringValue(payload.title);
   const summary = stringValue(payload.summary);
   const fullDetails = stringValue(payload.fullDetails);
   const termsText = stringValue(payload.terms);
   const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
-  const coverImageUrl = stringValue(payload.coverImageUrl);
-  const coverImagePath = stringValue(payload.coverImagePath);
-  const coverImageName = stringValue(payload.coverImageName);
+  const galleryImages = normalizeGalleryImages(payload.galleryImages);
+  let coverImageUrl = stringValue(payload.coverImageUrl);
+  let coverImagePath = stringValue(payload.coverImagePath);
+  let coverImageName = stringValue(payload.coverImageName);
+
+  if (!coverImageUrl && galleryImages.length) {
+    coverImageUrl = galleryImages[0].url;
+    coverImagePath = galleryImages[0].path;
+    coverImageName = galleryImages[0].name;
+  }
 
   return {
     title,
@@ -48,6 +66,8 @@ function normalizeContentPayload(payload = {}) {
     coverImageUrl,
     coverImagePath,
     coverImageName,
+    galleryImages,
+    imageCount: galleryImages.length,
   };
 }
 
@@ -87,8 +107,17 @@ export async function updateStructuredCMS(collectionName, id, payload) {
   const ref = doc(state.db, collectionName, id);
   const current = await getDoc(ref);
   const currentData = current.exists() ? current.data() : null;
-  if (currentData?.coverImagePath && currentData.coverImagePath !== normalized.coverImagePath) {
-    await deleteStoragePath(currentData.coverImagePath);
+  const oldPaths = [
+    currentData?.coverImagePath,
+    ...((currentData?.galleryImages || []).map((item) => item?.path)),
+  ].filter(Boolean);
+  const nextPaths = [
+    normalized.coverImagePath,
+    ...((normalized.galleryImages || []).map((item) => item?.path)),
+  ].filter(Boolean);
+  const removedPaths = oldPaths.filter((path) => !nextPaths.includes(path));
+  if (removedPaths.length) {
+    await deleteStoragePaths(removedPaths);
   }
   await updateDoc(ref, {
     ...normalized,
@@ -102,12 +131,14 @@ export async function deleteCMSItem(collectionName, id) {
   const current = await getDoc(ref);
   if (current.exists()) {
     const data = current.data();
-    if (data?.coverImagePath) await deleteStoragePath(data.coverImagePath);
+    await deleteStoragePaths([
+      data?.coverImagePath,
+      ...((data?.galleryImages || []).map((item) => item?.path)),
+    ]);
   }
   await deleteDoc(ref);
 }
 
-// Backward-compatible wrappers
 export async function saveSimpleCMS(collectionName, title, body) {
   return saveStructuredCMS(collectionName, {
     title,
@@ -118,6 +149,7 @@ export async function saveSimpleCMS(collectionName, title, body) {
     coverImageUrl: '',
     coverImagePath: '',
     coverImageName: '',
+    galleryImages: [],
   });
 }
 
@@ -131,5 +163,6 @@ export async function updateSimpleCMS(collectionName, id, title, body) {
     coverImageUrl: '',
     coverImagePath: '',
     coverImageName: '',
+    galleryImages: [],
   });
 }
