@@ -30,12 +30,18 @@ function linesValue(value = '') {
 function normalizeGalleryImages(value = []) {
   const list = Array.isArray(value) ? value : [];
   return list
-    .map((item) => ({
+    .map((item, index) => ({
+      id: stringValue(item?.id) || `img_${Date.now()}_${index}`,
       url: stringValue(item?.url),
       path: stringValue(item?.path),
-      name: stringValue(item?.name),
+      name: stringValue(item?.name) || stringValue(item?.fileName),
+      fileName: stringValue(item?.fileName) || stringValue(item?.name),
+      sortOrder: Number.isFinite(item?.sortOrder) ? Number(item.sortOrder) : index,
+      isCover: !!item?.isCover,
     }))
-    .filter((item) => item.url);
+    .filter((item) => item.url)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((item, index) => ({ ...item, sortOrder: index }));
 }
 
 function normalizeContentPayload(payload = {}) {
@@ -44,7 +50,7 @@ function normalizeContentPayload(payload = {}) {
   const fullDetails = stringValue(payload.fullDetails);
   const termsText = stringValue(payload.terms);
   const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
-  const galleryImages = normalizeGalleryImages(payload.galleryImages);
+  let galleryImages = normalizeGalleryImages(payload.galleryImages);
   let coverImageUrl = stringValue(payload.coverImageUrl);
   let coverImagePath = stringValue(payload.coverImagePath);
   let coverImageName = stringValue(payload.coverImageName);
@@ -52,7 +58,16 @@ function normalizeContentPayload(payload = {}) {
   if (!coverImageUrl && galleryImages.length) {
     coverImageUrl = galleryImages[0].url;
     coverImagePath = galleryImages[0].path;
-    coverImageName = galleryImages[0].name;
+    coverImageName = galleryImages[0].name || galleryImages[0].fileName || '';
+    galleryImages = galleryImages.map((item, index) => ({
+      ...item,
+      isCover: index === 0,
+    }));
+  } else if (coverImagePath) {
+    galleryImages = galleryImages.map((item) => ({
+      ...item,
+      isCover: item.path === coverImagePath,
+    }));
   }
 
   return {
