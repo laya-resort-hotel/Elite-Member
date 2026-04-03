@@ -1,40 +1,44 @@
-import { AppShell } from "../../components/shared/AppShell";
-import {
-  mockPointTransactions,
-  mockResidentProfile,
-} from "../../lib/mock-data/resident";
+import { mockPointSummary, mockTransactions } from '../../lib/mockData';
 
 export default function PointsPage() {
   return (
-    <AppShell title="Points">
-      <div className="page-stack">
-        <section className="points-hero">
-          <div>
-            <span>Current Balance</span>
-            <h2>{mockResidentProfile.pointBalance.toLocaleString()}</h2>
-          </div>
-          <div className="points-hero__meta">
-            <div>Total Earned: {mockResidentProfile.totalEarned.toLocaleString()}</div>
-            <div>Total Used: {mockResidentProfile.totalUsed.toLocaleString()}</div>
-          </div>
-        </section>
+    <div className="stack-lg">
+      <section className="panel accent-panel">
+        <div className="summary-number">{mockPointSummary.balance.toLocaleString()}</div>
+        <div className="muted centered-text">Current total points</div>
+        <div className="summary-grid compact">
+          <article className="summary-tile">
+            <span className="muted">Earned This Month</span>
+            <strong>{mockPointSummary.thisMonthEarned.toLocaleString()}</strong>
+          </article>
+          <article className="summary-tile">
+            <span className="muted">Expiring Soon</span>
+            <strong>{mockPointSummary.expiringSoon.toLocaleString()}</strong>
+          </article>
+        </div>
+      </section>
 
-        <section className="section-stack">
-          <h2>Point History</h2>
-          {mockPointTransactions.map((item) => (
-            <article key={item.id} className="history-card">
-              <div className="history-card__top">
-                <strong>{item.outletName}</strong>
-                <span>+{item.pointsEarned}</span>
+      <section className="panel">
+        <div className="section-head">
+          <h3>Point History</h3>
+          <span className="muted">Latest transactions</span>
+        </div>
+        <div className="stack-sm">
+          {mockTransactions.map((tx) => (
+            <article key={tx.id} className="row-card">
+              <div>
+                <strong>{tx.outlet}</strong>
+                <div className="muted">{tx.date}</div>
+                <div className="muted">Spend ฿{tx.spendAmount.toLocaleString()}</div>
               </div>
-              <div className="history-card__bottom">
-                <span>{item.date}</span>
-                <span>{item.status}</span>
+              <div className="right-text">
+                <strong>+{tx.points}</strong>
+                <span className="pill small">{tx.status}</span>
               </div>
             </article>
           ))}
-        </section>
-      </div>
-    </AppShell>
+        </div>
+      </section>
+    </div>
   );
 }

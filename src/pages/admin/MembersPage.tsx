@@ -1,63 +1,35 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AdminShell } from "../../components/admin/AdminShell";
-import { mockResidentsTable } from "../../lib/mock-data/admin";
+import { mockMembers } from '../../lib/mockData';
 
 export default function MembersPage() {
-  const navigate = useNavigate();
-  const [keyword, setKeyword] = useState("");
-
-  const filteredResidents = useMemo(() => {
-    const normalized = keyword.trim().toLowerCase();
-    if (!normalized) return mockResidentsTable;
-
-    return mockResidentsTable.filter((item) => {
-      return (
-        item.fullName.toLowerCase().includes(normalized) ||
-        item.memberId.toLowerCase().includes(normalized) ||
-        item.residenceRef.toLowerCase().includes(normalized) ||
-        (item.phone ?? "").toLowerCase().includes(normalized)
-      );
-    });
-  }, [keyword]);
-
   return (
-    <AdminShell title="Resident Search">
-      <div className="admin-page-stack">
-        <div className="toolbar toolbar--row">
-          <input
-            placeholder="Search by name / member ID / phone / room"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          <button type="button">Search</button>
+    <div className="stack-lg">
+      <section className="panel">
+        <div className="section-head">
+          <h3>Member Management</h3>
+          <button className="primary-button" type="button">
+            Add Member
+          </button>
         </div>
-
-        <section className="section-stack">
-          {filteredResidents.map((item) => (
-            <article key={item.memberId} className="member-row-card">
-              <div className="member-row-card__main">
-                <strong>{item.fullName}</strong>
-                <p className="muted-text">
-                  {item.memberId} · {item.residenceRef}
-                </p>
+        <div className="stack-sm">
+          {mockMembers.map((member) => (
+            <article key={member.id} className="row-card">
+              <div>
+                <strong>{member.fullName}</strong>
+                <div className="muted">{member.roomLabel}</div>
+                <div className="muted">{member.email}</div>
               </div>
-
-              <div className="member-row-card__side">
-                <span className="status-chip">{item.status}</span>
-                <strong>{item.pointBalance.toLocaleString()} pts</strong>
-                <button
-                  type="button"
-                  className="button-secondary"
-                  onClick={() => navigate(`/admin/members/${item.memberId}`)}
-                >
-                  View Detail
+              <div className="right-text">
+                <span className={`pill small ${member.status === 'active' ? '' : 'muted-pill'}`}>
+                  {member.status}
+                </span>
+                <button className="secondary-button" type="button">
+                  View
                 </button>
               </div>
             </article>
           ))}
-        </section>
-      </div>
-    </AdminShell>
+        </div>
+      </section>
+    </div>
   );
 }

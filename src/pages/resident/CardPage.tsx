@@ -1,30 +1,34 @@
-import { useNavigate } from "react-router-dom";
-import { AppShell } from "../../components/shared/AppShell";
-import { LuxuryMemberCard } from "../../components/resident/LuxuryMemberCard";
-import { mockResidentProfile } from "../../lib/mock-data/resident";
-import { RESIDENT_ROUTES } from "../../lib/constants/routes";
+import { mockMemberCard } from '../../lib/mockData';
 
 export default function CardPage() {
-  const navigate = useNavigate();
-
   return (
-    <AppShell title="Elite Black Card">
-      <div className="page-stack">
-        <LuxuryMemberCard
-          fullName={mockResidentProfile.fullName}
-          memberId={mockResidentProfile.memberId}
-          tier={mockResidentProfile.tier}
-          pointBalance={mockResidentProfile.pointBalance}
-        />
+    <div className="stack-lg">
+      <section className="black-card large">
+        <div className="card-chip" />
+        <div className="card-brand">ELITE BLACK CARD</div>
+        <div className="card-name">{mockMemberCard.fullName}</div>
+        <div className="card-meta">{mockMemberCard.roomLabel}</div>
+        <div className="card-meta">{mockMemberCard.memberId}</div>
+        <div className="card-footer">{mockMemberCard.since}</div>
+      </section>
 
-        <div className="info-panel">
-          <div><strong>Status:</strong> {mockResidentProfile.status}</div>
-          <div><strong>Residence Ref:</strong> {mockResidentProfile.residenceRef}</div>
-          <div><strong>Member Since:</strong> {mockResidentProfile.memberSince}</div>
+      <section className="panel centered-panel">
+        <div className="qr-box">
+          <div className="qr-pattern" />
         </div>
-
-        <button onClick={() => navigate(RESIDENT_ROUTES.QR)}>Show QR Code</button>
-      </div>
-    </AppShell>
+        <h3>{mockMemberCard.memberId}</h3>
+        <p className="muted centered-text">
+          Staff can scan this member code to identify the resident and record spending for point accrual.
+        </p>
+        <div className="inline-actions">
+          <button className="primary-button" type="button">
+            Full Screen QR
+          </button>
+          <button className="secondary-button" type="button">
+            Save Card
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }

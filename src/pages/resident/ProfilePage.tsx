@@ -1,54 +1,44 @@
-import { AppShell } from "../../components/shared/AppShell";
-import { mockResidentProfile } from "../../lib/mock-data/resident";
+import { mockMemberCard } from '../../lib/mockData';
 
 export default function ProfilePage() {
   return (
-    <AppShell title="Profile" showBackButton>
-      <div className="page-stack">
-        <section className="profile-hero-card">
-          <div className="profile-avatar">MW</div>
-          <div>
-            <h2>{mockResidentProfile.fullName}</h2>
-            <p className="muted-text">{mockResidentProfile.memberId}</p>
+    <div className="stack-lg">
+      <section className="panel">
+        <h3>Resident Profile</h3>
+        <div className="detail-list">
+          <div className="detail-row">
+            <span>Name</span>
+            <strong>{mockMemberCard.fullName}</strong>
           </div>
-        </section>
+          <div className="detail-row">
+            <span>Member ID</span>
+            <strong>{mockMemberCard.memberId}</strong>
+          </div>
+          <div className="detail-row">
+            <span>Residence</span>
+            <strong>{mockMemberCard.roomLabel}</strong>
+          </div>
+          <div className="detail-row">
+            <span>Status</span>
+            <strong>Active</strong>
+          </div>
+        </div>
+      </section>
 
-        <section className="info-panel">
-          <strong>Member Information</strong>
-          <div className="detail-list">
-            <div>
-              <span>Tier</span>
-              <strong>{mockResidentProfile.tier}</strong>
-            </div>
-            <div>
-              <span>Status</span>
-              <strong>{mockResidentProfile.status}</strong>
-            </div>
-            <div>
-              <span>Residence Ref</span>
-              <strong>{mockResidentProfile.residenceRef}</strong>
-            </div>
-            <div>
-              <span>Member Since</span>
-              <strong>{mockResidentProfile.memberSince}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="info-panel">
-          <strong>Contact Information</strong>
-          <div className="detail-list">
-            <div>
-              <span>Phone</span>
-              <strong>{mockResidentProfile.phone}</strong>
-            </div>
-            <div>
-              <span>Email</span>
-              <strong>{mockResidentProfile.email}</strong>
-            </div>
-          </div>
-        </section>
-      </div>
-    </AppShell>
+      <section className="panel">
+        <h3>Preferences</h3>
+        <div className="stack-sm">
+          <button className="secondary-button" type="button">
+            Language Settings
+          </button>
+          <button className="secondary-button" type="button">
+            Contact Concierge
+          </button>
+          <button className="secondary-button" type="button">
+            Privacy & Terms
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }

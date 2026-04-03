@@ -1,65 +1,47 @@
-import { createHashRouter, Navigate } from "react-router-dom";
-import LoginPage from "../pages/resident/LoginPage";
-import HomePage from "../pages/resident/HomePage";
-import CardPage from "../pages/resident/CardPage";
-import QRPage from "../pages/resident/QRPage";
-import PointsPage from "../pages/resident/PointsPage";
-import BenefitsPage from "../pages/resident/BenefitsPage";
-import MorePage from "../pages/resident/MorePage";
-import NewsListPage from "../pages/resident/NewsListPage";
-import PromotionsPage from "../pages/resident/PromotionsPage";
-import ProfilePage from "../pages/resident/ProfilePage";
-import SettingsPage from "../pages/resident/SettingsPage";
-import ContactPage from "../pages/resident/ContactPage";
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import AppShell from '../layouts/AppShell';
+import AdminShell from '../layouts/AdminShell';
+import HomePage from '../pages/resident/HomePage';
+import CardPage from '../pages/resident/CardPage';
+import PointsPage from '../pages/resident/PointsPage';
+import BenefitsPage from '../pages/resident/BenefitsPage';
+import NewsPage from '../pages/resident/NewsPage';
+import ProfilePage from '../pages/resident/ProfilePage';
+import DashboardPage from '../pages/admin/DashboardPage';
+import MembersPage from '../pages/admin/MembersPage';
+import ScanSpendPage from '../pages/admin/ScanSpendPage';
+import ContentPage from '../pages/admin/ContentPage';
+import { ProtectedRoute } from '../routes/ProtectedRoute';
 
-import AdminLoginPage from "../pages/admin/AdminLoginPage";
-import DashboardPage from "../pages/admin/DashboardPage";
-import MembersPage from "../pages/admin/MembersPage";
-import MemberDetailPage from "../pages/admin/MemberDetailPage";
-import SpendEntryPage from "../pages/admin/SpendEntryPage";
-import NewsEditorPage from "../pages/admin/NewsEditorPage";
-import PromotionsEditorPage from "../pages/admin/PromotionsEditorPage";
-import BenefitsEditorPage from "../pages/admin/BenefitsEditorPage";
-
-import { ResidentProtectedRoute } from "../components/guards/ResidentProtectedRoute";
-import { AdminProtectedRoute } from "../components/guards/AdminProtectedRoute";
-import { PublicOnlyRoute } from "../components/guards/PublicOnlyRoute";
-
-export const router = createHashRouter([
+export const router = createBrowserRouter([
   {
-    element: <PublicOnlyRoute />,
+    path: '/',
+    element: <AppShell />,
     children: [
-      { path: "/", element: <Navigate to="/login" replace /> },
-      { path: "/login", element: <LoginPage /> },
-      { path: "/admin/login", element: <AdminLoginPage /> },
-    ],
+      { index: true, element: <HomePage /> },
+      { path: 'card', element: <CardPage /> },
+      { path: 'points', element: <PointsPage /> },
+      { path: 'benefits', element: <BenefitsPage /> },
+      { path: 'news', element: <NewsPage /> },
+      { path: 'profile', element: <ProfilePage /> }
+    ]
   },
   {
-    element: <ResidentProtectedRoute />,
+    path: '/admin',
+    element: (
+      <ProtectedRoute allow={['staff', 'manager', 'admin']}>
+        <AdminShell />
+      </ProtectedRoute>
+    ),
     children: [
-      { path: "/home", element: <HomePage /> },
-      { path: "/card", element: <CardPage /> },
-      { path: "/card/qr", element: <QRPage /> },
-      { path: "/points", element: <PointsPage /> },
-      { path: "/benefits", element: <BenefitsPage /> },
-      { path: "/more", element: <MorePage /> },
-      { path: "/more/news", element: <NewsListPage /> },
-      { path: "/more/promotions", element: <PromotionsPage /> },
-      { path: "/more/profile", element: <ProfilePage /> },
-      { path: "/more/settings", element: <SettingsPage /> },
-      { path: "/more/contact", element: <ContactPage /> },
-    ],
+      { index: true, element: <DashboardPage /> },
+      { path: 'members', element: <MembersPage /> },
+      { path: 'scan', element: <ScanSpendPage /> },
+      { path: 'content', element: <ContentPage /> }
+    ]
   },
   {
-    element: <AdminProtectedRoute />,
-    children: [
-      { path: "/admin/dashboard", element: <DashboardPage /> },
-      { path: "/admin/members", element: <MembersPage /> },
-      { path: "/admin/members/:memberId", element: <MemberDetailPage /> },
-      { path: "/admin/spend-entry", element: <SpendEntryPage /> },
-      { path: "/admin/content/news", element: <NewsEditorPage /> },
-      { path: "/admin/content/promotions", element: <PromotionsEditorPage /> },
-      { path: "/admin/content/benefits", element: <BenefitsEditorPage /> },
-    ],
-  },
+    path: '*',
+    element: <Navigate to="/" replace />
+  }
 ]);

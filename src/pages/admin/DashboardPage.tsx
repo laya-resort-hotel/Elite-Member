@@ -1,48 +1,37 @@
-import { AdminShell } from "../../components/admin/AdminShell";
-import {
-  mockDashboardStats,
-  mockRecentTransactions,
-} from "../../lib/mock-data/admin";
+import { mockDashboardStats, mockNews } from '../../lib/mockData';
 
 export default function DashboardPage() {
   return (
-    <AdminShell title="Dashboard">
-      <div className="admin-page-stack">
-        <section className="admin-stat-grid">
-          <div className="admin-stat-card">
-            <span>Transactions Today</span>
-            <h3>{mockDashboardStats.transactionsToday}</h3>
-          </div>
-          <div className="admin-stat-card">
-            <span>Points Today</span>
-            <h3>{mockDashboardStats.pointsToday}</h3>
-          </div>
-          <div className="admin-stat-card">
-            <span>Active Residents</span>
-            <h3>{mockDashboardStats.activeResidents}</h3>
-          </div>
-          <div className="admin-stat-card">
-            <span>Pending Drafts</span>
-            <h3>{mockDashboardStats.pendingDrafts}</h3>
-          </div>
-        </section>
+    <div className="stack-lg">
+      <section className="admin-stat-grid">
+        {mockDashboardStats.map((stat) => (
+          <article key={stat.label} className="admin-stat-card">
+            <span className="muted">{stat.label}</span>
+            <strong>{stat.value}</strong>
+            <p>{stat.hint}</p>
+          </article>
+        ))}
+      </section>
 
-        <section className="section-stack">
-          <h2>Recent Transactions</h2>
-          {mockRecentTransactions.map((item) => (
-            <article key={item.id} className="history-card">
-              <div className="history-card__top">
-                <strong>{item.memberName}</strong>
-                <span>{item.points} pts</span>
+      <section className="panel">
+        <div className="section-head">
+          <h3>Latest Content</h3>
+          <span className="muted">Recently updated items</span>
+        </div>
+        <div className="stack-sm">
+          {mockNews.slice(0, 2).map((item) => (
+            <article key={item.id} className="row-card">
+              <div>
+                <strong>{item.title}</strong>
+                <div className="muted">{item.category}</div>
               </div>
-              <div className="history-card__bottom">
-                <span>{item.outletName}</span>
-                <span>{item.time}</span>
-              </div>
+              <button className="secondary-button" type="button">
+                Edit
+              </button>
             </article>
           ))}
-        </section>
-      </div>
-    </AdminShell>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -1,16 +1,22 @@
-import { NavLink } from "react-router-dom";
-import { residentBottomNav } from "../../lib/constants/nav";
+import { NavLink } from 'react-router-dom';
 
-export function BottomNav() {
+const items = [
+  { to: '/', label: 'Home' },
+  { to: '/card', label: 'Card' },
+  { to: '/points', label: 'Points' },
+  { to: '/benefits', label: 'Benefits' },
+  { to: '/profile', label: 'Profile' }
+];
+
+export default function BottomNav() {
   return (
     <nav className="bottom-nav">
-      {residentBottomNav.map((item) => (
+      {items.map((item) => (
         <NavLink
           key={item.to}
           to={item.to}
-          className={({ isActive }) =>
-            `bottom-nav__item ${isActive ? "is-active" : ""}`
-          }
+          end={item.to === '/'}
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
         >
           <span>{item.label}</span>
         </NavLink>

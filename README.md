@@ -1,59 +1,41 @@
-# LAYA Resident – Elite Black Card Starter
+# LAYA Resident — Elite Black Card Starter
 
-Starter project for the **LAYA Resident – Elite Black Card** web app.
+Starter project สำหรับทำ Web App สมาชิก Resident ของ LAYA Resort Hotel
 
-## Stack
-- Vite
-- React
-- TypeScript
-- React Router
-- Firebase-ready services and guards
-- Demo mode included
+## สิ่งที่มีใน ZIP นี้
+- Frontend ฝั่ง Resident แบบ mobile-first luxury style
+- หน้า Home / Card / Points / Benefits / News / Profile
+- หน้า Admin เบื้องต้นสำหรับ Dashboard / Members / Scan Spend / Content
+- Mock data พร้อมรันเดโมได้ทันที
+- Firebase-ready structure สำหรับต่อระบบจริง
 
-## Quick start
+## วิธีเปิดบน VS Code
+1. แตกไฟล์ ZIP
+2. เปิดโฟลเดอร์นี้ใน VS Code
+3. เปิด Terminal
+4. รันคำสั่ง
 
 ```bash
 npm install
 npm run dev
 ```
 
-Then open the local URL shown in the terminal.
+จากนั้นเปิด URL ที่ Vite แสดงใน Terminal
 
-## Demo mode
-This starter runs in **demo mode by default**, so you can open it in VS Code and start testing immediately even before Firebase is configured.
+## ถ้าจะใช้ Firebase จริง
+1. copy ไฟล์ `.env.example` เป็น `.env`
+2. ใส่ค่า Firebase ของโปรเจกต์
+3. เปลี่ยน `VITE_USE_MOCK=true` เป็น `VITE_USE_MOCK=false`
+4. เขียน service ฝั่ง Firestore เพิ่มใน `src/lib/services/`
 
-### Resident demo login
-- Login page: `/login`
-- Identifier: `resident@example.com`
-- Password: `demo123`
+## โครงสร้างหลัก
+- `src/pages/resident` หน้าฝั่งสมาชิก
+- `src/pages/admin` หน้าฝั่งหลังบ้าน
+- `src/layouts` layout ของแอพ
+- `src/context` auth mock context
+- `src/lib/services` service layer
+- `src/routes` protected route
 
-### Admin demo login
-- Login page: `/admin/login`
-- Employee ID: `9001`
-- Password: `demo123`
-
-## Enable Firebase later
-1. Copy `.env.example` to `.env`
-2. Fill in your Firebase project values
-3. Set:
-
-```env
-VITE_ENABLE_FIREBASE=true
-```
-
-4. Restart the dev server
-
-## Suggested next steps
-- Connect real Firestore collections
-- Connect Firebase Storage for content images
-- Add CRUD screens with save actions
-- Replace mock data with live service hooks
-
-## Suggested Firestore collections
-- `resident_members`
-- `resident_transactions`
-- `resident_news`
-- `resident_promotions`
-- `resident_benefits`
-- `resident_auth_profiles`
-- `staff_users`
+## หมายเหตุ
+โปรเจกต์นี้เป็น starter ที่เน้นให้เห็นโครงสร้างและ UI direction ก่อน
+ยังไม่ได้เชื่อม auth / firestore / QR scanner จริง แต่เตรียมฐานไว้ให้แล้ว
