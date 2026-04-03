@@ -1,10 +1,9 @@
-
 import { state, setMode } from '../core/state.js';
 import { $ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions, demoResident, demoTransactions } from '../data/demo.js';
 import { loadCollectionSafe } from '../services/content-service.js';
 import { loadTransactions } from '../services/transaction-service.js';
-import { renderCards, renderResidentCard, renderTable, updateStatusLabels } from '../ui/renderers.js';
+import { renderCards, renderResidentCard, renderTable, renderVaultHome, updateStatusLabels } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
 
 export async function loadResidentDashboard() {
@@ -17,16 +16,25 @@ export async function loadResidentDashboard() {
       loadCollectionSafe('promotions', { limit: 3 }),
       loadTransactions({ limit: 10, whereMemberCode: resident.memberCode, orderBy: false }),
     ]);
-    renderCards($('benefitsList'), benefits.length ? benefits : demoBenefits, 'No benefits yet');
-    renderCards($('newsList'), news.length ? news : demoNews, 'No news yet');
-    renderCards($('promoList'), promotions.length ? promotions : demoPromotions, 'No promotions yet');
-    renderTable($('transactionsTable'), transactions.length ? transactions : demoTransactions);
+    const finalBenefits = benefits.length ? benefits : demoBenefits;
+    const finalNews = news.length ? news : demoNews;
+    const finalPromotions = promotions.length ? promotions : demoPromotions;
+    if ($('homeNewsHero') || $('homePromotionGrid')) {
+      renderVaultHome(finalNews[0] || demoNews[0], finalPromotions);
+    }
+    if ($('benefitsList')) renderCards($('benefitsList'), finalBenefits, 'No benefits yet');
+    if ($('newsList')) renderCards($('newsList'), finalNews, 'No news yet');
+    if ($('promoList')) renderCards($('promoList'), finalPromotions, 'No promotions yet');
+    if ($('transactionsTable')) renderTable($('transactionsTable'), transactions.length ? transactions : demoTransactions);
   } catch (error) {
     console.warn(error);
-    renderCards($('benefitsList'), demoBenefits);
-    renderCards($('newsList'), demoNews);
-    renderCards($('promoList'), demoPromotions);
-    renderTable($('transactionsTable'), demoTransactions);
+    if ($('homeNewsHero') || $('homePromotionGrid')) {
+      renderVaultHome(demoNews[0], demoPromotions);
+    }
+    if ($('benefitsList')) renderCards($('benefitsList'), demoBenefits);
+    if ($('newsList')) renderCards($('newsList'), demoNews);
+    if ($('promoList')) renderCards($('promoList'), demoPromotions);
+    if ($('transactionsTable')) renderTable($('transactionsTable'), demoTransactions);
     showToast('ใช้ข้อมูลตัวอย่างชั่วคราว เพราะอ่าน Firestore ไม่ได้', 'error');
   }
 }
@@ -34,10 +42,13 @@ export async function loadResidentDashboard() {
 export function openDemoResident() {
   state.currentResident = demoResident;
   renderResidentCard(demoResident);
-  renderCards($('benefitsList'), demoBenefits);
-  renderCards($('newsList'), demoNews);
-  renderCards($('promoList'), demoPromotions);
-  renderTable($('transactionsTable'), demoTransactions);
+  if ($('homeNewsHero') || $('homePromotionGrid')) {
+    renderVaultHome(demoNews[0], demoPromotions);
+  }
+  if ($('benefitsList')) renderCards($('benefitsList'), demoBenefits);
+  if ($('newsList')) renderCards($('newsList'), demoNews);
+  if ($('promoList')) renderCards($('promoList'), demoPromotions);
+  if ($('transactionsTable')) renderTable($('transactionsTable'), demoTransactions);
   setMode('demo-resident');
   updateStatusLabels({ modeState: 'demo-resident' });
 }

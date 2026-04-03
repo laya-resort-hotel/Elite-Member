@@ -1,4 +1,3 @@
-
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js';
 
@@ -21,6 +20,44 @@ export function renderCards(listEl, items = [], emptyText = 'No data') {
       ${item.createdLabel ? `<small>${escapeHtml(item.createdLabel)}</small>` : ''}
     </div>
   `).join('');
+}
+
+export function renderVaultHome(newsItem, promotionItems = []) {
+  const hero = $('homeNewsHero');
+  if (hero) {
+    const image = newsItem?.coverImageUrl || newsItem?.galleryImages?.[0]?.url || '';
+    hero.innerHTML = `
+      <a class="vault-news-hero-link" href="./news.html">
+        <div class="vault-news-image-wrap">
+          ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(newsItem?.title || 'News')}" />` : '<div class="vault-news-image vault-news-fallback">News</div>'}
+        </div>
+        <div class="vault-news-copy">
+          <div class="vault-news-kicker">Latest update</div>
+          <h2>${escapeHtml(newsItem?.title || 'Resident news')}</h2>
+          <p>${escapeHtml(newsItem?.summary || newsItem?.body || 'ติดตามข่าวสารล่าสุดของ LAYA Resident ได้ที่นี่')}</p>
+        </div>
+      </a>
+    `;
+  }
+
+  const promoGrid = $('homePromotionGrid');
+  if (promoGrid) {
+    const items = promotionItems.slice(0, 3);
+    promoGrid.innerHTML = items.map((item) => {
+      const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
+      return `
+        <a class="vault-promo-card" href="./promotions.html">
+          <div class="vault-promo-thumb-wrap">
+            ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || 'Promotion')}" />` : '<div class="vault-promo-thumb vault-news-fallback">Promo</div>'}
+          </div>
+          <div class="vault-promo-copy">
+            <strong>${escapeHtml(item.title || 'Promotion')}</strong>
+            <span>${escapeHtml(item.summary || '')}</span>
+          </div>
+        </a>
+      `;
+    }).join('');
+  }
 }
 
 export function renderTable(container, rows = [], emptyText = 'No transactions yet') {
@@ -58,13 +95,17 @@ export function renderTable(container, rows = [], emptyText = 'No transactions y
 }
 
 export function renderResidentCard(resident) {
-  if ($('memberName')) $('memberName').textContent = resident.fullName || 'Resident Member';
+  const fullName = resident.fullName || 'Resident Member';
+  const initials = fullName.trim().charAt(0).toUpperCase() || 'R';
+  if ($('memberName')) $('memberName').textContent = fullName;
+  if ($('vaultMemberName')) $('vaultMemberName').textContent = fullName;
   if ($('memberTier')) $('memberTier').textContent = resident.tier || 'Elite Black';
   if ($('memberStatusPill')) $('memberStatusPill').textContent = resident.status || 'ACTIVE';
   if ($('memberCode')) $('memberCode').textContent = resident.memberCode || 'LAYA-0001';
   if ($('memberResidence')) $('memberResidence').textContent = resident.residence || '-';
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(resident.points || 0);
   if ($('memberSpend')) $('memberSpend').textContent = formatTHB(resident.totalSpend || 0);
+  if ($('memberAvatarLetter')) $('memberAvatarLetter').textContent = initials;
   renderQr(resident.memberCode || 'LAYA-0001');
 }
 

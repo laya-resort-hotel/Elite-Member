@@ -7,7 +7,7 @@ import { initFirebaseServices } from './services/firebase-service.js';
 import { subscribeAuth } from './services/auth-service.js';
 import { loadResidentForUser, loadUserProfile } from './services/member-service.js';
 import { showToast } from './ui/toast.js';
-import { updateStatusLabels } from './ui/renderers.js';
+import { renderResidentCard, updateStatusLabels } from './ui/renderers.js';
 import { bindAuthPage } from './pages/auth-page.js';
 import { bindResidentPage, loadResidentDashboard, openDemoResident } from './pages/resident-page.js';
 import { loadRedemptionPage } from './pages/redemption-page.js';
@@ -16,6 +16,7 @@ import { applyContentPageState, bindContentPage, loadContentPage } from './pages
 import { bindDetailPage, loadDetailPage } from './pages/detail-page.js';
 import { bindMembersPage, loadMembersPage } from './pages/members-page.js';
 import { bindFlipCards } from './ui/card-flip.js';
+import { demoResident } from './data/demo.js';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
@@ -64,6 +65,7 @@ async function initCurrentPage(isLive = false) {
       await loadRedemptionPage();
       break;
     case 'settings':
+      renderResidentCard(state.currentResident || demoResident);
       if ($('changeLanguageBtn')) {
         $('changeLanguageBtn').addEventListener('click', () => showToast('ระบบสลับภาษาจะทำต่อได้ในรอบถัดไป'));
       }

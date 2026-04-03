@@ -3,13 +3,14 @@ import { $ } from '../core/dom.js';
 import { demoResident } from '../data/demo.js';
 import { demoRewards } from '../data/rewards.js';
 import { escapeHtml, formatNumber } from '../core/format.js';
+import { renderResidentCard } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
 
 export function loadRedemptionPage() {
   const resident = state.currentResident || demoResident;
+  renderResidentCard(resident);
   const points = Number(resident.points || 0);
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
-  if ($('redemptionPointsBadge')) $('redemptionPointsBadge').textContent = `${formatNumber(points)} pts`;
   renderRewards(points);
 }
 
@@ -19,16 +20,14 @@ function renderRewards(points) {
   container.innerHTML = demoRewards.map((reward) => {
     const canRedeem = points >= reward.pointsRequired;
     return `
-      <div class="reward-card panel">
-        <div class="reward-thumb">${reward.imageUrl ? `<img src="${escapeHtml(reward.imageUrl)}" alt="${escapeHtml(reward.title)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
-        <div class="reward-info">
-          <div class="eyebrow gold">${escapeHtml(reward.outlet || 'Reward')}</div>
+      <div class="reward-card vault-reward-card">
+        <div class="reward-thumb vault-reward-thumb">${reward.imageUrl ? `<img src="${escapeHtml(reward.imageUrl)}" alt="${escapeHtml(reward.title)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
+        <div class="reward-info vault-reward-info">
           <h3>${escapeHtml(reward.title)}</h3>
-          <p>${escapeHtml(reward.summary || '')}</p>
-          <div class="reward-meta">${formatNumber(reward.pointsRequired)} point(s)</div>
+          <div class="reward-meta vault-points-text">${formatNumber(reward.pointsRequired)} Point(s)</div>
         </div>
-        <div class="reward-action">
-          <button type="button" class="${canRedeem ? 'secondary-btn' : 'ghost-btn'} reward-redeem-btn" data-reward-id="${escapeHtml(reward.id)}" ${canRedeem ? '' : 'disabled'}>${canRedeem ? 'Redeem' : 'Need more points'}</button>
+        <div class="reward-action vault-reward-action">
+          <button type="button" class="vault-redeem-btn ${canRedeem ? 'ready' : 'disabled'}" data-reward-id="${escapeHtml(reward.id)}" ${canRedeem ? '' : 'disabled'}>Redeem</button>
         </div>
       </div>
     `;

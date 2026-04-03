@@ -15,38 +15,64 @@
   <script type="module" src="./assets/js/main.js"></script>
 </head>
 <body data-page="settings">
-  <div id="app" class="app-shell customer-shell">
-    <header class="topbar customer-topbar">
-      <div>
-        <div class="eyebrow">LAYA RESIDENT</div>
-        <h1><a class="brand-link" href="./home.html">Elite Black Card</a></h1>
+  <div id="app" class="app-shell customer-shell vault-shell">
+    <header class="vault-header">
+      <div class="vault-brand-bar">
+        <div>
+          <div class="vault-app-name">LAYA RESIDENT</div>
+          <div class="vault-app-subtitle">Elite Black Card</div>
+        </div>
+        <button id="logoutBtn" class="ghost-btn hidden compact-btn vault-logout">Logout</button>
       </div>
-      <div class="page-actions compact-actions">
-        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
-        <button id="logoutBtn" class="ghost-btn hidden compact-btn">Logout</button>
+      <div class="vault-profile-strip">
+        <div class="vault-avatar" id="memberAvatarLetter">N</div>
+        <div class="vault-profile-copy">
+          <div class="vault-profile-name" id="memberName">Resident Member</div>
+          <div class="vault-profile-meta">Account & support</div>
+        </div>
+        <div class="vault-points-pill small-pill">
+          <strong id="memberPoints">42,580</strong>
+          <span>P</span>
+        </div>
       </div>
     </header>
 
-    <main class="main-content">
-      <section class="panel">
-        <div class="eyebrow gold">SETTINGS</div>
-        <h2 style="margin:8px 0 16px">Other</h2>
-        <div class="settings-list">
-          <a class="settings-item" href="./home.html"><span class="settings-icon">⌂</span><div><strong>About us</strong><small>กลับไปหน้า Home และดูข้อมูลหลักของโครงการ</small></div></a>
-          <a class="settings-item" href="./benefits.html"><span class="settings-icon">★</span><div><strong>Benefit for Member</strong><small>ดูสิทธิประโยชน์ทั้งหมดของสมาชิก</small></div></a>
-          <a class="settings-item" href="./news.html"><span class="settings-icon">i</span><div><strong>FAQ / News</strong><small>ใช้หน้า News สำหรับอัปเดตคำถามที่พบบ่อยและประกาศ</small></div></a>
-          <a class="settings-item" href="mailto:info@layaresortphuket.com"><span class="settings-icon">✉</span><div><strong>Contact us</strong><small>info@layaresortphuket.com</small></div></a>
-          <button class="settings-item button-like" type="button" id="changeLanguageBtn"><span class="settings-icon">A</span><div><strong>Change Language</strong><small>สลับไทย / English (placeholder)</small></div></button>
-        </div>
+    <main class="main-content vault-main-content">
+      <section class="vault-section-title">Other</section>
+      <section class="vault-settings-list">
+        <a class="vault-settings-item" href="./home.html">
+          <span class="vault-settings-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.2v6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.2" r="1" fill="currentColor"/></svg>
+          </span>
+          <span>About us</span>
+        </a>
+        <a class="vault-settings-item" href="./news.html">
+          <span class="vault-settings-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5c0-1.38 1.12-2.5 2.5-2.5h7A2.5 2.5 0 0 1 16 7.5V13a2.5 2.5 0 0 1-2.5 2.5H10l-3.7 2.7c-.54.4-1.3.01-1.3-.66V7.5Z" stroke="currentColor" stroke-width="1.8"/><circle cx="18.4" cy="8" r="3.1" stroke="currentColor" stroke-width="1.8"/><path d="M18.4 6.9v2.2M17.3 8h2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span>FAQ</span>
+        </a>
+        <a class="vault-settings-item" href="mailto:info@layaresortphuket.com">
+          <span class="vault-settings-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v9c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-9Z" stroke="currentColor" stroke-width="1.8"/><path d="m5.5 8.2 6.5 5 6.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span>Contact us</span>
+        </a>
+        <button class="vault-settings-item button-like" type="button" id="changeLanguageBtn">
+          <span class="vault-settings-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h6v6H4zM14 12h6v6h-6z" stroke="currentColor" stroke-width="1.8"/><path d="M7 16h4m-2-2v4M16.5 6.5 20 10m0-3.5L16.5 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span>Change Language</span>
+        </button>
       </section>
     </main>
   </div>
 
-  <nav class="bottom-nav customer-nav">
-    <a class="nav-btn" data-page-link="home" href="./home.html">Home</a>
-    <a class="nav-btn" data-page-link="redemption" href="./redemption.html">Redemption</a>
-    <a class="nav-btn" data-page-link="member" href="./member.html">Member</a>
-    <a class="nav-btn" data-page-link="settings" href="./settings.html">Settings</a>
+  <nav class="bottom-nav customer-nav vault-bottom-nav">
+    <a class="nav-btn" data-page-link="home" href="./home.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 9.8V20h11V9.8" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span><span class="nav-label">Home</span></a>
+    <a class="nav-btn" data-page-link="redemption" href="./redemption.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 9h15v11h-15z" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 9h17v-3h-17z" stroke="currentColor" stroke-width="1.9"/><path d="M12 6v14M8.2 6c-1.3 0-2.2-.8-2.2-1.9 0-.9.7-1.7 1.8-1.7 1.8 0 3 1.7 4.2 3.6C10.9 6 9.7 6 8.2 6Zm7.6 0c1.3 0 2.2-.8 2.2-1.9 0-.9-.7-1.7-1.8-1.7-1.8 0-3 1.7-4.2 3.6C13.1 6 14.3 6 15.8 6Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nav-label">Redemption</span></a>
+    <a class="nav-btn" data-page-link="member" href="./member.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M3 9.5h18" stroke="currentColor" stroke-width="1.9"/><path d="M7 15h4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><span class="nav-label">Member</span></a>
+    <a class="nav-btn" data-page-link="settings" href="./settings.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8.4a3.6 3.6 0 1 1 0 7.2 3.6 3.6 0 0 1 0-7.2Z" stroke="currentColor" stroke-width="1.9"/><path d="M12 3.5v2.1M12 18.4v2.1M20.5 12h-2.1M5.6 12H3.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5M18.2 18.2l-1.5-1.5M7.3 7.3 5.8 5.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><span class="nav-label">Settings</span></a>
   </nav>
   <div id="toast" class="toast hidden"></div>
 </body>
