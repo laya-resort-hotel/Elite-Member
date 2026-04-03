@@ -5,46 +5,47 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function myRole() {
+    function userRole() {
       return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
         ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
         : null;
     }
 
-    function isAdmin() {
-      return myRole() in ['admin', 'manager', 'staff'];
+    function isAdminLike() {
+      return userRole() in ['admin', 'manager', 'staff'];
     }
 
     match /users/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
-      allow write: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid || isAdminLike();
+      allow delete: if isAdminLike();
     }
 
-    match /residents/{docId} {
+    match /residents/{residentId} {
       allow read: if signedIn();
-      allow create, update: if isAdmin();
-      allow delete: if myRole() in ['admin', 'manager'];
+      allow create, update: if isAdminLike();
+      allow delete: if isAdminLike();
     }
 
-    match /transactions/{docId} {
+    match /transactions/{transactionId} {
       allow read: if signedIn();
-      allow create: if isAdmin();
-      allow update, delete: if myRole() in ['admin', 'manager'];
+      allow create: if isAdminLike();
+      allow update, delete: if isAdminLike();
     }
 
     match /news/{docId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow write: if isAdminLike();
     }
 
     match /promotions/{docId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow write: if isAdminLike();
     }
 
     match /benefits/{docId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow write: if isAdminLike();
     }
   }
 }

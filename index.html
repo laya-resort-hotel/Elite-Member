@@ -7,8 +7,12 @@
   <meta name="theme-color" content="#0d0f12" />
   <meta name="description" content="LAYA Resident Elite Black Card web app" />
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -17,7 +21,7 @@
         <div class="eyebrow">LAYA RESIDENT</div>
         <h1>Elite Black Card</h1>
       </div>
-      <button id="themeBadge" class="ghost-btn">Luxury Member App</button>
+      <button id="themeBadge" class="ghost-btn">Structured Static Edition</button>
     </header>
 
     <main class="main-content">
@@ -25,15 +29,15 @@
         <div class="hero-card glass">
           <div class="hero-copy">
             <span class="eyebrow gold">Resident Privileges</span>
-            <h2>ระบบสมาชิกแบบอัปขึ้น GitHub ได้เลย</h2>
-            <p>เวอร์ชันนี้ไม่ต้องติดตั้ง Node.js ไม่ต้อง npm แค่อัปไฟล์ขึ้น GitHub Pages แล้วเปิดใช้งานได้ทันที</p>
+            <h2>เว็บแอพสมาชิกแบบอัป GitHub ได้ง่าย แต่แยกไฟล์เป็นระเบียบกว่าเดิม</h2>
+            <p>เวอร์ชันนี้ยังคงเป็น static web app เหมือนเดิม แต่แยกไฟล์ config, services, pages, ui และ styles ออกจากกัน เพื่อให้แก้ไขง่ายขึ้นโดยไม่ต้องใช้ npm หรือ React</p>
           </div>
           <div class="black-card-preview">
             <div class="card-chip"></div>
             <div class="card-brand">ELITE BLACK CARD</div>
             <div class="card-number">LAYA • RESIDENT • PRIVILEGE</div>
             <div class="card-footer-row">
-              <span>Member Experience</span>
+              <span>Luxury Member Experience</span>
               <span>Phuket</span>
             </div>
           </div>
@@ -43,11 +47,11 @@
           <div class="panel glass">
             <h3>เข้าสู่ระบบจริงด้วย Firebase</h3>
             <p class="muted">ใช้ Email / Password ที่สร้างไว้ใน Firebase Authentication</p>
-            <label class="field-label">Email</label>
+            <label class="field-label" for="loginEmail">Email</label>
             <input id="loginEmail" class="input" type="email" placeholder="resident@laya.com" />
-            <label class="field-label">Password</label>
+            <label class="field-label" for="loginPassword">Password</label>
             <input id="loginPassword" class="input" type="password" placeholder="••••••••" />
-            <div class="row gap">
+            <div class="row gap wrap mt-md">
               <button id="loginBtn" class="primary-btn">Login</button>
               <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
             </div>
@@ -55,7 +59,7 @@
 
           <div class="panel glass">
             <h3>เข้าแบบดูตัวอย่าง</h3>
-            <p class="muted">ใช้สำหรับเปิดดูหน้าเว็บทันที แม้ยังไม่ได้ตั้งค่า user ใน Firebase</p>
+            <p class="muted">เปิดดูหน้าเว็บได้ทันที แม้ยังไม่ได้สร้าง user หรือ collection ใน Firebase</p>
             <div class="stack gap-sm">
               <button id="demoResidentBtn" class="secondary-btn">Open Demo Resident</button>
               <button id="demoAdminBtn" class="secondary-btn">Open Demo Admin</button>
@@ -90,127 +94,166 @@
               <div class="small-label">Owned Residence</div>
               <div id="memberResidence" class="big-text">D-108</div>
             </div>
+            <div class="qr-wrap">
+              <canvas id="memberQrCanvas" width="124" height="124"></canvas>
+            </div>
           </div>
-          <div class="card-bottom-grid">
-            <div class="metric dark-tile">
-              <span>Points</span>
-              <strong id="memberPoints">0</strong>
+          <div class="grid-2 mt-lg">
+            <div class="metric-card dark-tile">
+              <span class="small-label">Available Points</span>
+              <strong id="memberPoints">42,580</strong>
             </div>
-            <div class="metric dark-tile">
-              <span>Total Spend</span>
-              <strong id="memberSpend">THB 0</strong>
-            </div>
-            <div class="metric dark-tile">
-              <span>QR</span>
-              <canvas id="memberQrCanvas" width="140" height="140"></canvas>
+            <div class="metric-card dark-tile">
+              <span class="small-label">Total Spend</span>
+              <strong id="memberSpend">฿238,900</strong>
             </div>
           </div>
         </div>
 
-        <div class="grid-2">
-          <div class="panel glass">
+        <div class="row gap wrap">
+          <button id="refreshResidentBtn" class="ghost-btn">Refresh Data</button>
+          <button class="ghost-btn" data-screen="screen-resident">Resident Home</button>
+          <button class="ghost-btn" data-screen="screen-admin">Go to Admin</button>
+        </div>
+
+        <div class="grid-3">
+          <div class="panel">
             <div class="section-head">
-              <h3>สิทธิพิเศษของคุณ</h3>
-              <button id="refreshResidentBtn" class="ghost-btn">Refresh</button>
+              <h3>Benefits</h3>
+              <span class="eyebrow">Resident perks</span>
             </div>
             <div id="benefitsList" class="card-list"></div>
           </div>
-          <div class="panel glass">
+          <div class="panel">
             <div class="section-head">
-              <h3>ข่าวและโปรโมชัน</h3>
+              <h3>News</h3>
+              <span class="eyebrow">Latest updates</span>
             </div>
-            <div id="newsList" class="card-list compact"></div>
-            <div class="divider"></div>
-            <div id="promoList" class="card-list compact"></div>
+            <div id="newsList" class="card-list"></div>
+          </div>
+          <div class="panel">
+            <div class="section-head">
+              <h3>Promotions</h3>
+              <span class="eyebrow">Featured offers</span>
+            </div>
+            <div id="promoList" class="card-list"></div>
           </div>
         </div>
 
-        <div class="panel glass">
+        <div class="panel">
           <div class="section-head">
-            <h3>ประวัติการใช้จ่ายและแต้ม</h3>
+            <h3>Spending & Point History</h3>
+            <span class="eyebrow">Recent transactions</span>
           </div>
-          <div id="transactionsTable" class="table-wrap"></div>
+          <div id="transactionsTable"></div>
         </div>
       </section>
 
       <section id="screen-admin" class="screen">
-        <div class="hero-strip glass">
-          <div>
-            <div class="eyebrow gold">Operations & CMS</div>
-            <h2>Admin Dashboard</h2>
-            <p class="muted">เพิ่มยอดใช้จ่าย สะสมแต้ม และจัดการข่าว / benefits / promotions</p>
-          </div>
-          <div class="kpi-row">
-            <div class="metric glass small"><span>Residents</span><strong id="kpiResidents">0</strong></div>
-            <div class="metric glass small"><span>Points Issued</span><strong id="kpiPoints">0</strong></div>
-            <div class="metric glass small"><span>Spend</span><strong id="kpiSpend">THB 0</strong></div>
-          </div>
-        </div>
-
-        <div class="grid-2 admin-grid">
-          <div class="panel glass">
-            <h3>เพิ่มยอดใช้จ่าย / สะสมแต้ม</h3>
-            <label class="field-label">Member Code</label>
-            <input id="spendMemberCode" class="input" type="text" placeholder="LAYA-0001" />
-            <label class="field-label">Resident Name</label>
-            <input id="spendMemberName" class="input" type="text" placeholder="Noi Resident" />
-            <label class="field-label">Outlet</label>
-            <input id="spendOutlet" class="input" type="text" placeholder="Aroonsawat" />
-            <label class="field-label">Amount (THB)</label>
-            <input id="spendAmount" class="input" type="number" placeholder="1200" />
-            <label class="field-label">Point Rate (1 THB = ? point)</label>
-            <input id="pointRate" class="input" type="number" value="1" step="0.01" />
-            <div class="row gap wrap">
-              <button id="addSpendBtn" class="primary-btn">Save Spend Transaction</button>
-              <button id="loadAdminDataBtn" class="ghost-btn">Refresh Admin Data</button>
+        <div class="admin-grid">
+          <div class="panel">
+            <div class="section-head">
+              <h3>Dashboard</h3>
+              <span class="eyebrow">Operations</span>
+            </div>
+            <div class="grid-3 compact-grid">
+              <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
+              <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
+              <div class="metric-card"><span>Total Spend</span><strong id="kpiSpend">฿0</strong></div>
+            </div>
+            <div class="row gap wrap mt-md">
+              <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
             </div>
           </div>
 
-          <div class="panel glass">
-            <h3>Resident Lookup</h3>
-            <label class="field-label">Search keyword</label>
-            <input id="residentSearch" class="input" type="text" placeholder="ชื่อ / member code / email" />
-            <button id="residentSearchBtn" class="secondary-btn">Search</button>
-            <div id="residentSearchResults" class="card-list compact"></div>
+          <div class="panel">
+            <div class="section-head">
+              <h3>Member Search</h3>
+              <span class="eyebrow">By name / member code / email</span>
+            </div>
+            <div class="row gap stretch mt-sm">
+              <input id="residentSearch" class="input" type="text" placeholder="Search resident" />
+              <button id="residentSearchBtn" class="secondary-btn">Search</button>
+            </div>
+            <div id="residentSearchResults" class="card-list mt-md"></div>
           </div>
         </div>
 
-        <div class="grid-3 cms-grid">
-          <div class="panel glass">
-            <h3>News CMS</h3>
-            <input id="newsTitle" class="input" type="text" placeholder="News title" />
-            <textarea id="newsBody" class="input textarea" placeholder="News summary"></textarea>
-            <button id="saveNewsBtn" class="secondary-btn">Save News</button>
+        <div class="admin-grid mt-lg">
+          <div class="panel">
+            <div class="section-head">
+              <h3>Add Spend & Points</h3>
+              <span class="eyebrow">QR / Manual entry</span>
+            </div>
+            <label class="field-label" for="spendMemberCode">Member Code</label>
+            <input id="spendMemberCode" class="input" type="text" placeholder="LAYA-0001" />
+            <label class="field-label" for="spendMemberName">Member Name</label>
+            <input id="spendMemberName" class="input" type="text" placeholder="Noi Resident" />
+            <label class="field-label" for="spendOutlet">Outlet</label>
+            <input id="spendOutlet" class="input" type="text" placeholder="Aroonsawat" />
+            <div class="grid-2 mt-sm">
+              <div>
+                <label class="field-label" for="spendAmount">Amount (THB)</label>
+                <input id="spendAmount" class="input" type="number" placeholder="2500" />
+              </div>
+              <div>
+                <label class="field-label" for="pointRate">Point Rate</label>
+                <input id="pointRate" class="input" type="number" value="1" min="0" step="0.1" />
+              </div>
+            </div>
+            <div class="row gap wrap mt-md">
+              <button id="addSpendBtn" class="primary-btn">Save Transaction</button>
+            </div>
           </div>
-          <div class="panel glass">
-            <h3>Promotions CMS</h3>
-            <input id="promoTitle" class="input" type="text" placeholder="Promotion title" />
-            <textarea id="promoBody" class="input textarea" placeholder="Promotion details"></textarea>
-            <button id="savePromoBtn" class="secondary-btn">Save Promotion</button>
-          </div>
-          <div class="panel glass">
-            <h3>Benefits CMS</h3>
-            <input id="benefitTitle" class="input" type="text" placeholder="Benefit title" />
-            <textarea id="benefitBody" class="input textarea" placeholder="Benefit details"></textarea>
-            <button id="saveBenefitBtn" class="secondary-btn">Save Benefit</button>
+
+          <div class="panel cms-panel">
+            <div class="section-head">
+              <h3>Resident CMS</h3>
+              <span class="eyebrow">News / Promotions / Benefits</span>
+            </div>
+
+            <div class="cms-grid">
+              <div class="stack gap-sm">
+                <h4>News</h4>
+                <input id="newsTitle" class="input" type="text" placeholder="News title" />
+                <textarea id="newsBody" class="input textarea" placeholder="News details"></textarea>
+                <button id="saveNewsBtn" class="secondary-btn">Save News</button>
+              </div>
+
+              <div class="stack gap-sm">
+                <h4>Promotion</h4>
+                <input id="promoTitle" class="input" type="text" placeholder="Promotion title" />
+                <textarea id="promoBody" class="input textarea" placeholder="Promotion details"></textarea>
+                <button id="savePromoBtn" class="secondary-btn">Save Promotion</button>
+              </div>
+
+              <div class="stack gap-sm">
+                <h4>Benefit</h4>
+                <input id="benefitTitle" class="input" type="text" placeholder="Benefit title" />
+                <textarea id="benefitBody" class="input textarea" placeholder="Benefit details"></textarea>
+                <button id="saveBenefitBtn" class="secondary-btn">Save Benefit</button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="panel glass">
-          <h3>Recent Transactions</h3>
-          <div id="adminTransactionsTable" class="table-wrap"></div>
+        <div class="panel mt-lg">
+          <div class="section-head">
+            <h3>Recent Transactions</h3>
+            <span class="eyebrow">Admin view</span>
+          </div>
+          <div id="adminTransactionsTable"></div>
         </div>
       </section>
     </main>
-
-    <nav class="bottom-nav">
-      <button data-screen="screen-auth" class="nav-btn active">Login</button>
-      <button data-screen="screen-resident" class="nav-btn">Card</button>
-      <button data-screen="screen-admin" class="nav-btn">Admin</button>
-    </nav>
   </div>
 
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="screen-auth">Login</button>
+    <button class="nav-btn" data-screen="screen-resident">Resident</button>
+    <button class="nav-btn" data-screen="screen-admin">Admin</button>
+  </nav>
+
   <div id="toast" class="toast hidden"></div>
-  <script type="module" src="./app.js"></script>
 </body>
 </html>
