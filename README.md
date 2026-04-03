@@ -25,3 +25,9 @@
 
 ## หมายเหตุ
 แม้จะเป็น multi-page แต่ยังคงใช้ static hosting แบบง่ายเหมือนเดิม
+
+
+## Added detail pages
+- news-detail.html
+- promotions-detail.html
+- benefits-detail.html

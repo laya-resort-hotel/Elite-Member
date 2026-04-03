@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Promotion Detail</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident Elite Black Card web app" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="promotions-detail" data-content-type="promotions">
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="detail-page-grid">
+        <div class="detail-main">
+          <div class="panel detail-hero">
+            <div class="row between wrap gap">
+              <button id="backToListBtn" class="ghost-btn">← Back to Promotions</button>
+              <span class="badge-inline"><span>Page</span><strong data-detail-label>Promotion Detail</strong></span>
+            </div>
+            <div class="eyebrow gold mt-md" id="detailEyebrow">Promotions</div>
+            <h2 id="detailHeading">Promotion Detail</h2>
+            <p id="detailSummary" class="page-intro">Loading detail...</p>
+            <div class="row gap wrap mt-md">
+              <span class="badge-inline"><span>Status</span><strong>Published</strong></span>
+              <span class="badge-inline"><span>Info</span><strong id="detailMeta">Loading...</strong></span>
+            </div>
+          </div>
+
+          <div class="panel" id="detailBody">
+            <div class="card-item"><p>Loading detail content...</p></div>
+          </div>
+        </div>
+
+        <aside class="sticky-col">
+          <div class="panel">
+            <div class="section-head"><h3>Quick Action</h3><span class="eyebrow">Resident app</span></div>
+            <p class="readonly-note">ใช้หน้านี้สำหรับแสดงรายละเอียดแบบอ่านต่ออีกขั้นจากรายการหลัก</p>
+            <button id="detailCtaBtn" class="primary-btn full-btn"><span id="detailCtaLabel">Contact team</span></button>
+          </div>
+
+          <div class="panel">
+            <div class="section-head"><h3>Related Items</h3><span class="eyebrow">Promotions</span></div>
+            <div id="relatedList" class="card-list"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" data-page-link="index" href="./index.html">Login</a>
+    <a class="nav-btn" data-page-link="resident" href="./resident.html">Resident</a>
+    <a class="nav-btn" data-page-link="news" href="./news.html">News</a>
+    <a class="nav-btn" data-page-link="promotions" href="./promotions.html">Promotions</a>
+    <a class="nav-btn" data-page-link="benefits" href="./benefits.html">Benefits</a>
+    <a class="nav-btn" data-page-link="admin" href="./admin.html">Admin</a>
+    <a class="nav-btn" data-page-link="members" href="./members.html">Members</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

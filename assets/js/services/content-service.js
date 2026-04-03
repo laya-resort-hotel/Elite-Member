@@ -1,6 +1,8 @@
 import {
   addDoc,
   collection,
+  doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -22,10 +24,20 @@ export async function loadCollectionSafe(name, options = {}) {
   return snap.docs.map((d) => ({ id: d.id, ...d.data(), createdLabel: formatDate(d.data().createdAt) }));
 }
 
+export async function loadDocumentById(collectionName, id) {
+  const ref = doc(state.db, collectionName, id);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return { id: snap.id, ...data, createdLabel: formatDate(data.createdAt), updatedLabel: formatDate(data.updatedAt) };
+}
+
 export async function saveSimpleCMS(collectionName, title, body) {
   await addDoc(collection(state.db, collectionName), {
     title,
     body,
+    summary: body,
+    details: [body],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     createdBy: state.currentUser?.email || 'manual-admin',

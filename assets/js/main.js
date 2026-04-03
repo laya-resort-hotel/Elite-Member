@@ -12,6 +12,7 @@ import { bindAuthPage } from './pages/auth-page.js';
 import { bindResidentPage, loadResidentDashboard, openDemoResident } from './pages/resident-page.js';
 import { bindAdminPage, loadAdminDashboard, openDemoAdmin } from './pages/admin-page.js';
 import { applyContentPageState, bindContentPage, loadContentPage } from './pages/content-page.js';
+import { bindDetailPage, loadDetailPage } from './pages/detail-page.js';
 import { bindMembersPage, loadMembersPage } from './pages/members-page.js';
 
 const page = document.body?.dataset?.page || 'index';
@@ -66,6 +67,12 @@ async function initCurrentPage(isLive = false) {
           ? 'คุณกำลังอยู่ในโหมดแก้ไขข้อมูลจริงผ่าน Firebase'
           : 'หน้านี้อ่านข้อมูลได้ แต่การบันทึกจะใช้ได้เมื่อ login เป็น admin/staff';
       }
+      break;
+    case 'news-detail':
+    case 'promotions-detail':
+    case 'benefits-detail':
+      bindDetailPage(contentType);
+      await loadDetailPage(contentType);
       break;
     case 'admin':
       bindAdminPage();

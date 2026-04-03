@@ -1,9 +1,8 @@
-
 import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
 import { loadCollectionSafe, saveSimpleCMS } from '../services/content-service.js';
-import { renderCards } from '../ui/renderers.js';
+import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
 
 const demoMap = {
@@ -18,14 +17,43 @@ const labelMap = {
   benefits: 'Benefits',
 };
 
+function detailHref(type, item) {
+  if (item.id && item.createdLabel) return `./${type}-detail.html?id=${encodeURIComponent(item.id)}`;
+  const demoId = item.id || '';
+  return `./${type}-detail.html?demo=${encodeURIComponent(demoId)}`;
+}
+
+function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
+  if (!listEl) return;
+  if (!items.length) {
+    listEl.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
+    return;
+  }
+  listEl.innerHTML = items.map((item) => `
+    <article class="card-item content-entry-card">
+      <div class="content-entry-top">
+        <div>
+          <div class="eyebrow gold">${escapeHtml(labelMap[type].slice(0, -1) || labelMap[type])}</div>
+          <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
+        </div>
+        ${item.createdLabel && item.createdLabel !== '-' ? `<small>${escapeHtml(item.createdLabel)}</small>` : '<small>Demo content</small>'}
+      </div>
+      <p>${escapeHtml(item.summary || item.body || item.description || '')}</p>
+      <div class="row gap wrap mt-md">
+        <a class="secondary-btn" href="${detailHref(type, item)}">Open detail</a>
+      </div>
+    </article>
+  `).join('');
+}
+
 export async function loadContentPage(type) {
   const target = $('contentList');
   try {
     const rows = await loadCollectionSafe(type, { limit: 20 });
-    renderCards(target, rows.length ? rows : demoMap[type], `No ${labelMap[type]} yet`);
+    renderContentCards(target, type, rows.length ? rows : demoMap[type], `No ${labelMap[type]} yet`);
   } catch (error) {
     console.warn(error);
-    renderCards(target, demoMap[type], `No ${labelMap[type]} yet`);
+    renderContentCards(target, type, demoMap[type], `No ${labelMap[type]} yet`);
     showToast('ใช้ข้อมูลตัวอย่างชั่วคราว เพราะอ่าน Firestore ไม่ได้', 'error');
   }
 }
