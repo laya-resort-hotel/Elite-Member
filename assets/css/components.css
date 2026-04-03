@@ -554,7 +554,7 @@ body.lightbox-open {
   --tilt-y: 0deg;
   position: relative;
   width: 100%;
-  aspect-ratio: 675 / 447;
+  aspect-ratio: 525 / 318;
   border-radius: 28px;
   perspective: 2400px;
   cursor: pointer;
