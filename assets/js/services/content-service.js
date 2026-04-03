@@ -15,6 +15,37 @@ import {
 import { state } from '../core/state.js';
 import { formatDate } from '../core/format.js';
 
+function stringValue(value = '') {
+  return String(value || '').trim();
+}
+
+function linesValue(value = '') {
+  return stringValue(value)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function normalizeContentPayload(payload = {}) {
+  const title = stringValue(payload.title);
+  const summary = stringValue(payload.summary);
+  const fullDetails = stringValue(payload.fullDetails);
+  const termsText = stringValue(payload.terms);
+  const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
+  const coverImageUrl = stringValue(payload.coverImageUrl);
+
+  return {
+    title,
+    summary,
+    body: summary,
+    fullDetails,
+    details: linesValue(fullDetails),
+    terms: linesValue(termsText),
+    ctaLabel,
+    coverImageUrl,
+  };
+}
+
 export async function loadCollectionSafe(name, options = {}) {
   const colRef = collection(state.db, name);
   const clauses = [];
@@ -34,22 +65,10 @@ export async function loadDocumentById(collectionName, id) {
   return { id: snap.id, ...data, createdLabel: formatDate(data.createdAt), updatedLabel: formatDate(data.updatedAt) };
 }
 
-function normalizeBody(body) {
-  return String(body || '').trim();
-}
-
-function toDetails(body) {
-  return normalizeBody(body).split('
-').map((line) => line.trim()).filter(Boolean);
-}
-
-export async function saveSimpleCMS(collectionName, title, body) {
-  const normalizedBody = normalizeBody(body);
+export async function saveStructuredCMS(collectionName, payload) {
+  const normalized = normalizeContentPayload(payload);
   const ref = await addDoc(collection(state.db, collectionName), {
-    title,
-    body: normalizedBody,
-    summary: normalizedBody,
-    details: toDetails(normalizedBody),
+    ...normalized,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     createdBy: state.currentUser?.email || 'manual-admin',
@@ -58,13 +77,10 @@ export async function saveSimpleCMS(collectionName, title, body) {
   return ref;
 }
 
-export async function updateSimpleCMS(collectionName, id, title, body) {
-  const normalizedBody = normalizeBody(body);
+export async function updateStructuredCMS(collectionName, id, payload) {
+  const normalized = normalizeContentPayload(payload);
   await updateDoc(doc(state.db, collectionName, id), {
-    title,
-    body: normalizedBody,
-    summary: normalizedBody,
-    details: toDetails(normalizedBody),
+    ...normalized,
     updatedAt: serverTimestamp(),
     updatedBy: state.currentUser?.email || 'manual-admin',
   });
@@ -72,4 +88,27 @@ export async function updateSimpleCMS(collectionName, id, title, body) {
 
 export async function deleteCMSItem(collectionName, id) {
   await deleteDoc(doc(state.db, collectionName, id));
+}
+
+// Backward-compatible wrappers
+export async function saveSimpleCMS(collectionName, title, body) {
+  return saveStructuredCMS(collectionName, {
+    title,
+    summary: body,
+    fullDetails: body,
+    terms: '',
+    ctaLabel: 'Learn more',
+    coverImageUrl: '',
+  });
+}
+
+export async function updateSimpleCMS(collectionName, id, title, body) {
+  return updateStructuredCMS(collectionName, id, {
+    title,
+    summary: body,
+    fullDetails: body,
+    terms: '',
+    ctaLabel: 'Learn more',
+    coverImageUrl: '',
+  });
 }

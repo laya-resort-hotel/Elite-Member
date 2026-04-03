@@ -48,19 +48,44 @@
           </div>
         </div>
         <aside class="sticky-col">
-          <div class="panel">
-            <div class="section-head"><h3>CMS Quick Add</h3><span class="eyebrow">Admin use</span></div>
+          
+          <div class="panel cms-editor-panel">
+            <div class="section-head"><h3>CMS Editor</h3><span class="eyebrow">Admin use</span></div>
             <p id="cmsReadOnlyNote" class="readonly-note">หน้านี้อ่านข้อมูลได้ แต่การบันทึกจะใช้ได้เมื่อ login เป็น admin/staff</p>
+
             <label class="field-label" data-content-label for="contentTitle">Content</label>
             <input id="contentTitle" class="input" type="text" placeholder="Title" />
-            <label class="field-label" for="contentBody">Details</label>
-            <textarea id="contentBody" class="input textarea" placeholder="Details"></textarea>
+
+            <label class="field-label" for="contentSummary">Summary</label>
+            <textarea id="contentSummary" class="input textarea textarea-sm" placeholder="Short summary for card and detail hero"></textarea>
+
+            <label class="field-label" for="contentFullDetails">Full details</label>
+            <textarea id="contentFullDetails" class="input textarea" placeholder="Longer description for detail page"></textarea>
+
+            <label class="field-label" for="contentTerms">Terms</label>
+            <textarea id="contentTerms" class="input textarea textarea-sm" placeholder="1 line per term / condition"></textarea>
+
+            <label class="field-label" for="contentCtaLabel">CTA label</label>
+            <input id="contentCtaLabel" class="input" type="text" placeholder="Example: Book now / Contact team" />
+
+            <label class="field-label" for="contentCoverImageUrl">Cover image URL</label>
+            <input id="contentCoverImageUrl" class="input" type="url" placeholder="https://..." />
+
+            <div class="cms-cover-preview-wrap mt-sm">
+              <div class="small-label">Cover preview</div>
+              <div class="cms-cover-preview">
+                <img id="contentCoverPreview" class="hidden" alt="Cover preview" />
+                <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No cover image URL yet</div>
+              </div>
+            </div>
+
             <div id="editStateNote" class="info-note hidden mt-sm"></div>
             <div class="row gap wrap mt-md">
               <button id="saveContentBtn" class="secondary-btn">Save <span data-content-label>Content</span></button>
               <button id="cancelContentEditBtn" class="ghost-btn hidden" type="button">Cancel edit</button>
             </div>
           </div>
+
           <div class="panel">
             <div class="section-head"><h3>Why this page?</h3><span class="eyebrow">Structure</span></div>
             <div class="info-note">ตอนนี้ News / Promotions / Benefits ไม่ได้เป็น section ซ้อนอยู่ในหน้าเดียวแล้ว แต่แยกเป็นไฟล์จริง เพื่อให้ต่อระบบหลังบ้านและตกแต่งแต่ละหน้าต่างกันได้ง่ายขึ้น</div>

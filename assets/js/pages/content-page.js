@@ -1,7 +1,7 @@
 import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
 import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
-import { deleteCMSItem, loadCollectionSafe, loadDocumentById, saveSimpleCMS, updateSimpleCMS } from '../services/content-service.js';
+import { deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
 
@@ -40,6 +40,47 @@ function detailHref(type, item) {
   return `./${type}-detail.html?demo=${encodeURIComponent(demoId)}`;
 }
 
+function getFormValues() {
+  return {
+    title: $('contentTitle')?.value.trim() || '',
+    summary: $('contentSummary')?.value.trim() || '',
+    fullDetails: $('contentFullDetails')?.value.trim() || '',
+    terms: $('contentTerms')?.value.trim() || '',
+    ctaLabel: $('contentCtaLabel')?.value.trim() || '',
+    coverImageUrl: $('contentCoverImageUrl')?.value.trim() || '',
+  };
+}
+
+function setFormValues(item = {}) {
+  if ($('contentTitle')) $('contentTitle').value = item.title || '';
+  if ($('contentSummary')) $('contentSummary').value = item.summary || item.body || '';
+  if ($('contentFullDetails')) {
+    $('contentFullDetails').value = item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : item.body || '');
+  }
+  if ($('contentTerms')) {
+    $('contentTerms').value = Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || '');
+  }
+  if ($('contentCtaLabel')) $('contentCtaLabel').value = item.ctaLabel || '';
+  if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = item.coverImageUrl || '';
+  updateCoverPreview();
+}
+
+function updateCoverPreview() {
+  const url = $('contentCoverImageUrl')?.value.trim() || '';
+  const img = $('contentCoverPreview');
+  const empty = $('contentCoverPreviewEmpty');
+  if (!img || !empty) return;
+  if (url) {
+    img.src = url;
+    img.classList.remove('hidden');
+    empty.classList.add('hidden');
+  } else {
+    img.removeAttribute('src');
+    img.classList.add('hidden');
+    empty.classList.remove('hidden');
+  }
+}
+
 function updateEditorUi(type) {
   const saveBtn = $('saveContentBtn');
   const cancelBtn = $('cancelContentEditBtn');
@@ -55,8 +96,7 @@ function updateEditorUi(type) {
 
 function resetEditor(type) {
   editingItemId = '';
-  if ($('contentTitle')) $('contentTitle').value = '';
-  if ($('contentBody')) $('contentBody').value = '';
+  setFormValues({});
   updateEditorUi(type);
 }
 
@@ -76,9 +116,7 @@ async function startEdit(type, id) {
       return;
     }
     editingItemId = id;
-    if ($('contentTitle')) $('contentTitle').value = item.title || '';
-    if ($('contentBody')) $('contentBody').value = item.body || item.summary || (Array.isArray(item.details) ? item.details.join('
-') : '');
+    setFormValues(item);
     updateEditorUi(type);
     $('contentTitle')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     showToast('โหลดข้อมูลเข้าฟอร์มแก้ไขแล้ว');
@@ -123,8 +161,12 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
       <button class="ghost-btn" data-action="edit" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Edit' : 'Demo only'}</button>
       <button class="danger-btn" data-action="delete" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Delete' : 'Demo only'}</button>
     ` : '';
+    const cover = item.coverImageUrl
+      ? `<img class="entry-cover" src="${escapeHtml(item.coverImageUrl)}" alt="${escapeHtml(item.title || labelMap[type])}" loading="lazy">`
+      : `<div class="entry-cover entry-cover-fallback"><span>${escapeHtml(labelMap[type].slice(0, -1) || labelMap[type])}</span></div>`;
     return `
     <article class="card-item content-entry-card">
+      ${cover}
       <div class="content-entry-top">
         <div>
           <div class="eyebrow gold">${escapeHtml(labelMap[type].slice(0, -1) || labelMap[type])}</div>
@@ -164,35 +206,33 @@ export async function loadContentPage(type) {
 export function applyContentPageState(type) {
   const heading = $('contentHeading');
   const subheading = $('contentSubheading');
-  const titleInput = $('contentTitle');
-  const bodyInput = $('contentBody');
   if (heading) heading.textContent = labelMap[type];
   if (subheading) subheading.textContent = `All ${labelMap[type]} items`;
-  if (titleInput) titleInput.placeholder = `${labelMap[type]} title`;
-  if (bodyInput) bodyInput.placeholder = `${labelMap[type]} details`;
   $$('[data-content-label]').forEach((el) => el.textContent = labelMap[type]);
   updateEditorUi(type);
+  updateCoverPreview();
 }
 
 export function bindContentPage(type) {
+  $('contentCoverImageUrl')?.addEventListener('input', updateCoverPreview);
+
   if ($('saveContentBtn')) {
     $('saveContentBtn').addEventListener('click', async () => {
       if (!canManageContent()) {
         showToast('ต้อง login เป็น admin/staff ก่อน', 'error');
         return;
       }
-      const title = $('contentTitle')?.value.trim();
-      const body = $('contentBody')?.value.trim();
-      if (!title || !body) {
-        showToast('กรอกข้อมูลให้ครบก่อนบันทึก', 'error');
+      const payload = getFormValues();
+      if (!payload.title || !payload.summary || !payload.fullDetails) {
+        showToast('กรอก title, summary และ full details ก่อนบันทึก', 'error');
         return;
       }
       try {
         if (editingItemId) {
-          await updateSimpleCMS(type, editingItemId, title, body);
+          await updateStructuredCMS(type, editingItemId, payload);
           showToast(`Updated ${labelMap[type].slice(0, -1)}`);
         } else {
-          await saveSimpleCMS(type, title, body);
+          await saveStructuredCMS(type, payload);
           showToast(`Saved ${labelMap[type].slice(0, -1)}`);
         }
         resetEditor(type);

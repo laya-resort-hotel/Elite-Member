@@ -15,7 +15,8 @@ export const demoBenefits = [
     id: 'benefit-dining-privilege',
     title: 'Dining Privilege',
     summary: 'รับส่วนลด 15% ที่ Aroonsawat และ The Taste สำหรับสมาชิก Resident ที่ลงทะเบียนแล้ว',
-    body: 'รับส่วนลด 15% ที่ Aroonsawat และ The Taste สำหรับโต๊ะที่ลงทะเบียนสมาชิก',
+    body: 'รับส่วนลด 15% ที่ Aroonsawat และ The Taste สำหรับสมาชิก Resident ที่ลงทะเบียนแล้ว',
+    fullDetails: 'ใช้ได้สำหรับสมาชิก Resident ที่แสดง Elite Black Card หรือ QR Member ก่อนชำระเงิน\nสิทธิ์ครอบคลุมค่าอาหารและเครื่องดื่มที่ร่วมรายการตามเงื่อนไขโรงแรม\nไม่สามารถใช้ร่วมกับโปรโมชันลดราคาอื่น เว้นแต่โรงแรมประกาศเป็นกรณีพิเศษ',
     details: [
       'ใช้ได้สำหรับสมาชิก Resident ที่แสดง Elite Black Card หรือ QR Member ก่อนชำระเงิน',
       'สิทธิ์ครอบคลุมค่าอาหารและเครื่องดื่มที่ร่วมรายการตามเงื่อนไขโรงแรม',
@@ -27,12 +28,14 @@ export const demoBenefits = [
       'โรงแรมขอสงวนสิทธิ์เปลี่ยนแปลงเงื่อนไขโดยไม่ต้องแจ้งล่วงหน้า',
     ],
     ctaLabel: 'Contact Dining Team',
+    coverImageUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'benefit-resident-exclusive-rate',
     title: 'Resident Exclusive Rate',
     summary: 'รับสิทธิ์ราคาพิเศษสำหรับบริการ select experiences และบริการภายในรีสอร์ต',
-    body: 'รับสิทธิ์ราคาพิเศษสำหรับบริการภายในรีสอร์ตและกิจกรรม select experiences',
+    body: 'รับสิทธิ์ราคาพิเศษสำหรับบริการ select experiences และบริการภายในรีสอร์ต',
+    fullDetails: 'ใช้สิทธิ์ได้กับแพ็กเกจที่โรงแรมประกาศเป็น Resident Exclusive เท่านั้น\nครอบคลุมบางบริการ เช่น dining events, recreation และ seasonal activities\nพนักงานสามารถตรวจสอบ eligibility ผ่านระบบ Members และ QR code ได้ทันที',
     details: [
       'ใช้สิทธิ์ได้กับแพ็กเกจที่โรงแรมประกาศเป็น Resident Exclusive เท่านั้น',
       'ครอบคลุมบางบริการ เช่น dining events, recreation และ seasonal activities',
@@ -43,12 +46,14 @@ export const demoBenefits = [
       'ราคาพิเศษอาจมีจำนวนจำกัดในบางกิจกรรม',
     ],
     ctaLabel: 'Ask Concierge',
+    coverImageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'benefit-priority-assistance',
     title: 'Priority Assistance',
     summary: 'ช่องทางติดต่อพิเศษสำหรับ Resident services และ concierge support',
     body: 'ช่องทางติดต่อพิเศษสำหรับ Resident services และ concierge support',
+    fullDetails: 'รองรับการประสานงานเรื่อง stay support, owner assistance และ guest coordination\nช่วยลดเวลาการติดต่อสำหรับ Resident ที่มีคำขอเร่งด่วน\nสามารถใช้ผ่านหน้า Contact / Concierge ในระบบได้โดยตรง',
     details: [
       'รองรับการประสานงานเรื่อง stay support, owner assistance และ guest coordination',
       'ช่วยลดเวลาการติดต่อสำหรับ Resident ที่มีคำขอเร่งด่วน',
@@ -59,6 +64,7 @@ export const demoBenefits = [
       'คำขอบางประเภทอาจต้องใช้เวลาประสานงานเพิ่มเติม',
     ],
     ctaLabel: 'Open Concierge',
+    coverImageUrl: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1200&q=80',
   },
 ];
 
@@ -68,6 +74,7 @@ export const demoNews = [
     title: 'Resident Sunset Reception',
     summary: 'เชิญร่วมงานรับรอง Resident ประจำเดือน ณ Beach Lawn เวลา 18:00 น.',
     body: 'เชิญร่วมงานรับรอง Resident ประจำเดือน ณ Beach Lawn เวลา 18:00 น.',
+    fullDetails: 'งานพบปะ Resident ประจำเดือนในบรรยากาศ sunset networking ริมทะเล\nมี welcome drink, canapés และอัปเดตข่าวสารจากทีมบริหารโรงแรม\nทีม Resident Relations จะเปิดโต๊ะช่วยเหลือสำหรับคำถามเรื่องสิทธิพิเศษและ point program',
     details: [
       'งานพบปะ Resident ประจำเดือนในบรรยากาศ sunset networking ริมทะเล',
       'มี welcome drink, canapés และอัปเดตข่าวสารจากทีมบริหารโรงแรม',
@@ -78,12 +85,14 @@ export const demoNews = [
       'จำนวนผู้เข้าร่วมอาจถูกจำกัดตามพื้นที่จัดงาน',
     ],
     ctaLabel: 'Register Interest',
+    coverImageUrl: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'news-owner-update',
     title: 'Owner Update',
     summary: 'อัปเดตผลการบริหารห้องและ occupancy summary พร้อมให้ดูใน resident office',
     body: 'อัปเดตผลการบริหารห้องและ occupancy summary พร้อมให้ดูใน resident office',
+    fullDetails: 'สรุป occupancy trend, guest demand และภาพรวมผลการบริหารห้องในช่วงที่ผ่านมา\nมีเจ้าหน้าที่ช่วยอธิบายรายงานและตอบคำถามเกี่ยวกับ owner performance summary\nสามารถนัดหมายเวลาพูดคุยเพิ่มเติมกับทีมที่ดูแล Resident ได้',
     details: [
       'สรุป occupancy trend, guest demand และภาพรวมผลการบริหารห้องในช่วงที่ผ่านมา',
       'มีเจ้าหน้าที่ช่วยอธิบายรายงานและตอบคำถามเกี่ยวกับ owner performance summary',
@@ -93,6 +102,7 @@ export const demoNews = [
       'ข้อมูลบางส่วนใช้เพื่อการอ้างอิงภายในของ Resident เท่านั้น',
     ],
     ctaLabel: 'Request Meeting',
+    coverImageUrl: 'https://images.unsplash.com/photo-1517502884422-41eaead166d4?auto=format&fit=crop&w=1200&q=80',
   },
 ];
 
@@ -102,6 +112,7 @@ export const demoPromotions = [
     title: 'Wine & Dine Weekend',
     summary: 'รับคะแนนพิเศษ x2 เมื่อใช้จ่ายครบ 3,000 บาท ที่ outlet ที่ร่วมรายการ',
     body: 'รับคะแนนพิเศษ x2 เมื่อใช้จ่ายครบ 3,000 บาท ที่ outlet ที่ร่วมรายการ',
+    fullDetails: 'สะสมคะแนนคูณสองเมื่อใช้จ่ายตามยอดที่กำหนดในช่วงวันศุกร์ถึงอาทิตย์\nเหมาะสำหรับ Resident ที่ใช้จ่ายใน Aroonsawat, The Taste และกิจกรรม dining ที่ร่วมรายการ\nคะแนนจะเข้า wallet หลังจากพนักงานบันทึก transaction ผ่านระบบหลังบ้านเรียบร้อย',
     details: [
       'สะสมคะแนนคูณสองเมื่อใช้จ่ายตามยอดที่กำหนดในช่วงวันศุกร์ถึงอาทิตย์',
       'เหมาะสำหรับ Resident ที่ใช้จ่ายใน Aroonsawat, The Taste และกิจกรรม dining ที่ร่วมรายการ',
@@ -112,12 +123,14 @@ export const demoPromotions = [
       'คะแนนพิเศษอาจใช้เวลาประมวลผลภายใน 24 ชั่วโมง',
     ],
     ctaLabel: 'See Participating Outlets',
+    coverImageUrl: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'promo-spa-retreat-offer',
     title: 'Spa Retreat Offer',
     summary: 'แพ็กเกจสปาสำหรับสมาชิกพร้อม late checkout benefits ตามเงื่อนไข',
     body: 'แพ็กเกจสปาสำหรับสมาชิกพร้อม late checkout benefits ตามเงื่อนไข',
+    fullDetails: 'Resident รับสิทธิ์แพ็กเกจสปาราคาพิเศษ พร้อม benefit เสริมในวันที่กำหนด\nสามารถใช้ร่วมกับวันพักผ่อนส่วนตัวหรือมอบเป็นสิทธิ์สำหรับการเข้าพักของแขกภายใต้เงื่อนไขโรงแรม\nพนักงานจะตรวจสอบสิทธิ์และบันทึก point earning ให้หลังใช้บริการ',
     details: [
       'Resident รับสิทธิ์แพ็กเกจสปาราคาพิเศษ พร้อม benefit เสริมในวันที่กำหนด',
       'สามารถใช้ร่วมกับวันพักผ่อนส่วนตัวหรือมอบเป็นสิทธิ์สำหรับการเข้าพักของแขกภายใต้เงื่อนไขโรงแรม',
@@ -128,6 +141,7 @@ export const demoPromotions = [
       'กรุณาจองล่วงหน้าอย่างน้อย 24 ชั่วโมง',
     ],
     ctaLabel: 'Book Spa',
+    coverImageUrl: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80',
   },
 ];
 

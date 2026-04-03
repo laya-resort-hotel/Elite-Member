@@ -39,19 +39,22 @@ function getParams() {
 }
 
 function normalizeContent(item = {}) {
+  const fullDetails = String(item.fullDetails || '').trim();
   const details = Array.isArray(item.details)
     ? item.details
-    : String(item.details || item.body || '').split('
-').filter(Boolean);
+    : String(fullDetails || item.details || item.body || '').split('\n').map((x) => x.trim()).filter(Boolean);
   const terms = Array.isArray(item.terms)
     ? item.terms
-    : String(item.terms || '').split('
-').filter(Boolean);
+    : String(item.terms || '').split('\n').map((x) => x.trim()).filter(Boolean);
   return {
     ...item,
     summary: item.summary || item.body || '',
+    body: item.body || item.summary || '',
+    fullDetails: fullDetails || details.join('\n'),
     details,
     terms,
+    ctaLabel: item.ctaLabel || 'Contact team',
+    coverImageUrl: item.coverImageUrl || '',
   };
 }
 
@@ -112,14 +115,25 @@ function renderDetail(type, item) {
   if ($('detailHeading')) $('detailHeading').textContent = safe.title || pageTitleMap[type];
   if ($('detailSummary')) $('detailSummary').textContent = safe.summary || safe.body || '';
   if ($('detailMeta')) $('detailMeta').textContent = safe.createdLabel && safe.createdLabel !== '-' ? `Published ${safe.createdLabel}` : `Demo ${labelMap[type]} detail`;
+  if ($('detailCoverWrap')) {
+    if (safe.coverImageUrl) {
+      $('detailCoverWrap').innerHTML = `<img class="detail-cover" src="${escapeHtml(safe.coverImageUrl)}" alt="${escapeHtml(safe.title || labelMap[type])}" loading="lazy">`;
+    } else {
+      $('detailCoverWrap').innerHTML = `<div class="detail-cover detail-cover-fallback"><span>${escapeHtml(labelMap[type])}</span></div>`;
+    }
+  }
   if ($('detailBody')) {
     $('detailBody').innerHTML = `
       <section class="detail-section">
         <div class="section-head"><h3>Overview</h3><span class="eyebrow">Summary</span></div>
-        <p class="detail-paragraph">${escapeHtml(safe.body || safe.summary || '')}</p>
+        <p class="detail-paragraph">${escapeHtml(safe.summary || safe.body || '')}</p>
       </section>
       <section class="detail-section">
-        <div class="section-head"><h3>Details</h3><span class="eyebrow">Key points</span></div>
+        <div class="section-head"><h3>Full Details</h3><span class="eyebrow">Expanded content</span></div>
+        <p class="detail-paragraph">${escapeHtml(safe.fullDetails || '').replaceAll('\n', '<br>')}</p>
+      </section>
+      <section class="detail-section">
+        <div class="section-head"><h3>Key Points</h3><span class="eyebrow">Highlights</span></div>
         ${renderList(safe.details)}
       </section>
       <section class="detail-section">

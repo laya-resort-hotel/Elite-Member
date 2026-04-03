@@ -38,3 +38,13 @@
 - Open each list page and use **Edit** or **Delete** on live Firebase items.
 - Detail pages now include **Admin Tools** with an edit shortcut and delete button for live items.
 - Demo items are view-only and cannot be edited or deleted.
+
+
+## Updated CMS fields
+Admin pages for News, Promotions, and Benefits now support:
+- title
+- summary
+- full details
+- terms
+- CTA label
+- cover image URL
