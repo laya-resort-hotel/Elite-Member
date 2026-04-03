@@ -16,13 +16,26 @@
 </head>
 <body data-page="home">
   <div id="app" class="app-shell customer-shell vault-shell">
-    <header class="vault-header">
-      <div class="vault-brand-bar">
-        <div>
-          <div class="vault-app-name">LAYA RESIDENT</div>
-          <div class="vault-app-subtitle">Elite Black Card</div>
+    <header class="vault-header vault-header-with-appbar">
+      <div class="vault-appbar-top">
+        <a class="vault-appbar-icon vault-appbar-back" href="./home.html" aria-label="Back to home">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5 7.5 12l7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <div class="vault-appbar-copy">
+          <div class="vault-appbar-title">LAYA Resident</div>
+          <div class="vault-appbar-subtitle">layaresortphuket.com</div>
         </div>
-        <button id="logoutBtn" class="ghost-btn hidden compact-btn vault-logout">Logout</button>
+        <div class="vault-appbar-actions">
+          <button class="vault-appbar-icon" type="button" aria-label="More options">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+          </button>
+          <button id="logoutBtn" class="vault-appbar-icon hidden" type="button" aria-label="Close and logout">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="vault-brand-banner">
+        <div class="vault-brand-banner-logo">ELITE BLACK CARD</div>
       </div>
       <div class="vault-profile-strip">
         <div class="vault-avatar" id="memberAvatarLetter">N</div>

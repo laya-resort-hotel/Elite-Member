@@ -1276,3 +1276,116 @@ body.lightbox-open {
   .vault-reward-action { grid-column: 1 / -1; justify-content: flex-end; }
   .vault-redeem-btn { min-width: 132px; }
 }
+
+
+/* Top white app bar refinement */
+.vault-header-with-appbar {
+  position: sticky;
+  top: 0;
+  z-index: 18;
+  background: #000;
+}
+.vault-appbar-top {
+  height: 78px;
+  background: #f5f5f5;
+  color: #111;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 12px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.08);
+}
+.vault-appbar-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.vault-appbar-title {
+  font-size: 18px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #131313;
+}
+.vault-appbar-subtitle {
+  font-size: 11px;
+  line-height: 1.2;
+  color: #9b9b9b;
+}
+.vault-appbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.vault-appbar-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: #171717;
+  padding: 0;
+  text-decoration: none;
+}
+.vault-appbar-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+.vault-brand-banner {
+  min-height: 58px;
+  padding: 8px 14px;
+  background: linear-gradient(180deg, #8f0012, #ad0018);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid rgba(0,0,0,.3);
+}
+.vault-brand-banner-logo {
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: .06em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.vault-brand-bar,
+.vault-app-name,
+.vault-app-subtitle,
+.vault-logout {
+  display: none !important;
+}
+.vault-profile-strip {
+  padding-top: 16px;
+}
+.vault-member-panel {
+  margin: 0 12px 0;
+  border-radius: 0 0 24px 24px;
+}
+.vault-member-panel .resident-card-hero {
+  grid-template-columns: 1fr;
+}
+.vault-member-panel .elite-card-toolbar {
+  padding-top: 0;
+}
+@media (max-width: 520px) {
+  .vault-appbar-top {
+    height: 72px;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding-left: 12px;
+    padding-right: 10px;
+  }
+  .vault-appbar-title {
+    font-size: 16px;
+  }
+  .vault-brand-banner {
+    min-height: 52px;
+    padding: 7px 12px;
+  }
+  .vault-brand-banner-logo {
+    font-size: 18px;
+  }
+}
