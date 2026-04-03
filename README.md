@@ -84,3 +84,9 @@ Notes:
 - In the admin form, upload a primary cover image and also upload multiple gallery images.
 - Gallery images are saved in Firestore as `galleryImages` and uploaded to Firebase Storage.
 - On the detail page, users can tap thumbnails to switch the main image.
+
+
+## Gallery ordering
+- Admin can drag & drop gallery images to control display order on detail pages.
+- The first image in the gallery becomes the first image of the set on the detail page.
+- Cover image can still be set independently with `Use as cover`.

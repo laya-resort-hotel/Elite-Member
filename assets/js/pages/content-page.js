@@ -23,6 +23,7 @@ let currentCoverImagePath = '';
 let currentCoverImageName = '';
 let currentGalleryImages = [];
 let uploadInProgress = false;
+let draggedGalleryIndex = null;
 
 function canManageContent() {
   return state.firebaseReady && state.currentMode.includes('live') && ['admin', 'manager', 'staff'].includes(state.currentRole);
@@ -149,19 +150,33 @@ function renderGalleryPreview() {
     list.innerHTML = '<div class="gallery-empty">ยังไม่มีรูป gallery สำหรับรายการนี้</div>';
     return;
   }
-  list.innerHTML = currentGalleryImages.map((item, index) => `
-    <div class="gallery-preview-card">
-      <img src="${escapeHtml(item.url)}" alt="Gallery ${index + 1}" loading="lazy" />
+  const currentCoverUrl = $('contentCoverImageUrl')?.value.trim() || '';
+  list.innerHTML = currentGalleryImages.map((item, index) => {
+    const isCover = currentCoverUrl && currentCoverUrl === item.url;
+    const badges = [
+      isCover ? '<span class="mini-badge gold">Cover</span>' : '',
+      index === 0 ? '<span class="mini-badge">First in set</span>' : '',
+      '<span class="mini-badge subtle">Drag</span>',
+    ].filter(Boolean).join('');
+    return `
+    <div class="gallery-preview-card" draggable="true" data-gallery-card data-gallery-index="${index}">
+      <div class="gallery-preview-image-wrap">
+        <img src="${escapeHtml(item.url)}" alt="Gallery ${index + 1}" loading="lazy" />
+        <div class="gallery-order-chip">#${index + 1}</div>
+      </div>
       <div class="gallery-preview-meta">
+        <div class="gallery-badge-row">${badges}</div>
         <strong>Image ${index + 1}</strong>
         <small>${escapeHtml(item.name || 'uploaded-image')}</small>
       </div>
       <div class="gallery-preview-actions">
+        <button class="ghost-btn gallery-preview-btn" type="button" data-gallery-action="move-first" data-gallery-index="${index}">Move first</button>
         <button class="ghost-btn gallery-preview-btn" type="button" data-gallery-action="make-cover" data-gallery-index="${index}">Use as cover</button>
         <button class="danger-btn gallery-preview-btn" type="button" data-gallery-action="remove" data-gallery-index="${index}">Remove</button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function previewSelectedCoverFile() {
@@ -307,6 +322,7 @@ function clearCoverSelection() {
 
 function clearGallerySelection() {
   currentGalleryImages = [];
+  clearGalleryDragState();
   if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
   if ($('contentGalleryUploadStatus')) {
     $('contentGalleryUploadStatus').textContent = '';
@@ -340,6 +356,74 @@ function removeGalleryImage(index) {
   showToast('ลบรูปออกจากรายการในฟอร์มแล้ว');
 }
 
+function reorderGalleryImages(fromIndex, toIndex) {
+  if (fromIndex === toIndex) return;
+  if (fromIndex < 0 || toIndex < 0) return;
+  if (fromIndex >= currentGalleryImages.length || toIndex >= currentGalleryImages.length) return;
+  const next = [...currentGalleryImages];
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  currentGalleryImages = next;
+  renderGalleryPreview();
+  showToast(`ย้ายรูปเป็นลำดับที่ ${toIndex + 1} แล้ว`);
+}
+
+function moveGalleryImageFirst(index) {
+  reorderGalleryImages(index, 0);
+}
+
+function handleGalleryDragStart(event) {
+  const card = event.target.closest('[data-gallery-card]');
+  if (!card) return;
+  draggedGalleryIndex = Number(card.dataset.galleryIndex || -1);
+  if (draggedGalleryIndex < 0) return;
+  card.classList.add('dragging');
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(draggedGalleryIndex));
+  }
+}
+
+function handleGalleryDragOver(event) {
+  const card = event.target.closest('[data-gallery-card]');
+  if (!card) return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+}
+
+function handleGalleryDragEnter(event) {
+  const card = event.target.closest('[data-gallery-card]');
+  if (!card) return;
+  const index = Number(card.dataset.galleryIndex || -1);
+  if (index === draggedGalleryIndex) return;
+  card.classList.add('drop-target');
+}
+
+function handleGalleryDragLeave(event) {
+  const card = event.target.closest('[data-gallery-card]');
+  if (!card) return;
+  if (card.contains(event.relatedTarget)) return;
+  card.classList.remove('drop-target');
+}
+
+function handleGalleryDrop(event) {
+  const card = event.target.closest('[data-gallery-card]');
+  if (!card) return;
+  event.preventDefault();
+  const toIndex = Number(card.dataset.galleryIndex || -1);
+  card.classList.remove('drop-target');
+  if (draggedGalleryIndex === null || toIndex < 0) return;
+  reorderGalleryImages(draggedGalleryIndex, toIndex);
+  draggedGalleryIndex = null;
+}
+
+function clearGalleryDragState() {
+  draggedGalleryIndex = null;
+  $$('.gallery-preview-card').forEach((card) => {
+    card.classList.remove('dragging', 'drop-target');
+  });
+}
+
 function updateEditorUi(type) {
   const saveBtn = $('saveContentBtn');
   const cancelBtn = $('cancelContentEditBtn');
@@ -359,6 +443,7 @@ function resetEditor(type) {
   currentCoverImagePath = '';
   currentCoverImageName = '';
   currentGalleryImages = [];
+  clearGalleryDragState();
   setFormValues({});
   ['contentUploadStatus', 'contentGalleryUploadStatus'].forEach((id) => {
     if ($(id)) {
@@ -507,9 +592,16 @@ export function bindContentPage(type) {
     if (!button) return;
     const index = Number(button.dataset.galleryIndex || -1);
     if (index < 0) return;
+    if (button.dataset.galleryAction === 'move-first') moveGalleryImageFirst(index);
     if (button.dataset.galleryAction === 'make-cover') makeGalleryImageCover(index);
     if (button.dataset.galleryAction === 'remove') removeGalleryImage(index);
   });
+  $('contentGalleryPreviewList')?.addEventListener('dragstart', handleGalleryDragStart);
+  $('contentGalleryPreviewList')?.addEventListener('dragover', handleGalleryDragOver);
+  $('contentGalleryPreviewList')?.addEventListener('dragenter', handleGalleryDragEnter);
+  $('contentGalleryPreviewList')?.addEventListener('dragleave', handleGalleryDragLeave);
+  $('contentGalleryPreviewList')?.addEventListener('drop', handleGalleryDrop);
+  $('contentGalleryPreviewList')?.addEventListener('dragend', clearGalleryDragState);
 
   if ($('saveContentBtn')) {
     $('saveContentBtn').addEventListener('click', async () => {
