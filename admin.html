@@ -315,6 +315,26 @@
                 </div>
               </div>
 
+              <section class="member-qr-panel">
+                <div class="panel-title-row compact-row">
+                  <h5>Member QR Preview</h5>
+                  <span class="mini-badge gold">Live card code</span>
+                </div>
+                <div class="member-qr-layout">
+                  <div class="member-qr-canvas-wrap">
+                    <canvas id="memberQrPreviewCanvas" width="164" height="164"></canvas>
+                  </div>
+                  <div class="member-qr-copy">
+                    <div class="member-qr-code" id="memberQrCodeText">Not created</div>
+                    <p class="member-qr-note">QR นี้ใช้ค่า <strong>publicCardCode</strong> ของสมาชิก เพื่อให้พนักงานสแกนจากบัตรหรือหน้า Member ได้ทันที</p>
+                    <div class="row gap wrap mt-sm">
+                      <button id="copyMemberCardCodeBtn" class="ghost-btn" type="button">Copy Card Code</button>
+                      <button id="downloadMemberQrBtn" class="primary-btn" type="button">Download QR</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <div class="member-detail-grid">
                 <div class="member-detail-item">
                   <span>Email</span>

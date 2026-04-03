@@ -337,6 +337,7 @@ function hydrateMemberEditorFromState() {
 
   if ($('memberEditorModeLabel')) $('memberEditorModeLabel').textContent = editor.isExisting ? 'Editing member' : 'Create new member';
   if ($('memberEditorDocIdLabel')) $('memberEditorDocIdLabel').textContent = editor.memberId || 'Not created';
+  renderMemberQrPreview();
 }
 
 function updateCoverPreview() {
@@ -453,6 +454,102 @@ function renderContentList() {
   }).join('');
 }
 
+
+async function copyTextToClipboard(text = '') {
+  const value = String(text || '').trim();
+  if (!value) throw new Error('No card code to copy');
+
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const el = document.createElement('textarea');
+  el.value = value;
+  el.setAttribute('readonly', '');
+  el.style.position = 'absolute';
+  el.style.left = '-9999px';
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+}
+
+function renderMemberQrPreview() {
+  const editor = getMemberEditorState();
+  const code = String(editor.publicCardCode || editor.memberId || '').trim();
+  const canvas = $('memberQrPreviewCanvas');
+  const codeText = $('memberQrCodeText');
+  const copyBtn = $('copyMemberCardCodeBtn');
+  const downloadBtn = $('downloadMemberQrBtn');
+
+  if (codeText) codeText.textContent = code || 'Not created';
+  if (copyBtn) copyBtn.disabled = !code;
+  if (downloadBtn) downloadBtn.disabled = !code;
+  if (!canvas) return;
+
+  if (!code) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#111111';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('No QR yet', 48, 86);
+    return;
+  }
+
+  if (window.QRious) {
+    new window.QRious({
+      element: canvas,
+      value: code,
+      size: 164,
+      background: 'white',
+      foreground: '#111111',
+      level: 'H',
+      padding: 10,
+    });
+  } else {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#111111';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(code, 10, 82);
+  }
+}
+
+async function handleCopyMemberCardCode() {
+  try {
+    const code = getMemberEditorState().publicCardCode || getMemberEditorState().memberId || '';
+    await copyTextToClipboard(code);
+    showToast('Copied card code');
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'Copy card code failed', 'error');
+  }
+}
+
+function handleDownloadMemberQr() {
+  const editor = getMemberEditorState();
+  const code = String(editor.publicCardCode || editor.memberId || '').trim();
+  const canvas = $('memberQrPreviewCanvas');
+  if (!code || !canvas) {
+    showToast('No QR to download', 'error');
+    return;
+  }
+
+  const link = document.createElement('a');
+  const baseName = (editor.memberId || editor.publicCardCode || 'member-qr').replace(/[^a-z0-9-_]/gi, '-');
+  link.href = canvas.toDataURL('image/png');
+  link.download = `${baseName}-qr.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Downloaded QR image');
+}
+
 function renderMemberInsights() {
   const editor = getMemberEditorState();
   const insights = getMemberInsightsState();
@@ -472,6 +569,7 @@ function renderMemberInsights() {
   if ($('memberDetailAvatar')) $('memberDetailAvatar').textContent = initials;
   if ($('memberDetailName')) $('memberDetailName').textContent = displayName;
   if ($('memberDetailCode')) $('memberDetailCode').textContent = editor.publicCardCode || 'Not created';
+  renderMemberQrPreview();
   if ($('memberDetailTier')) $('memberDetailTier').textContent = editor.tier || 'elite_black';
   if ($('memberDetailStatus')) $('memberDetailStatus').textContent = editor.status || 'active';
   if ($('memberDetailOwnerType')) $('memberDetailOwnerType').textContent = editor.ownerType || 'resident_owner';
@@ -750,6 +848,7 @@ function resetMemberEditor() {
   });
   setMemberInsightsState(blankMemberInsightsState());
   hydrateMemberEditorFromState();
+  renderMemberInsights();
 }
 
 async function ensureEditingDocId(type = getActiveType()) {
@@ -1337,6 +1436,8 @@ function bindAdminContentTabs() {
   $('saveMemberBtn')?.addEventListener('click', saveCurrentMember);
   $('cancelMemberEditBtn')?.addEventListener('click', resetMemberEditor);
   $('deleteMemberBtn')?.addEventListener('click', deleteCurrentMember);
+  $('copyMemberCardCodeBtn')?.addEventListener('click', handleCopyMemberCardCode);
+  $('downloadMemberQrBtn')?.addEventListener('click', handleDownloadMemberQr);
 
   $('contentCoverFile')?.addEventListener('change', () => {
     const file = $('contentCoverFile')?.files?.[0];
