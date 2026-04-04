@@ -664,7 +664,7 @@ export function bindContentPage(type) {
           await updateStructuredCMS(type, editingItemId, payload);
           showToast(`Updated ${labelMap[type].slice(0, -1)}`);
         } else {
-          const docId = editingItemId || createContentShell(type);
+          const docId = editingItemId || await createContentShell(type, payload);
           await saveStructuredCMS(type, payload, { docId });
           showToast(`Saved ${labelMap[type].slice(0, -1)}`);
         }

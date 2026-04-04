@@ -806,9 +806,23 @@ function resetMemberEditor() {
 }
 
 async function ensureEditingDocId(type = getActiveType()) {
+  syncContentEditorFromDom(type);
   const editor = getContentEditorState(type);
   if (editor.docId) return editor.docId;
-  editor.docId = createContentShell(type);
+
+  const draftPayload = {
+    title: editor.title,
+    summary: editor.summary,
+    fullDetails: editor.fullDetails,
+    terms: editor.terms,
+    ctaLabel: editor.ctaLabel,
+    coverImageUrl: editor.coverImageUrl,
+    coverImagePath: editor.coverImagePath,
+    coverImageName: editor.coverImageName,
+    galleryImages: editor.galleryImages,
+  };
+
+  editor.docId = await createContentShell(type, draftPayload);
   setContentEditorState(type, editor);
   updateEditorHeader();
   return editor.docId;
