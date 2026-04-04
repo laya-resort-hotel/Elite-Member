@@ -164,9 +164,21 @@
                 <label class="field-label" for="contentPointsCost">Points required</label>
                 <input id="contentPointsCost" class="input" type="number" min="0" step="1" placeholder="เช่น 5200" />
               </div>
+              <div>
+                <label class="field-label" for="contentRewardCategory">Category</label>
+                <input id="contentRewardCategory" class="input" type="text" placeholder="เช่น Dining / Beverage / Spa" />
+              </div>
+              <div>
+                <label class="field-label" for="contentRewardStock">Stock</label>
+                <input id="contentRewardStock" class="input" type="number" min="0" step="1" placeholder="0 = unlimited" />
+              </div>
               <div class="reward-config-note">
-                <label class="field-label">Redemption preview</label>
-                <div class="info-note no-margin">แท็บนี้ใช้กับ Redemption reward โดยตรง เมื่อใส่คะแนนและ Publish แล้ว รายการจะไปแสดงในหน้า Redemption อัตโนมัติ</div>
+                <label class="field-label" for="contentRewardActive">Reward active</label>
+                <label class="switch-row">
+                  <input id="contentRewardActive" type="checkbox" checked />
+                  <span>เปิดให้แลกของรางวัลนี้</span>
+                </label>
+                <div class="info-note no-margin">แท็บนี้ใช้กับ Redemption reward โดยตรง เมื่อ Publish แล้ว รายการจะไปแสดงในหน้า Redemption หากเปิด active และสต๊อกยังเหลือ</div>
               </div>
             </div>
 

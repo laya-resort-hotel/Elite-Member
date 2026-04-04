@@ -93,6 +93,9 @@ function blankContentEditorState() {
     terms: '',
     ctaLabel: '',
     pointsCost: 0,
+    rewardCategory: '',
+    stockTotal: 0,
+    rewardIsActive: true,
     coverImageUrl: '',
     coverImagePath: '',
     coverImageName: '',
@@ -125,6 +128,9 @@ function mapContentItemToEditor(item = {}) {
     terms: Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || ''),
     ctaLabel: item.ctaLabel || '',
     pointsCost: Number(item.pointsCost || 0),
+    rewardCategory: item.rewardCategory || item.category || '',
+    stockTotal: Number(item.stockTotal || 0),
+    rewardIsActive: item.rewardIsActive !== false,
     coverImageUrl: item.coverImageUrl || '',
     coverImagePath: item.coverImagePath || '',
     coverImageName: item.coverImageName || '',
@@ -365,6 +371,9 @@ function syncContentEditorFromDom(type = getActiveType()) {
   editor.terms = $('contentTerms')?.value.trim() || '';
   editor.ctaLabel = $('contentCtaLabel')?.value.trim() || '';
   editor.pointsCost = Math.max(0, Number($('contentPointsCost')?.value || editor.pointsCost || 0));
+  editor.rewardCategory = $('contentRewardCategory')?.value.trim() || '';
+  editor.stockTotal = Math.max(0, Number($('contentRewardStock')?.value || editor.stockTotal || 0));
+  editor.rewardIsActive = $('contentRewardActive') ? Boolean($('contentRewardActive').checked) : (editor.rewardIsActive !== false);
   editor.coverImageUrl = $('contentCoverImageUrl')?.value.trim() || editor.coverImageUrl || '';
   setContentEditorState(type, editor);
 }
@@ -397,6 +406,9 @@ function hydrateContentEditorFromState(type = getActiveType()) {
   if ($('contentTerms')) $('contentTerms').value = editor.terms || '';
   if ($('contentCtaLabel')) $('contentCtaLabel').value = editor.ctaLabel || '';
   if ($('contentPointsCost')) $('contentPointsCost').value = String(Number(editor.pointsCost || 0) || 0);
+  if ($('contentRewardCategory')) $('contentRewardCategory').value = editor.rewardCategory || '';
+  if ($('contentRewardStock')) $('contentRewardStock').value = String(Number(editor.stockTotal || 0) || 0);
+  if ($('contentRewardActive')) $('contentRewardActive').checked = editor.rewardIsActive !== false;
   if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = editor.coverImageUrl || '';
   if ($('contentCoverFile')) $('contentCoverFile').value = '';
   if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
@@ -538,6 +550,9 @@ function renderContentList() {
           <div class="gallery-badge-row mt-sm">
             <span class="mini-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
             ${type === 'rewards' && Number(item.pointsCost || 0) > 0 ? `<span class="mini-badge gold">${formatNumber(item.pointsCost)} pts</span>` : ''}
+            ${type === 'rewards' && (item.rewardCategory || item.category) ? `<span class="mini-badge">${escapeHtml(item.rewardCategory || item.category)}</span>` : ''}
+            ${type === 'rewards' ? `<span class="mini-badge ${item.rewardIsActive === false ? 'subtle' : ''}">${item.rewardIsActive === false ? 'Paused' : 'Active'}</span>` : ''}
+            ${type === 'rewards' ? `<span class="mini-badge ${Number(item.stockTotal || 0) > 0 && Number(item.stockRemaining || 0) <= 0 ? 'subtle' : ''}">${Number(item.stockTotal || 0) > 0 ? `${formatNumber(item.stockRemaining || 0)} left` : 'Unlimited'}</span>` : ''}
             ${Array.isArray(item.galleryImages) && item.galleryImages.length ? `<span class="mini-badge">${item.galleryImages.length} photos</span>` : ''}
           </div>
           <p>${escapeHtml(item.summary || item.body || '')}</p>
@@ -936,6 +951,9 @@ async function ensureEditingDocId(type = getActiveType()) {
     terms: editor.terms,
     ctaLabel: editor.ctaLabel,
     pointsCost: editor.pointsCost,
+    rewardCategory: editor.rewardCategory,
+    stockTotal: editor.stockTotal,
+    rewardIsActive: editor.rewardIsActive !== false,
     coverImageUrl: editor.coverImageUrl,
     coverImagePath: editor.coverImagePath,
     coverImageName: editor.coverImageName,
@@ -1229,6 +1247,9 @@ async function persistCurrentContentEditor(type = getActiveType()) {
     terms: editor.terms,
     ctaLabel: editor.ctaLabel,
     pointsCost: editor.pointsCost,
+    rewardCategory: editor.rewardCategory,
+    stockTotal: editor.stockTotal,
+    rewardIsActive: editor.rewardIsActive !== false,
     coverImageUrl: editor.coverImageUrl,
     coverImagePath: editor.coverImagePath,
     coverImageName: editor.coverImageName,

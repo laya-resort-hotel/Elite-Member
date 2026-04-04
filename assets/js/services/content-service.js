@@ -30,6 +30,18 @@ function linesValue(value = '') {
     .filter(Boolean);
 }
 
+function integerValue(value, fallback = 0) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.floor(numeric)) : fallback;
+}
+
+function toBoolean(value, fallback = true) {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return fallback;
+}
+
 function normalizeGalleryImages(value = []) {
   const list = Array.isArray(value) ? value : [];
   return list
@@ -97,6 +109,9 @@ function normalizeContentPayload(payload = {}) {
   const termsText = stringValue(payload.terms);
   const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
   const pointsCost = Math.max(0, Number(payload.pointsCost || 0));
+  const rewardCategory = stringValue(payload.rewardCategory || payload.category);
+  const stockTotal = integerValue(payload.stockTotal || payload.stock || 0, 0);
+  const rewardIsActive = toBoolean(payload.rewardIsActive, true);
 
   const galleryImages = normalizeGalleryImages(payload.galleryImages);
   const coverFields = pickCoverFromGallery(
@@ -115,6 +130,10 @@ function normalizeContentPayload(payload = {}) {
     terms: linesValue(termsText),
     ctaLabel,
     pointsCost,
+    rewardCategory,
+    category: rewardCategory,
+    stockTotal,
+    rewardIsActive,
     redemptionMode: pointsCost > 0 ? 'points' : stringValue(payload.redemptionMode),
     benefitType: pointsCost > 0 ? 'reward' : stringValue(payload.benefitType),
     coverImageUrl: coverFields.coverImageUrl,
@@ -122,6 +141,30 @@ function normalizeContentPayload(payload = {}) {
     coverImageName: coverFields.coverImageName,
     galleryImages: coverFields.galleryImages,
     imageCount: coverFields.galleryImages.length,
+  };
+}
+
+function buildRewardPersistenceFields(normalized = {}, existingData = null) {
+  const rewardCategory = stringValue(normalized.rewardCategory || normalized.category || existingData?.rewardCategory || existingData?.category);
+  const stockTotal = integerValue(normalized.stockTotal ?? existingData?.stockTotal ?? 0, 0);
+  const rewardIsActive = toBoolean(normalized.rewardIsActive, existingData?.rewardIsActive !== false);
+
+  let stockRemaining = null;
+  if (stockTotal > 0) {
+    const previousTotal = integerValue(existingData?.stockTotal ?? 0, 0);
+    const previousRemaining = existingData?.stockRemaining == null
+      ? previousTotal
+      : integerValue(existingData?.stockRemaining, previousTotal);
+    const alreadyRedeemed = previousTotal > 0 ? Math.max(previousTotal - previousRemaining, 0) : 0;
+    stockRemaining = existingData ? Math.max(stockTotal - alreadyRedeemed, 0) : stockTotal;
+  }
+
+  return {
+    rewardCategory,
+    category: rewardCategory,
+    stockTotal,
+    stockRemaining,
+    rewardIsActive,
   };
 }
 
@@ -151,6 +194,10 @@ function enrichContentDocument(collectionName, snapOrData, id = '') {
   const publishedAt = data.publishedAt || null;
   const unpublishedAt = data.unpublishedAt || null;
 
+  const stockTotal = integerValue(data.stockTotal ?? 0, 0);
+  const stockRemaining = data.stockRemaining == null ? (stockTotal > 0 ? stockTotal : null) : integerValue(data.stockRemaining, stockTotal);
+  const rewardIsActive = data.rewardIsActive !== false;
+
   return {
     id: docId,
     ...data,
@@ -158,6 +205,14 @@ function enrichContentDocument(collectionName, snapOrData, id = '') {
     statusLabel: toStatusLabel(status),
     isPublished: status === 'published',
     isActive: ['benefits', 'reward_catalog'].includes(collectionName) ? status === 'published' : Boolean(data.isActive),
+    rewardCategory: stringValue(data.rewardCategory || data.category),
+    category: stringValue(data.rewardCategory || data.category),
+    stockTotal,
+    stockRemaining,
+    rewardIsActive,
+    rewardAvailable: collectionName === 'reward_catalog'
+      ? status === 'published' && rewardIsActive && (stockTotal === 0 || stockRemaining > 0)
+      : true,
     createdLabel: formatDate(data.createdAt),
     updatedLabel: formatDate(data.updatedAt),
     publishedLabel: formatDate(publishedAt),
@@ -205,6 +260,7 @@ export async function createContentShell(collectionName, payload = {}) {
     coverImageName: normalized.coverImageName || '',
     galleryImages: Array.isArray(normalized.galleryImages) ? normalized.galleryImages : [],
     imageCount: Array.isArray(normalized.galleryImages) ? normalized.galleryImages.length : 0,
+    ...(collectionName === 'reward_catalog' ? buildRewardPersistenceFields(normalized) : {}),
     ...getStatusPersistenceFields(collectionName, 'draft'),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -251,6 +307,7 @@ export async function saveStructuredCMS(collectionName, payload, options = {}) {
 
     const nextData = {
       ...normalized,
+      ...(collectionName === 'reward_catalog' ? buildRewardPersistenceFields(normalized, existingData) : {}),
       ...getStatusPersistenceFields(collectionName, existingStatus, existingData),
       updatedAt: serverTimestamp(),
       updatedBy: author,
@@ -264,6 +321,7 @@ export async function saveStructuredCMS(collectionName, payload, options = {}) {
 
   return addDoc(collection(state.db, collectionName), {
     ...normalized,
+    ...(collectionName === 'reward_catalog' ? buildRewardPersistenceFields(normalized) : {}),
     ...getStatusPersistenceFields(collectionName, 'draft'),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -291,6 +349,7 @@ export async function updateStructuredCMS(collectionName, id, payload) {
   }
   await updateDoc(ref, {
     ...normalized,
+    ...(collectionName === 'reward_catalog' ? buildRewardPersistenceFields(normalized, currentData) : {}),
     ...getStatusPersistenceFields(collectionName, resolveContentStatus(currentData || {}), currentData),
     updatedAt: serverTimestamp(),
     updatedBy: state.currentUser?.email || 'manual-admin',

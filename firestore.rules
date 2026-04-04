@@ -213,6 +213,42 @@ service cloud.firestore {
         && request.resource.data.status == 'active';
     }
 
+
+function validResidentWalletRedeemUpdate(residentId) {
+  return signedIn()
+    && residentOwnedByCurrentUser(residentId)
+    && request.resource.data.residentId == resource.data.residentId
+    && request.resource.data.pendingPoints == resource.data.pendingPoints
+    && request.resource.data.lifetimeEarned == resource.data.lifetimeEarned
+    && request.resource.data.currentPoints < resource.data.currentPoints
+    && request.resource.data.lifetimeRedeemed > resource.data.lifetimeRedeemed
+    && (resource.data.currentPoints - request.resource.data.currentPoints)
+        == (request.resource.data.lifetimeRedeemed - resource.data.lifetimeRedeemed);
+}
+
+function validResidentRewardStockUpdate() {
+  return signedIn()
+    && resource.data.status == 'published'
+    && (!resource.data.keys().hasAny(['rewardIsActive']) || resource.data.rewardIsActive == true)
+    && resource.data.keys().hasAny(['stockTotal'])
+    && resource.data.stockTotal is int
+    && resource.data.stockTotal > 0
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stockRemaining', 'updatedAt', 'updatedBy'])
+    && request.resource.data.stockRemaining is int
+    && request.resource.data.stockRemaining == resource.data.stockRemaining - 1
+    && request.resource.data.stockRemaining >= 0;
+}
+
+function validResidentPointRedeemCreate() {
+  return signedIn()
+    && request.resource.data.residentId is string
+    && residentOwnedByCurrentUser(request.resource.data.residentId)
+    && request.resource.data.type == 'redeem'
+    && request.resource.data.pointsDelta is int
+    && request.resource.data.pointsDelta < 0
+    && request.resource.data.createdByUid == myUid();
+}
+
     function validSelfInviteClaim(code) {
       return signedIn()
         && resource.data.code == code
@@ -304,7 +340,8 @@ service cloud.firestore {
 
     match /reward_catalog/{docId} {
       allow read: if true;
-      allow write: if isAdminLike();
+      allow create, delete: if isAdminLike();
+      allow update: if isAdminLike() || validResidentRewardStockUpdate();
     }
 
     match /app_settings/{docId} {
@@ -323,7 +360,7 @@ service cloud.firestore {
       allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
       allow list: if isAdminLike();
       allow create: if isAdminLike() || validSelfResidentWalletCreate(residentId);
-      allow update: if isAdminLike();
+      allow update: if isAdminLike() || validResidentWalletRedeemUpdate(residentId);
       allow delete: if isAdminLike();
     }
 
@@ -344,7 +381,7 @@ service cloud.firestore {
 
     match /resident_point_transactions/{transactionId} {
       allow get, list: if isAdminLike() || (signedIn() && resource.data.residentId is string && residentOwnedByCurrentUser(resource.data.residentId));
-      allow create: if isAdminLike();
+      allow create: if isAdminLike() || validResidentPointRedeemCreate();
       allow update, delete: if false;
     }
 
