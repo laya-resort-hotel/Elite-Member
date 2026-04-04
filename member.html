@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./assets/css/components.css" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260404fix5"></script>
+  <script type="module" src="./assets/js/main.js?v=20260404flip1"></script>
 </head>
 <body data-page="member">
   <div id="app" class="app-shell customer-shell vault-shell">
@@ -60,9 +60,16 @@
                 <div class="eyebrow gold">MEMBER</div>
               </div>
             </div>
-            <div class="elite-card-scene large" aria-label="Elite Black Card front preview">
-              <div class="elite-card-face elite-card-front is-static-front">
-                <img src="./assets/images/elite-black-card-front.png" alt="LAYA Elite Black Card front" />
+            <div class="resident-card-flip-wrap" data-card-flip data-default-side="front" data-side="front">
+              <div class="elite-card-scene large" aria-label="Elite Black Card preview" role="button" tabindex="0">
+                <div class="elite-card-flipper">
+                  <div class="elite-card-face elite-card-front" aria-hidden="false">
+                    <img src="./assets/images/elite-black-card-front.png" alt="LAYA Elite Black Card front" />
+                  </div>
+                  <div class="elite-card-face elite-card-back" aria-hidden="true">
+                    <img src="./assets/images/elite-black-card-back.png" alt="LAYA Elite Black Card back" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
