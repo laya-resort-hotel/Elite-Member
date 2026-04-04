@@ -9,11 +9,11 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css?v=20260404layoutfix1" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260404layoutfix2" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
-  <link rel="stylesheet" href="./assets/css/resident-management.css?v=20260404layoutfix1" />
+  <link rel="stylesheet" href="./assets/css/resident-management.css?v=20260404layoutfix2" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260404layoutfix1?v=20260404layoutfix1"></script>
+  <script type="module" src="./assets/js/main.js?v=20260404layoutfix2"></script>
 </head>
 <body data-page="resident-management">
   <div id="app" class="app-shell">
@@ -201,25 +201,27 @@
                 </div>
               </div>
               <div class="resident-preview-card">
-                <div class="resident-preview-copy">
-                  <div class="eyebrow gold">Elite Black Card</div>
-                  <h4 id="residentCardPreviewName">Resident Member</h4>
-                  <div class="member-luxury-code" id="residentCardPreviewCode">-</div>
-                  <div class="member-luxury-tags">
-                    <span class="mini-badge gold" id="residentCardPreviewTier">elite_black</span>
-                    <span class="mini-badge subtle" id="residentCardPreviewStatus">active</span>
-                    <span class="mini-badge" id="residentCardPreviewOwner">resident_owner</span>
+                <div class="resident-preview-head">
+                  <div class="resident-preview-copy">
+                    <div class="eyebrow gold">Elite Black Card</div>
+                    <h4 id="residentCardPreviewName">Resident Member</h4>
+                    <div class="member-luxury-code" id="residentCardPreviewCode">-</div>
+                    <div class="member-luxury-tags">
+                      <span class="mini-badge gold" id="residentCardPreviewTier">elite_black</span>
+                      <span class="mini-badge subtle" id="residentCardPreviewStatus">active</span>
+                      <span class="mini-badge" id="residentCardPreviewOwner">resident_owner</span>
+                    </div>
                   </div>
-                  <div class="member-detail-grid mt-md">
-                    <div class="member-detail-item"><span>Primary Unit</span><strong id="residentCardPreviewUnit">-</strong></div>
-                    <div class="member-detail-item"><span>All Units</span><strong id="residentUnitsSummary">-</strong></div>
-                    <div class="member-detail-item"><span>Login Email</span><strong id="residentLinkedLoginPreview">-</strong></div>
-                    <div class="member-detail-item"><span>Linked UID</span><strong id="residentLinkedUidPreview">-</strong></div>
+                  <div class="resident-preview-qr">
+                    <canvas id="residentQrCanvas" width="180" height="180"></canvas>
+                    <div class="member-qr-code" id="residentQrText">-</div>
                   </div>
                 </div>
-                <div class="resident-preview-qr">
-                  <canvas id="residentQrCanvas" width="180" height="180"></canvas>
-                  <div class="member-qr-code" id="residentQrText">-</div>
+                <div class="resident-preview-meta mt-md">
+                  <div class="member-detail-item"><span>Primary Unit</span><strong id="residentCardPreviewUnit">-</strong></div>
+                  <div class="member-detail-item"><span>All Units</span><strong id="residentUnitsSummary">-</strong></div>
+                  <div class="member-detail-item wide"><span>Login Email</span><strong id="residentLinkedLoginPreview">-</strong></div>
+                  <div class="member-detail-item wide"><span>Linked UID</span><strong id="residentLinkedUidPreview">-</strong></div>
                 </div>
               </div>
             </section>
