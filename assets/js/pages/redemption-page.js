@@ -1,13 +1,13 @@
 
-import { state } from '../core/state.js?v=20260405residentredemptionlink1';
-import { $ } from '../core/dom.js?v=20260405residentredemptionlink1';
-import { escapeHtml, formatNumber } from '../core/format.js?v=20260405residentredemptionlink1';
-import { renderResidentCard } from '../ui/renderers.js?v=20260405residentredemptionlink1';
-import { showToast } from '../ui/toast.js?v=20260405residentredemptionlink1';
-import { loadCollectionSafe } from '../services/content-service.js?v=20260405residentredemptionlink1';
-import { redeemReward } from '../services/redemption-service.js?v=20260405residentredemptionlink1';
-import { demoRewards } from '../data/rewards.js?v=20260405residentredemptionlink1';
-import { loadResidentForUser, loadUserProfile } from '../services/member-service.js?v=20260405residentredemptionlink1';
+import { state } from '../core/state.js';
+import { $ } from '../core/dom.js';
+import { escapeHtml, formatNumber } from '../core/format.js';
+import { renderResidentCard } from '../ui/renderers.js';
+import { showToast } from '../ui/toast.js';
+import { loadCollectionSafe } from '../services/content-service.js';
+import { redeemReward } from '../services/redemption-service.js';
+import { demoRewards } from '../data/rewards.js';
+import { loadResidentForUser, loadUserProfile } from '../services/member-service.js';
 
 function emptyResident() {
   return {
