@@ -128,3 +128,66 @@
     max-height: none;
   }
 }
+
+/* QR / Card Preview layout hardening */
+.resident-preview-copy {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.resident-preview-copy h4 {
+  margin: 0;
+  font-size: clamp(1.7rem, 2.8vw, 2.2rem);
+  line-height: 1.05;
+}
+
+.resident-preview-card .member-luxury-code {
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.resident-preview-card .member-detail-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.resident-preview-card .member-detail-item {
+  min-width: 0;
+  align-content: start;
+}
+
+.resident-preview-card .member-detail-item span,
+.resident-preview-card .member-detail-item strong {
+  display: block;
+  min-width: 0;
+}
+
+.resident-preview-card .member-detail-item span {
+  line-height: 1.3;
+  white-space: normal;
+}
+
+.resident-preview-card .member-detail-item strong {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 760px) {
+  .resident-preview-card .member-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-card-preview-panel .panel-title-row {
+    align-items: flex-start;
+  }
+
+  .resident-card-preview-panel .panel-title-row .row {
+    width: 100%;
+  }
+
+  .resident-card-preview-panel .panel-title-row .ghost-btn,
+  .resident-card-preview-panel .panel-title-row .primary-btn {
+    flex: 1 1 160px;
+  }
+}
