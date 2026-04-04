@@ -302,6 +302,11 @@ service cloud.firestore {
       allow write: if isAdminLike();
     }
 
+    match /reward_catalog/{docId} {
+      allow read: if true;
+      allow write: if isAdminLike();
+    }
+
     match /app_settings/{docId} {
       allow read: if signedIn();
       allow write: if isAdminLike();

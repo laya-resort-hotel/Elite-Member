@@ -33,7 +33,7 @@
       <section class="panel page-hero">
         <div class="eyebrow gold">Admin Dashboard</div>
         <h2>Single-page CMS</h2>
-        <p class="page-intro">รวมการจัดการ News / Promotions / Benefits ไว้ในหน้าเดียวแบบแท็บ เพื่อให้ทำงานหลังบ้านง่ายขึ้น ไม่ต้องสลับหลายหน้า</p>
+        <p class="page-intro">รวมการจัดการ News / Promotions / Benefits / Redemption ไว้ในหน้าเดียวแบบแท็บ เพื่อให้ทำงานหลังบ้านง่ายขึ้น โดยแยกของแลกแต้มออกจากสิทธิพิเศษทั่วไปชัดเจน</p>
         <div class="grid-3 compact-grid">
           <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
           <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
@@ -107,7 +107,7 @@
         <div class="section-head admin-cms-head">
           <div>
             <div class="eyebrow gold">Content Manager</div>
-            <h3>News / Promotions / Benefits / Members</h3>
+            <h3>News / Promotions / Benefits / Redemption / Members</h3>
           </div>
           <div class="row gap wrap">
             <button id="newContentItemBtn" class="primary-btn">New item</button>
@@ -119,6 +119,7 @@
           <button class="admin-tab-btn active" data-admin-tab="news" role="tab" aria-selected="true">News</button>
           <button class="admin-tab-btn" data-admin-tab="promotions" role="tab" aria-selected="false">Promotions</button>
           <button class="admin-tab-btn" data-admin-tab="benefits" role="tab" aria-selected="false">Benefits</button>
+          <button class="admin-tab-btn" data-admin-tab="rewards" role="tab" aria-selected="false">Redemption</button>
           <button class="admin-tab-btn" data-admin-tab="members" role="tab" aria-selected="false">Members</button>
         </div>
 
@@ -165,7 +166,7 @@
               </div>
               <div class="reward-config-note">
                 <label class="field-label">Redemption preview</label>
-                <div class="info-note no-margin">ถ้าใส่คะแนนมากกว่า 0 และ Publish รายการนี้ จะไปแสดงในหน้า Redemption อัตโนมัติ</div>
+                <div class="info-note no-margin">แท็บนี้ใช้กับ Redemption reward โดยตรง เมื่อใส่คะแนนและ Publish แล้ว รายการจะไปแสดงในหน้า Redemption อัตโนมัติ</div>
               </div>
             </div>
 

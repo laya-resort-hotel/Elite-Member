@@ -39,7 +39,15 @@ const labelMap = {
   news: 'News',
   promotions: 'Promotions',
   benefits: 'Benefits',
+  rewards: 'Redemption',
   members: 'Members',
+};
+
+const contentCollectionMap = {
+  news: 'news',
+  promotions: 'promotions',
+  benefits: 'benefits',
+  rewards: 'reward_catalog',
 };
 
 const adminContentState = {
@@ -48,11 +56,13 @@ const adminContentState = {
     news: [],
     promotions: [],
     benefits: [],
+    rewards: [],
   },
   editors: {
     news: blankContentEditorState(),
     promotions: blankContentEditorState(),
     benefits: blankContentEditorState(),
+    rewards: blankContentEditorState(),
   },
 };
 
@@ -180,6 +190,10 @@ function canManageContent() {
   return state.firebaseReady && ['admin', 'manager', 'staff'].includes(state.currentRole || '');
 }
 
+function getCollectionNameForType(type = getActiveType()) {
+  return contentCollectionMap[type] || type;
+}
+
 function getActiveType() {
   return adminContentState.activeType;
 }
@@ -279,7 +293,7 @@ function updateEditorHeader() {
 }
 
 function updateRewardConfigUi(type = getActiveType()) {
-  const isRewardType = type === 'benefits';
+  const isRewardType = type === 'rewards';
   $('rewardConfigBlock')?.classList.toggle('hidden', !isRewardType);
   if ($('contentCtaLabel')) $('contentCtaLabel').placeholder = isRewardType ? 'Redeem now' : 'Learn more';
 }
@@ -523,7 +537,7 @@ function renderContentList() {
           </div>
           <div class="gallery-badge-row mt-sm">
             <span class="mini-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
-            ${type === 'benefits' && Number(item.pointsCost || 0) > 0 ? `<span class="mini-badge gold">${formatNumber(item.pointsCost)} pts</span>` : ''}
+            ${type === 'rewards' && Number(item.pointsCost || 0) > 0 ? `<span class="mini-badge gold">${formatNumber(item.pointsCost)} pts</span>` : ''}
             ${Array.isArray(item.galleryImages) && item.galleryImages.length ? `<span class="mini-badge">${item.galleryImages.length} photos</span>` : ''}
           </div>
           <p>${escapeHtml(item.summary || item.body || '')}</p>
@@ -533,7 +547,9 @@ function renderContentList() {
               ? `<button class="ghost-btn" type="button" data-content-action="unpublish" data-item-id="${escapeHtml(item.id)}">Unpublish</button>`
               : `<button class="secondary-btn" type="button" data-content-action="publish" data-item-id="${escapeHtml(item.id)}">Publish</button>`}
             <button class="danger-btn" type="button" data-content-action="delete" data-item-id="${escapeHtml(item.id)}">Delete</button>
-            <a class="ghost-btn" href="./${type}-detail.html?id=${encodeURIComponent(item.id)}">Open detail</a>
+            ${type === 'rewards'
+              ? `<a class="ghost-btn" href="./redemption.html">Open redemption page</a>`
+              : `<a class="ghost-btn" href="./${type}-detail.html?id=${encodeURIComponent(item.id)}">Open detail</a>`}
           </div>
         </div>
       </article>
@@ -827,7 +843,7 @@ async function loadAdminContent(type, { force = false } = {}) {
     return adminContentState.cache[type];
   }
 
-  adminContentState.cache[type] = await loadCollectionSafe(type, { limit: 40 });
+  adminContentState.cache[type] = await loadCollectionSafe(getCollectionNameForType(type), { limit: 40 });
   renderContentList();
   return adminContentState.cache[type];
 }
@@ -844,7 +860,7 @@ async function loadMembersTab({ force = false } = {}) {
 }
 
 async function loadEditorItem(type, itemId) {
-  const item = await loadDocumentById(type, itemId);
+  const item = await loadDocumentById(getCollectionNameForType(type), itemId);
 
   if (!item) {
     showToast('ไม่พบรายการที่ต้องการเปิด', 'error');
@@ -926,7 +942,7 @@ async function ensureEditingDocId(type = getActiveType()) {
     galleryImages: editor.galleryImages,
   };
 
-  editor.docId = await createContentShell(type, draftPayload);
+  editor.docId = await createContentShell(getCollectionNameForType(type), draftPayload);
   editor.status = 'draft';
   editor.publishedLabel = '';
   editor.unpublishedLabel = '';
@@ -955,7 +971,9 @@ function setTab(type) {
   if ($('adminContentNote')) {
     $('adminContentNote').textContent = type === 'members'
       ? 'แท็บ Members ใช้สร้าง แก้ไข และลบข้อมูลสมาชิกได้จากหน้าเดียว โดยแยก state ออกจากแท็บคอนเทนต์'
-      : `ตอนนี้กำลังจัดการ ${labelMap[type]} ข้อมูลที่แก้ค้างไว้ของแต่ละแท็บจะถูกจำแยกกัน`;
+      : type === 'rewards'
+        ? 'ตอนนี้กำลังจัดการ Redemption rewards แยกจาก Benefits แล้ว เพื่อไม่ให้สิทธิพิเศษทั่วไปปนกับของแลกแต้ม'
+        : `ตอนนี้กำลังจัดการ ${labelMap[type]} ข้อมูลที่แก้ค้างไว้ของแต่ละแท็บจะถูกจำแยกกัน`;
   }
 
   if ($('newContentItemBtn')) {
@@ -1218,12 +1236,12 @@ async function persistCurrentContentEditor(type = getActiveType()) {
   };
 
   if (editor.isExisting) {
-    await updateStructuredCMS(type, docId, payload);
+    await updateStructuredCMS(getCollectionNameForType(type), docId, payload);
   } else {
-    await saveStructuredCMS(type, payload, { docId });
+    await saveStructuredCMS(getCollectionNameForType(type), payload, { docId });
   }
 
-  const saved = await loadDocumentById(type, docId);
+  const saved = await loadDocumentById(getCollectionNameForType(type), docId);
   const nextEditor = saved ? mapContentItemToEditor(saved) : { ...editor, docId, isExisting: true, status: editor.status || 'draft' };
   setContentEditorState(type, nextEditor);
   hydrateContentEditorFromState(type);
@@ -1259,8 +1277,8 @@ async function publishCurrentEditor() {
   const saved = await persistCurrentContentEditor(type);
   if (!saved?.id && !saved?.docId) return;
   const docId = saved.id || saved.docId;
-  await publishCMSItem(type, docId);
-  const reloaded = await loadDocumentById(type, docId);
+  await publishCMSItem(getCollectionNameForType(type), docId);
+  const reloaded = await loadDocumentById(getCollectionNameForType(type), docId);
   if (reloaded) {
     setContentEditorState(type, mapContentItemToEditor(reloaded));
     hydrateContentEditorFromState(type);
@@ -1276,8 +1294,8 @@ async function unpublishCurrentEditor() {
     showToast('ยังไม่มีรายการให้ยกเลิกเผยแพร่', 'error');
     return;
   }
-  await unpublishCMSItem(type, editor.docId);
-  const reloaded = await loadDocumentById(type, editor.docId);
+  await unpublishCMSItem(getCollectionNameForType(type), editor.docId);
+  const reloaded = await loadDocumentById(getCollectionNameForType(type), editor.docId);
   if (reloaded) {
     setContentEditorState(type, mapContentItemToEditor(reloaded));
     hydrateContentEditorFromState(type);
@@ -1365,7 +1383,7 @@ async function deleteCurrentEditor() {
   try {
     if (canManageContent()) {
       if (editor.docId) {
-        await deleteCMSItem(type, editor.docId);
+        await deleteCMSItem(getCollectionNameForType(type), editor.docId);
       } else if (editor.coverImagePath || editor.galleryImages.length) {
         await deleteStoragePaths([
           editor.coverImagePath,
@@ -1419,7 +1437,7 @@ async function handleListClick(event) {
     return;
   }
   if (action === 'publish') {
-    await publishCMSItem(getActiveType(), itemId);
+    await publishCMSItem(getCollectionNameForType(getActiveType()), itemId);
     await loadAdminContent(getActiveType(), { force: true });
     if (getContentEditorState(getActiveType()).docId === itemId) {
       await loadEditorItem(getActiveType(), itemId);
@@ -1428,7 +1446,7 @@ async function handleListClick(event) {
     return;
   }
   if (action === 'unpublish') {
-    await unpublishCMSItem(getActiveType(), itemId);
+    await unpublishCMSItem(getCollectionNameForType(getActiveType()), itemId);
     await loadAdminContent(getActiveType(), { force: true });
     if (getContentEditorState(getActiveType()).docId === itemId) {
       await loadEditorItem(getActiveType(), itemId);
@@ -1444,7 +1462,7 @@ async function handleListClick(event) {
     }
     const ok = window.confirm(`Delete this ${labelMap[getActiveType()]} item?`);
     if (!ok) return;
-    await deleteCMSItem(getActiveType(), itemId);
+    await deleteCMSItem(getCollectionNameForType(getActiveType()), itemId);
     await loadAdminContent(getActiveType(), { force: true });
     showToast(`${labelMap[getActiveType()]} deleted`);
   }
@@ -1958,7 +1976,7 @@ function bindAdminContentTabs() {
     const editor = getContentEditorState(getActiveType());
     if (editor.docId && !editor.isExisting) {
       try {
-        await deleteCMSItem(getActiveType(), editor.docId);
+        await deleteCMSItem(getCollectionNameForType(getActiveType()), editor.docId);
       } catch (error) {
         console.warn(error);
       }

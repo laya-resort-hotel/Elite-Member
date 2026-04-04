@@ -27,8 +27,9 @@ export async function loadRedemptionPage() {
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
 
   try {
-    const benefits = await loadCollectionSafe('benefits', { limit: 100, publishedOnly: true });
-    const rewards = benefits
+    const rewardItems = await loadCollectionSafe('reward_catalog', { limit: 100, publishedOnly: true });
+    const fallbackBenefits = rewardItems.length ? [] : await loadCollectionSafe('benefits', { limit: 100, publishedOnly: true });
+    const rewards = (rewardItems.length ? rewardItems : fallbackBenefits)
       .filter((item) => item.isActive !== false && Number(item.pointsCost || 0) > 0)
       .sort((a, b) => Number(a.pointsCost || 0) - Number(b.pointsCost || 0));
     renderRewards(rewards, points);

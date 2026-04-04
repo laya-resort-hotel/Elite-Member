@@ -157,7 +157,7 @@ function enrichContentDocument(collectionName, snapOrData, id = '') {
     status,
     statusLabel: toStatusLabel(status),
     isPublished: status === 'published',
-    isActive: collectionName === 'benefits' ? status === 'published' : Boolean(data.isActive),
+    isActive: ['benefits', 'reward_catalog'].includes(collectionName) ? status === 'published' : Boolean(data.isActive),
     createdLabel: formatDate(data.createdAt),
     updatedLabel: formatDate(data.updatedAt),
     publishedLabel: formatDate(publishedAt),
@@ -183,7 +183,7 @@ function getStatusPersistenceFields(collectionName, status, existingData = null)
     unpublishedAt: nextStatus === 'unpublished'
       ? (existingData?.unpublishedAt || serverTimestamp())
       : (existingData?.unpublishedAt || null),
-    ...(collectionName === 'benefits' ? { isActive: nextStatus === 'published' } : {}),
+    ...(['benefits', 'reward_catalog'].includes(collectionName) ? { isActive: nextStatus === 'published' } : {}),
   };
 }
 
