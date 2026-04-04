@@ -9,13 +9,13 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260405residentlux2" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
-  <script type="module" src="./assets/js/main.js?v=20260405residentauth1"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405residentlux2"></script>
 </head>
 <body data-page="resident-login">
-  <div id="app" class="app-shell customer-shell">
-    <header class="topbar">
+  <div id="residentLoginShell" class="app-shell customer-shell resident-login-shell is-session-empty">
+    <header class="topbar resident-login-topbar">
       <div>
         <div class="eyebrow">LAYA RESIDENT</div>
         <h1><a class="brand-link" href="./resident-login.html">Resident Login</a></h1>
@@ -30,29 +30,119 @@
 
     <main class="main-content">
       <section class="hero-card glass resident-login-hero">
-        <div class="hero-copy">
+        <div class="hero-copy resident-login-copy">
           <span class="eyebrow gold">ELITE BLACK CARD</span>
-          <h2>เข้าสู่ระบบสำหรับ Resident โดยตรง</h2>
-          <p>ลูกค้า Resident สามารถ log in จากหน้านี้ได้เลย โดยไม่ต้องผ่านหน้า login หลักของระบบหลังบ้าน</p>
+          <h2>Resident Login แบบหรูขึ้น พร้อมจำอุปกรณ์และเช็ก session</h2>
+          <p>ลูกค้า Resident สามารถเข้าสู่ระบบจากหน้านี้โดยตรง พร้อม Remember Me, Forgot Password และแผงตรวจสอบ session ปัจจุบันแบบชัดเจน</p>
+
+          <div id="residentSessionFlash" class="resident-session-flash hidden"></div>
+
+          <div id="residentSessionCard" class="resident-session-card hidden">
+            <div class="resident-session-head">
+              <div>
+                <div class="eyebrow gold">SESSION CHECK</div>
+                <h3 id="residentSessionStatus">Session Active</h3>
+                <p id="residentSessionMode" class="muted-light">Remember Me · ใช้งานต่อเนื่องบนอุปกรณ์นี้</p>
+              </div>
+              <span class="resident-session-dot"></span>
+            </div>
+            <div class="resident-session-grid">
+              <div class="metric-card dark-tile">
+                <span class="small-label">Resident</span>
+                <strong id="residentSessionName">Resident Member</strong>
+                <small id="residentSessionEmail" class="muted-light">resident@example.com</small>
+              </div>
+              <div class="metric-card dark-tile">
+                <span class="small-label">Member Code</span>
+                <strong id="residentSessionCode">RES-0001</strong>
+                <small id="residentSessionResidence" class="muted-light">A101</small>
+              </div>
+            </div>
+            <div id="residentSessionActions" class="row gap wrap mt-md hidden">
+              <button id="residentContinueBtn" class="primary-btn" type="button">Continue to Home</button>
+              <button id="residentSessionLogoutBtn" class="ghost-btn" type="button">Log out</button>
+            </div>
+          </div>
+
+          <div id="residentSessionEmptyCard" class="resident-session-card resident-session-card-empty">
+            <div class="resident-session-head">
+              <div>
+                <div class="eyebrow gold">SESSION CHECK</div>
+                <h3>No Active Session</h3>
+                <p class="muted-light">ยังไม่มี Resident session ในอุปกรณ์นี้ กรุณาเข้าสู่ระบบด้านขวา</p>
+              </div>
+              <span class="resident-session-dot idle"></span>
+            </div>
+            <div class="resident-checklist">
+              <div class="resident-check-item"><span>01</span><strong>Log in ด้วย Email ของ Resident</strong></div>
+              <div class="resident-check-item"><span>02</span><strong>เลือก Remember Me ถ้าต้องการให้จำอุปกรณ์นี้</strong></div>
+              <div class="resident-check-item"><span>03</span><strong>กด Forgot Password หากต้องการรีเซ็ตรหัสผ่าน</strong></div>
+            </div>
+          </div>
+
           <div class="quick-links mt-md">
-            <a class="nav-link-card" href="./home.html"><strong>Resident Home</strong><small>หลัง login แล้วระบบจะพาไปหน้า Home อัตโนมัติ</small></a>
+            <a class="nav-link-card" href="./home.html"><strong>Resident Home</strong><small>หลัง login แล้วเปิดหน้า Home ได้ทันที</small></a>
             <a class="nav-link-card" href="./member.html"><strong>Member Card</strong><small>ดูคะแนน บัตร และ QR ของตัวเอง</small></a>
           </div>
         </div>
 
         <div class="panel glass resident-login-panel">
-          <h3>Resident Account</h3>
-          <p class="muted">ใช้ Email และ Password ของลูกค้า Resident ที่ผูกไว้ใน Firebase Authentication</p>
+          <div class="resident-login-panel-head">
+            <div>
+              <h3>Resident Account</h3>
+              <p id="residentLoginHint" class="muted">ใช้ Email และ Password ของลูกค้า Resident ที่ผูกไว้ใน Firebase Authentication</p>
+            </div>
+            <span class="pill gold-pill">Secure</span>
+          </div>
+
           <label class="field-label" for="residentLoginIdentifier">Email</label>
-          <input id="residentLoginIdentifier" class="input" type="email" placeholder="resident@example.com" />
+          <input id="residentLoginIdentifier" class="input" type="email" placeholder="resident@example.com" autocomplete="username" />
           <label class="field-label" for="residentLoginPassword">Password</label>
-          <input id="residentLoginPassword" class="input" type="password" placeholder="••••••••" />
+          <input id="residentLoginPassword" class="input" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+          <div class="resident-login-options">
+            <label class="remember-choice" for="residentRememberMe">
+              <input id="residentRememberMe" type="checkbox" />
+              <span>
+                <strong>Remember Me</strong>
+                <small>จำบัญชีและ session บนอุปกรณ์นี้</small>
+              </span>
+            </label>
+            <button id="forgotPasswordBtn" class="ghost-btn compact-btn" type="button">Forgot Password?</button>
+          </div>
+
           <div class="row gap wrap mt-md">
             <button id="residentLoginSubmitBtn" class="primary-btn" type="button">Log in</button>
             <a class="ghost-btn" href="./index.html">ไปหน้า Main Login</a>
           </div>
+
+          <div id="forgotPasswordPanel" class="resident-reset-panel hidden">
+            <div class="divider"></div>
+            <div class="resident-reset-head">
+              <div>
+                <div class="eyebrow gold">PASSWORD RESET</div>
+                <h4>ส่งลิงก์รีเซ็ตรหัสผ่าน</h4>
+              </div>
+              <span class="badge-inline"><span>Method</span><strong>Email Link</strong></span>
+            </div>
+            <p id="forgotPasswordHelper" class="muted">ลิงก์รีเซ็ตรหัสผ่านจะถูกส่งไปยังอีเมลของ Resident</p>
+            <div class="row gap wrap mt-sm">
+              <button id="sendResetLinkBtn" class="secondary-btn" type="button">Send reset link</button>
+            </div>
+            <div id="forgotPasswordStatus" class="info-note hidden mt-sm"></div>
+          </div>
+
           <div class="divider"></div>
-          <div class="info-note">ถ้า login สำเร็จ ระบบจะเปิดหน้า Resident Home และปุ่ม Log out จะอยู่ในหน้า Resident ของลูกค้าด้วย</div>
+          <div class="resident-login-security-grid">
+            <div class="info-note">
+              <strong>Remember Me</strong>
+              <div>เหมาะกับมือถือหรืออุปกรณ์ส่วนตัวของลูกค้า</div>
+            </div>
+            <div class="info-note">
+              <strong>Session only</strong>
+              <div>เหมาะกับอุปกรณ์ชั่วคราวหรือใช้ร่วมกัน</div>
+            </div>
+          </div>
         </div>
       </section>
     </main>

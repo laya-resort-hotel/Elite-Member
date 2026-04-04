@@ -1,6 +1,17 @@
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { doc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260404fix5';
+import { state } from '../core/state.js?v=20260405residentlux2';
+import { setResidentSessionMode } from '../core/session.js?v=20260405residentlux2';
 
 const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 
@@ -22,9 +33,26 @@ export function normalizeLoginIdentifier(identifier) {
   return employeeIdToEmail(value);
 }
 
-export async function loginWithEmail(identifier, password) {
+export async function loginWithEmail(identifier, password, options = {}) {
+  if (!state.firebaseReady || !state.auth) {
+    throw new Error('Firebase Auth is not ready');
+  }
+
+  const { rememberMe = false } = options;
   const email = normalizeLoginIdentifier(identifier);
+
+  await setPersistence(state.auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+  setResidentSessionMode(rememberMe ? 'local' : 'session');
   return signInWithEmailAndPassword(state.auth, email, password);
+}
+
+export async function sendLoginResetEmail(identifier) {
+  if (!state.firebaseReady || !state.auth) {
+    throw new Error('Firebase Auth is not ready');
+  }
+  const email = normalizeLoginIdentifier(identifier);
+  await sendPasswordResetEmail(state.auth, email);
+  return email;
 }
 
 export async function signUpWithEmployeeId({ employeeId, fullName, password }) {

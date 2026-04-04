@@ -1,12 +1,12 @@
-
-import { state, setMode } from './core/state.js?v=20260404fix5';
+import { state, setMode } from './core/state.js?v=20260405residentlux2';
 import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix5';
 import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix5';
-import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js?v=20260404fix5';
+import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js?v=20260405residentlux2';
 import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix5';
 import { showToast } from './ui/toast.js?v=20260404fix5';
 import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix5';
 import { bindFlipCards } from './ui/card-flip.js?v=20260404fix5';
+import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/session.js?v=20260405residentlux2';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
@@ -37,6 +37,8 @@ function bindGlobalLogout() {
     try {
       logoutBtn.disabled = true;
       await logoutCurrentUser();
+      clearResidentJustLoggedIn();
+      clearResidentSessionMode();
       state.currentUser = null;
       state.currentRole = null;
       state.currentResident = null;
@@ -93,7 +95,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'resident-login': {
-        const { bindResidentLoginPage } = await import('./pages/resident-login-page.js?v=20260405residentauth1');
+        const { bindResidentLoginPage } = await import('./pages/resident-login-page.js?v=20260405residentlux2');
         bindResidentLoginPage();
         break;
       }
@@ -193,7 +195,7 @@ async function renderPageForRole(role, user, profile = {}) {
     showToast('บัญชีนี้ยังไม่ได้ link กับ Resident profile ในระบบ', 'error');
   }
 
-  if (page === 'index' || page === 'resident-login') {
+  if (page === 'index') {
     go('home.html');
     return;
   }
@@ -206,6 +208,7 @@ async function renderPageForRole(role, user, profile = {}) {
 }
 
 async function handleSignedOut() {
+  clearResidentJustLoggedIn();
   state.currentUser = null;
   state.currentRole = null;
   state.currentResident = null;
