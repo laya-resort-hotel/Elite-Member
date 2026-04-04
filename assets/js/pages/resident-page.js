@@ -7,7 +7,7 @@ import { showToast } from '../ui/toast.js';
 
 function emptyResident() {
   return {
-    fullName: 'No member linked',
+    fullName: 'Resident Member',
     tier: 'Elite Black',
     status: 'INACTIVE',
     residence: '-',

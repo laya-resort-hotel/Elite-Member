@@ -118,7 +118,7 @@ function go(url) {
 
 function emptyResident() {
   return {
-    fullName: 'No member linked',
+    fullName: 'Resident Member',
     tier: 'Elite Black',
     status: 'INACTIVE',
     residence: '-',
@@ -162,7 +162,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260404residentredemptionfix3');
+        const mod = await import('./pages/redemption-page.js?v=20260404residentmemberfix1');
         await mod.loadRedemptionPage();
         break;
       }

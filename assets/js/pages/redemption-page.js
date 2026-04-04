@@ -6,11 +6,12 @@ import { renderResidentCard } from '../ui/renderers.js?v=20260404residentredempt
 import { showToast } from '../ui/toast.js?v=20260404residentredemptionfix3';
 import { loadCollectionSafe } from '../services/content-service.js?v=20260404residentredemptionfix3';
 import { redeemReward } from '../services/redemption-service.js?v=20260404residentredemptionfix3';
-import { demoRewards } from '../data/rewards.js?v=20260404residentredemptionfix3';
+import { demoRewards } from '../data/rewards.js?v=20260404residentmemberfix1';
+import { loadResidentForUser } from '../services/member-service.js?v=20260404residentmemberfix1';
 
 function emptyResident() {
   return {
-    fullName: 'No member linked',
+    fullName: 'Resident Member',
     tier: 'Elite Black',
     status: 'INACTIVE',
     residence: '-',
@@ -21,8 +22,42 @@ function emptyResident() {
   };
 }
 
+async function resolveResidentForRedemptionPage() {
+  if (state.currentResident) return state.currentResident;
+
+  const uid = state.currentUser?.uid || '';
+  const email = state.currentUser?.email || '';
+  if (uid) {
+    try {
+      const resident = await loadResidentForUser(uid, email, {
+        residentId: state.residentId || '',
+        memberCode: state.memberCode || '',
+        publicCardCode: state.memberCode || '',
+      });
+      if (resident) {
+        state.currentResident = resident;
+        state.residentId = resident.residentId || state.residentId || '';
+        state.memberCode = resident.memberCode || resident.publicCardCode || state.memberCode || '';
+        return resident;
+      }
+    } catch (error) {
+      console.warn('redemption resident retry failed', error);
+    }
+  }
+
+  const emailPrefix = String(email || '').trim().split('@')[0] || '';
+  const guessedName = state.currentUser?.displayName?.trim() || emailPrefix || 'Resident Member';
+  return {
+    ...emptyResident(),
+    fullName: guessedName,
+    displayName: guessedName,
+    email,
+    status: state.currentUser ? 'ACTIVE' : 'INACTIVE',
+  };
+}
+
 export async function loadRedemptionPage() {
-  const resident = state.currentResident || emptyResident();
+  const resident = await resolveResidentForRedemptionPage();
   renderResidentCard(resident);
   const points = Number(resident.points || 0);
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
