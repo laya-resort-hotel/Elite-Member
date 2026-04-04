@@ -210,9 +210,18 @@ function previewSelectedGalleryFiles() {
 
 async function ensureWorkingDocId(type) {
   if (editingItemId) return editingItemId;
-  editingItemId = createContentShell(type);
+
+  const draftPayload = getFormValues();
+  editingItemId = await createContentShell(type, draftPayload);
+
   isDraftShell = true;
   updateEditorUi(type);
+
+  if ($('contentUploadStatus')) {
+    $('contentUploadStatus').textContent = 'สร้าง draft document ใน Firestore แล้ว พร้อมอัปโหลดรูป';
+    $('contentUploadStatus').classList.remove('hidden');
+  }
+
   return editingItemId;
 }
 

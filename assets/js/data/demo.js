@@ -26,9 +26,9 @@ export const demoBenefits = [
     title: 'Dining Privilege',
     summary: 'รับส่วนลด 15% ที่ Aroonsawat และ The Taste สำหรับสมาชิก Resident ที่ลงทะเบียนแล้ว',
     body: 'รับส่วนลด 15% ที่ Aroonsawat และ The Taste สำหรับสมาชิก Resident ที่ลงทะเบียนแล้ว',
-    fullDetails: `ใช้ได้สำหรับสมาชิก Resident ที่แสดง Elite Black Card หรือ QR Member ก่อนชำระเงิน
+    fullDetails: 'ใช้ได้สำหรับสมาชิก Resident ที่แสดง Elite Black Card หรือ QR Member ก่อนชำระเงิน
 สิทธิ์ครอบคลุมค่าอาหารและเครื่องดื่มที่ร่วมรายการตามเงื่อนไขโรงแรม
-ไม่สามารถใช้ร่วมกับโปรโมชันลดราคาอื่น เว้นแต่โรงแรมประกาศเป็นกรณีพิเศษ`,
+ไม่สามารถใช้ร่วมกับโปรโมชันลดราคาอื่น เว้นแต่โรงแรมประกาศเป็นกรณีพิเศษ',
     details: [
       'ใช้ได้สำหรับสมาชิก Resident ที่แสดง Elite Black Card หรือ QR Member ก่อนชำระเงิน',
       'สิทธิ์ครอบคลุมค่าอาหารและเครื่องดื่มที่ร่วมรายการตามเงื่อนไขโรงแรม',
@@ -52,9 +52,9 @@ export const demoBenefits = [
     title: 'Resident Exclusive Rate',
     summary: 'รับสิทธิ์ราคาพิเศษสำหรับบริการ select experiences และบริการภายในรีสอร์ต',
     body: 'รับสิทธิ์ราคาพิเศษสำหรับบริการ select experiences และบริการภายในรีสอร์ต',
-    fullDetails: `ใช้สิทธิ์ได้กับแพ็กเกจที่โรงแรมประกาศเป็น Resident Exclusive เท่านั้น
+    fullDetails: 'ใช้สิทธิ์ได้กับแพ็กเกจที่โรงแรมประกาศเป็น Resident Exclusive เท่านั้น
 ครอบคลุมบางบริการ เช่น dining events, recreation และ seasonal activities
-พนักงานสามารถตรวจสอบ eligibility ผ่านระบบ Members และ QR code ได้ทันที`,
+พนักงานสามารถตรวจสอบ eligibility ผ่านระบบ Members และ QR code ได้ทันที',
     details: [
       'ใช้สิทธิ์ได้กับแพ็กเกจที่โรงแรมประกาศเป็น Resident Exclusive เท่านั้น',
       'ครอบคลุมบางบริการ เช่น dining events, recreation และ seasonal activities',
@@ -77,9 +77,9 @@ export const demoBenefits = [
     title: 'Priority Assistance',
     summary: 'ช่องทางติดต่อพิเศษสำหรับ Resident services และ concierge support',
     body: 'ช่องทางติดต่อพิเศษสำหรับ Resident services และ concierge support',
-    fullDetails: `รองรับการประสานงานเรื่อง stay support, owner assistance และ guest coordination
+    fullDetails: 'รองรับการประสานงานเรื่อง stay support, owner assistance และ guest coordination
 ช่วยลดเวลาการติดต่อสำหรับ Resident ที่มีคำขอเร่งด่วน
-สามารถใช้ผ่านหน้า Contact / Concierge ในระบบได้โดยตรง`,
+สามารถใช้ผ่านหน้า Contact / Concierge ในระบบได้โดยตรง',
     details: [
       'รองรับการประสานงานเรื่อง stay support, owner assistance และ guest coordination',
       'ช่วยลดเวลาการติดต่อสำหรับ Resident ที่มีคำขอเร่งด่วน',
@@ -104,9 +104,9 @@ export const demoNews = [
     title: 'Resident Sunset Reception',
     summary: 'เชิญร่วมงานรับรอง Resident ประจำเดือน ณ Beach Lawn เวลา 18:00 น.',
     body: 'เชิญร่วมงานรับรอง Resident ประจำเดือน ณ Beach Lawn เวลา 18:00 น.',
-    fullDetails: `งานพบปะ Resident ประจำเดือนในบรรยากาศ sunset networking ริมทะเล
+    fullDetails: 'งานพบปะ Resident ประจำเดือนในบรรยากาศ sunset networking ริมทะเล
 มี welcome drink, canapés และอัปเดตข่าวสารจากทีมบริหารโรงแรม
-ทีม Resident Relations จะเปิดโต๊ะช่วยเหลือสำหรับคำถามเรื่องสิทธิพิเศษและ point program`,
+ทีม Resident Relations จะเปิดโต๊ะช่วยเหลือสำหรับคำถามเรื่องสิทธิพิเศษและ point program',
     details: [
       'งานพบปะ Resident ประจำเดือนในบรรยากาศ sunset networking ริมทะเล',
       'มี welcome drink, canapés และอัปเดตข่าวสารจากทีมบริหารโรงแรม',
@@ -129,9 +129,9 @@ export const demoNews = [
     title: 'Owner Update',
     summary: 'อัปเดตผลการบริหารห้องและ occupancy summary พร้อมให้ดูใน resident office',
     body: 'อัปเดตผลการบริหารห้องและ occupancy summary พร้อมให้ดูใน resident office',
-    fullDetails: `สรุป occupancy trend, guest demand และภาพรวมผลการบริหารห้องในช่วงที่ผ่านมา
+    fullDetails: 'สรุป occupancy trend, guest demand และภาพรวมผลการบริหารห้องในช่วงที่ผ่านมา
 มีเจ้าหน้าที่ช่วยอธิบายรายงานและตอบคำถามเกี่ยวกับ owner performance summary
-สามารถนัดหมายเวลาพูดคุยเพิ่มเติมกับทีมที่ดูแล Resident ได้`,
+สามารถนัดหมายเวลาพูดคุยเพิ่มเติมกับทีมที่ดูแล Resident ได้',
     details: [
       'สรุป occupancy trend, guest demand และภาพรวมผลการบริหารห้องในช่วงที่ผ่านมา',
       'มีเจ้าหน้าที่ช่วยอธิบายรายงานและตอบคำถามเกี่ยวกับ owner performance summary',
@@ -156,9 +156,9 @@ export const demoPromotions = [
     title: 'Wine & Dine Weekend',
     summary: 'รับคะแนนพิเศษ x2 เมื่อใช้จ่ายครบ 3,000 บาท ที่ outlet ที่ร่วมรายการ',
     body: 'รับคะแนนพิเศษ x2 เมื่อใช้จ่ายครบ 3,000 บาท ที่ outlet ที่ร่วมรายการ',
-    fullDetails: `สะสมคะแนนคูณสองเมื่อใช้จ่ายตามยอดที่กำหนดในช่วงวันศุกร์ถึงอาทิตย์
+    fullDetails: 'สะสมคะแนนคูณสองเมื่อใช้จ่ายตามยอดที่กำหนดในช่วงวันศุกร์ถึงอาทิตย์
 เหมาะสำหรับ Resident ที่ใช้จ่ายใน Aroonsawat, The Taste และกิจกรรม dining ที่ร่วมรายการ
-คะแนนจะเข้า wallet หลังจากพนักงานบันทึก transaction ผ่านระบบหลังบ้านเรียบร้อย`,
+คะแนนจะเข้า wallet หลังจากพนักงานบันทึก transaction ผ่านระบบหลังบ้านเรียบร้อย',
     details: [
       'สะสมคะแนนคูณสองเมื่อใช้จ่ายตามยอดที่กำหนดในช่วงวันศุกร์ถึงอาทิตย์',
       'เหมาะสำหรับ Resident ที่ใช้จ่ายใน Aroonsawat, The Taste และกิจกรรม dining ที่ร่วมรายการ',
@@ -181,9 +181,9 @@ export const demoPromotions = [
     title: 'Spa Retreat Offer',
     summary: 'แพ็กเกจสปาสำหรับสมาชิกพร้อม late checkout benefits ตามเงื่อนไข',
     body: 'แพ็กเกจสปาสำหรับสมาชิกพร้อม late checkout benefits ตามเงื่อนไข',
-    fullDetails: `Resident รับสิทธิ์แพ็กเกจสปาราคาพิเศษ พร้อม benefit เสริมในวันที่กำหนด
+    fullDetails: 'Resident รับสิทธิ์แพ็กเกจสปาราคาพิเศษ พร้อม benefit เสริมในวันที่กำหนด
 สามารถใช้ร่วมกับวันพักผ่อนส่วนตัวหรือมอบเป็นสิทธิ์สำหรับการเข้าพักของแขกภายใต้เงื่อนไขโรงแรม
-พนักงานจะตรวจสอบสิทธิ์และบันทึก point earning ให้หลังใช้บริการ`,
+พนักงานจะตรวจสอบสิทธิ์และบันทึก point earning ให้หลังใช้บริการ',
     details: [
       'Resident รับสิทธิ์แพ็กเกจสปาราคาพิเศษ พร้อม benefit เสริมในวันที่กำหนด',
       'สามารถใช้ร่วมกับวันพักผ่อนส่วนตัวหรือมอบเป็นสิทธิ์สำหรับการเข้าพักของแขกภายใต้เงื่อนไขโรงแรม',

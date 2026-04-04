@@ -739,8 +739,10 @@ async function loadEditorItem(type, itemId) {
     isExisting: true,
     title: item.title || '',
     summary: item.summary || item.body || '',
-    fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : ''),
-    terms: Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || ''),
+    fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('
+') : ''),
+    terms: Array.isArray(item.terms) ? item.terms.join('
+') : (item.terms || ''),
     ctaLabel: item.ctaLabel || '',
     coverImageUrl: item.coverImageUrl || '',
     coverImagePath: item.coverImagePath || '',

@@ -119,8 +119,37 @@ function normalizeContentPayload(payload = {}) {
   };
 }
 
-export function createContentShell(collectionName) {
-  return doc(collection(state.db, collectionName)).id;
+export async function createContentShell(collectionName, payload = {}) {
+  const ref = doc(collection(state.db, collectionName));
+  const author = state.currentUser?.email || 'manual-admin';
+  const normalized = normalizeContentPayload(payload);
+
+  const shellData = {
+    title: normalized.title || '',
+    summary: normalized.summary || '',
+    body: normalized.summary || '',
+    fullDetails: normalized.fullDetails || '',
+    details: Array.isArray(normalized.details) ? normalized.details : [],
+    terms: Array.isArray(normalized.terms) ? normalized.terms : [],
+    ctaLabel: normalized.ctaLabel || 'Learn more',
+    coverImageUrl: normalized.coverImageUrl || '',
+    coverImagePath: normalized.coverImagePath || '',
+    coverImageName: normalized.coverImageName || '',
+    galleryImages: Array.isArray(normalized.galleryImages) ? normalized.galleryImages : [],
+    imageCount: Array.isArray(normalized.galleryImages) ? normalized.galleryImages.length : 0,
+    isPublished: false,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    createdBy: author,
+    updatedBy: author,
+  };
+
+  if (collectionName === 'benefits') {
+    shellData.isActive = false;
+  }
+
+  await setDoc(ref, shellData, { merge: true });
+  return ref.id;
 }
 
 export async function loadCollectionSafe(name, options = {}) {
@@ -150,13 +179,32 @@ export async function saveStructuredCMS(collectionName, payload, options = {}) {
 
   if (options.docId) {
     const ref = doc(state.db, collectionName, options.docId);
-    await setDoc(ref, {
+    const existingSnap = await getDoc(ref);
+    const existingData = existingSnap.exists() ? existingSnap.data() : null;
+
+    const nextData = {
       ...normalized,
-      createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      createdBy: author,
       updatedBy: author,
-    });
+      createdAt: existingData?.createdAt || serverTimestamp(),
+      createdBy: existingData?.createdBy || author,
+    };
+
+    if (typeof existingData?.isPublished === 'boolean') {
+      nextData.isPublished = existingData.isPublished;
+    } else {
+      nextData.isPublished = false;
+    }
+
+    if (collectionName === 'benefits') {
+      if (typeof existingData?.isActive === 'boolean') {
+        nextData.isActive = existingData.isActive;
+      } else {
+        nextData.isActive = false;
+      }
+    }
+
+    await setDoc(ref, nextData, { merge: true });
     return ref;
   }
 
