@@ -744,37 +744,29 @@ html.resident-loader-active body.has-resident-loader {
   box-shadow: 0 24px 60px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.05);
 }
 
-.resident-route-loader__crest {
-  width: 62px;
-  height: 62px;
-  margin: 0 auto 14px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  color: #f4ddb0;
-  background: radial-gradient(circle at 30% 30%, rgba(255,239,194,.24), rgba(183,137,42,.18) 42%, rgba(31,25,13,.96) 100%);
-  border: 1px solid rgba(217, 176, 84, 0.44);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset, 0 8px 24px rgba(154,110,21,.22);
+.resident-route-loader__logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(52vw, 280px);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.resident-route-loader__logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 36px rgba(0, 0, 0, 0.35));
   animation: residentLoaderPulse 1.8s ease-in-out infinite;
 }
 
-.resident-route-loader__brand {
-  font-size: clamp(28px, 7vw, 38px);
-  line-height: .95;
-  font-weight: 800;
-  letter-spacing: .18em;
-  color: #f2d69a;
-  text-transform: uppercase;
-}
-
-.resident-route-loader__sub {
+.resident-route-loader__caption {
   margin-top: 10px;
   font-size: 12px;
-  letter-spacing: .38em;
-  color: rgba(240, 224, 191, 0.78);
+  letter-spacing: .22em;
+  color: rgba(240, 224, 191, 0.82);
   text-transform: uppercase;
 }
 
@@ -790,19 +782,12 @@ html.resident-loader-active body.has-resident-loader {
     border-radius: 24px;
   }
 
-  .resident-route-loader__crest {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
+  .resident-route-loader__logo-wrap {
+    width: min(64vw, 220px);
   }
 
-  .resident-route-loader__brand {
-    font-size: 28px;
-    letter-spacing: .14em;
-  }
-
-  .resident-route-loader__sub {
-    font-size: 11px;
-    letter-spacing: .28em;
+  .resident-route-loader__caption {
+    font-size: 10px;
+    letter-spacing: .18em;
   }
 }
