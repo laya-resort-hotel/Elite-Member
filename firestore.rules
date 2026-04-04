@@ -5,9 +5,17 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function hasUserDoc() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(myUid()));
+    }
+
     function userRole() {
-      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+      return hasUserDoc()
+        ? get(/databases/$(database)/documents/users/$(myUid())).data.role
         : null;
     }
 
@@ -15,22 +23,54 @@ service cloud.firestore {
       return userRole() in ['admin', 'manager', 'staff'];
     }
 
+    function isResident() {
+      return userRole() == 'resident';
+    }
+
+    function memberOwnedByCurrentUser(memberId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/members/$(memberId))
+        && get(/databases/$(database)/documents/members/$(memberId)).data.authUid == myUid();
+    }
+
     match /users/{uid} {
-      allow read: if signedIn() && request.auth.uid == uid;
-      allow create, update: if signedIn() && request.auth.uid == uid || isAdminLike();
+      allow get: if signedIn() && (myUid() == uid || isAdminLike());
+      allow list: if isAdminLike();
+      allow create: if signedIn() && myUid() == uid;
+      allow update: if signedIn() && (myUid() == uid || isAdminLike());
       allow delete: if isAdminLike();
     }
 
-    match /residents/{residentId} {
-      allow read: if signedIn();
+    match /members/{memberId} {
+      allow get: if isAdminLike() || memberOwnedByCurrentUser(memberId);
+      allow list: if isAdminLike();
+      allow create, update, delete: if isAdminLike();
+    }
+
+    match /point_wallets/{memberId} {
+      allow get: if isAdminLike() || memberOwnedByCurrentUser(memberId);
+      allow list: if isAdminLike();
       allow create, update: if isAdminLike();
-      allow delete: if isAdminLike();
+      allow delete: if false;
     }
 
-    match /transactions/{transactionId} {
-      allow read: if signedIn();
+    match /point_transactions/{txId} {
+      allow get, list: if isAdminLike() || (signedIn() && resource.data.memberId is string && memberOwnedByCurrentUser(resource.data.memberId));
       allow create: if isAdminLike();
-      allow update, delete: if isAdminLike();
+      allow update, delete: if false;
+    }
+
+    match /spend_transactions/{txId} {
+      allow get, list: if isAdminLike() || (signedIn() && resource.data.memberId is string && memberOwnedByCurrentUser(resource.data.memberId));
+      allow create, update: if isAdminLike();
+      allow delete: if false;
+    }
+
+    match /redemptions/{docId} {
+      allow get, list: if isAdminLike() || (signedIn() && resource.data.requestedByUid == myUid());
+      allow create: if signedIn();
+      allow update: if isAdminLike() || (signedIn() && resource.data.requestedByUid == myUid());
+      allow delete: if isAdminLike();
     }
 
     match /news/{docId} {
@@ -46,6 +86,23 @@ service cloud.firestore {
     match /benefits/{docId} {
       allow read: if true;
       allow write: if isAdminLike();
+    }
+
+    match /app_settings/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdminLike();
+    }
+
+    match /residents/{residentId} {
+      allow read, write: if isAdminLike();
+    }
+
+    match /transactions/{transactionId} {
+      allow read, write: if isAdminLike();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

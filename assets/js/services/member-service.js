@@ -104,7 +104,7 @@ export async function loadUserProfile(uid, email) {
     if (snap.exists()) {
       const data = snap.data() || {};
       return {
-        role: data.role || 'resident',
+        role: data.role || (String(email || '').endsWith('@employee.layaresident.local') ? 'staff' : 'resident'),
         email: data.email || email,
         memberId: data.memberId || '',
         memberCode: data.publicCardCode || data.memberCode || data.memberId || '',
@@ -115,7 +115,13 @@ export async function loadUserProfile(uid, email) {
   } catch (error) {
     console.warn('user profile read failed', error);
   }
-  return { role: 'resident', email, memberId: '', memberCode: '', publicCardCode: '' };
+  return {
+    role: String(email || '').endsWith('@employee.layaresident.local') ? 'staff' : 'resident',
+    email,
+    memberId: '',
+    memberCode: '',
+    publicCardCode: ''
+  };
 }
 
 export async function loadResidentForUser(uid, email, memberCode) {
