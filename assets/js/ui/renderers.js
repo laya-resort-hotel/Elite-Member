@@ -118,7 +118,9 @@ export function renderResidentCard(resident = {}) {
   setAllById('memberTier', resident.tier || 'Elite Black');
   setAllById('memberStatusPill', resident.status || 'ACTIVE');
   setAllById('memberCode', resident.memberCode || qrCode);
-  setAllById('memberResidence', resident.residence || '-');
+  const residenceCode = resident.residence || resident.primaryUnitCode || '-';
+  setAllById('memberResidence', residenceCode);
+  setAllById('memberBackResidenceCode', residenceCode);
   setAllById('memberPoints', currentPoints);
   setAllById('memberSpend', formatTHB(resident.totalSpend || 0));
   setAllById('memberQrCodeText', qrCode);

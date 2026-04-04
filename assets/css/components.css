@@ -657,6 +657,35 @@ body.lightbox-open {
   opacity: 1;
 }
 
+.elite-card-back-badge {
+  position: absolute;
+  top: 8%;
+  right: 6%;
+  min-width: 34%;
+  max-width: 42%;
+  height: 15%;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(5, 7, 10, 0.96), rgba(5, 7, 10, 0.86));
+  border: 1px solid rgba(216, 188, 124, 0.24);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.28);
+  backdrop-filter: blur(4px);
+}
+
+.elite-card-back-badge span {
+  color: #f3ead3;
+  font-weight: 700;
+  font-size: clamp(14px, 2vw, 20px);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .resident-card-panel {
   background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
 }

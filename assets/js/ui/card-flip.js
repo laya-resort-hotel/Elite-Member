@@ -122,12 +122,79 @@ function downloadCurrentSide(card) {
   const img = card.querySelector(`.elite-card-${side} img`);
   const src = img?.getAttribute('src');
   if (!src) return;
-  const link = document.createElement('a');
-  link.href = src;
-  link.download = `laya-elite-black-card-${side}.png`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+
+  if (side !== 'back') {
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = `laya-elite-black-card-${side}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return;
+  }
+
+  const badgeText = (card.querySelector('#memberBackResidenceCode')?.textContent || '').trim();
+  if (!badgeText) {
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = `laya-elite-black-card-${side}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return;
+  }
+
+  const image = new Image();
+  image.crossOrigin = 'anonymous';
+  image.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth || 1050;
+    canvas.height = image.naturalHeight || 636;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const boxW = canvas.width * 0.34;
+    const boxH = canvas.height * 0.15;
+    const x = canvas.width * 0.60;
+    const y = canvas.height * 0.08;
+    const radius = boxH / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + boxW - radius, y);
+    ctx.quadraticCurveTo(x + boxW, y, x + boxW, y + radius);
+    ctx.lineTo(x + boxW, y + boxH - radius);
+    ctx.quadraticCurveTo(x + boxW, y + boxH, x + boxW - radius, y + boxH);
+    ctx.lineTo(x + radius, y + boxH);
+    ctx.quadraticCurveTo(x, y + boxH, x, y + boxH - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(5,7,10,0.93)';
+    ctx.fill();
+    ctx.lineWidth = Math.max(2, canvas.width * 0.0018);
+    ctx.strokeStyle = 'rgba(216,188,124,0.24)';
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = '#f3ead3';
+    ctx.font = `700 ${Math.round(canvas.height * 0.045)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.letterSpacing = '2px';
+    ctx.fillText(badgeText.toUpperCase(), x + (boxW / 2), y + (boxH / 2));
+
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = `laya-elite-black-card-${side}.png`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+  image.src = src;
 }
 
 export function bindFlipCards() {
