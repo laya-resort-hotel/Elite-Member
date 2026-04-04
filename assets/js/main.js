@@ -12,6 +12,13 @@ const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
 const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management']);
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
+const pageBindings = new Set();
+
+function bindPageOnce(key, binder) {
+  if (!key || typeof binder !== 'function' || pageBindings.has(key)) return;
+  binder();
+  pageBindings.add(key);
+}
 
 function getSignedOutTarget() {
   if (state.currentRole === 'resident' || page === 'resident-login' || RESIDENT_PAGES.has(page)) {
@@ -86,24 +93,24 @@ async function initCurrentPage(isLive = false) {
     switch (page) {
       case 'index': {
         const { bindAuthPage } = await import('./pages/auth-page.js');
-        bindAuthPage();
+        bindPageOnce('index', bindAuthPage);
         break;
       }
       case 'signup': {
         const { bindSignupPage } = await import('./pages/signup-page.js');
-        bindSignupPage();
+        bindPageOnce('signup', bindSignupPage);
         break;
       }
       case 'resident-login': {
         const { bindResidentLoginPage } = await import('./pages/resident-login-page.js');
-        bindResidentLoginPage();
+        bindPageOnce('resident-login', bindResidentLoginPage);
         break;
       }
       case 'resident':
       case 'home':
       case 'member': {
         const mod = await import('./pages/resident-page.js');
-        mod.bindResidentPage();
+        bindPageOnce(page, mod.bindResidentPage);
         await mod.loadResidentDashboard();
         break;
       }
@@ -126,7 +133,7 @@ async function initCurrentPage(isLive = false) {
       case 'benefits': {
         const mod = await import('./pages/content-page.js');
         mod.applyContentPageState(contentType);
-        mod.bindContentPage(contentType);
+        bindPageOnce(`content:${page}:${contentType}`, () => mod.bindContentPage(contentType));
         await mod.loadContentPage(contentType);
         const note = document.getElementById('cmsReadOnlyNote');
         if (note) {
@@ -140,25 +147,25 @@ async function initCurrentPage(isLive = false) {
       case 'promotions-detail':
       case 'benefits-detail': {
         const mod = await import('./pages/detail-page.js');
-        mod.bindDetailPage(contentType);
+        bindPageOnce(`detail:${page}:${contentType}`, () => mod.bindDetailPage(contentType));
         await mod.loadDetailPage(contentType);
         break;
       }
       case 'admin': {
         const mod = await import('./pages/admin-page.js');
-        mod.bindAdminPage();
+        bindPageOnce('admin', mod.bindAdminPage);
         await mod.loadAdminDashboard();
         break;
       }
       case 'members': {
         const mod = await import('./pages/members-page.js');
-        mod.bindMembersPage();
+        bindPageOnce('members', mod.bindMembersPage);
         await mod.loadMembersPage();
         break;
       }
       case 'resident-management': {
         const mod = await import('./pages/resident-management-page.js');
-        mod.bindResidentManagementPage();
+        bindPageOnce('resident-management', mod.bindResidentManagementPage);
         await mod.loadResidentManagementPage();
         break;
       }
