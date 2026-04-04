@@ -2338,3 +2338,24 @@ body.lightbox-open {
     flex-basis:100%;
   }
 }
+
+
+.reward-config-note .info-note.no-margin {
+  margin-top: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+.vault-reward-hint {
+  margin-top: 8px;
+  color: #5d6167;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.vault-redeem-btn.ready {
+  background: #babec5;
+}
+.vault-redeem-btn.disabled {
+  background: #c2c5cb;
+  color: rgba(255,255,255,.96);
+}

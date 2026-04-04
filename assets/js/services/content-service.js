@@ -96,6 +96,7 @@ function normalizeContentPayload(payload = {}) {
   const fullDetails = stringValue(payload.fullDetails);
   const termsText = stringValue(payload.terms);
   const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
+  const pointsCost = Math.max(0, Number(payload.pointsCost || 0));
 
   const galleryImages = normalizeGalleryImages(payload.galleryImages);
   const coverFields = pickCoverFromGallery(
@@ -113,6 +114,9 @@ function normalizeContentPayload(payload = {}) {
     details: linesValue(fullDetails),
     terms: linesValue(termsText),
     ctaLabel,
+    pointsCost,
+    redemptionMode: pointsCost > 0 ? 'points' : stringValue(payload.redemptionMode),
+    benefitType: pointsCost > 0 ? 'reward' : stringValue(payload.benefitType),
     coverImageUrl: coverFields.coverImageUrl,
     coverImagePath: coverFields.coverImagePath,
     coverImageName: coverFields.coverImageName,

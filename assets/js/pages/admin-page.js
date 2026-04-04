@@ -82,6 +82,7 @@ function blankContentEditorState() {
     fullDetails: '',
     terms: '',
     ctaLabel: '',
+    pointsCost: 0,
     coverImageUrl: '',
     coverImagePath: '',
     coverImageName: '',
@@ -113,6 +114,7 @@ function mapContentItemToEditor(item = {}) {
     fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : ''),
     terms: Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || ''),
     ctaLabel: item.ctaLabel || '',
+    pointsCost: Number(item.pointsCost || 0),
     coverImageUrl: item.coverImageUrl || '',
     coverImagePath: item.coverImagePath || '',
     coverImageName: item.coverImageName || '',
@@ -272,7 +274,14 @@ function updateEditorHeader() {
   if ($('adminTabTitle')) $('adminTabTitle').textContent = `${label} items`;
   if ($('editorModeLabel')) $('editorModeLabel').textContent = editor.isExisting ? `Editing ${label}` : `Create new ${label}`;
   if ($('editorDocIdLabel')) $('editorDocIdLabel').textContent = editor.docId || 'Not created';
+  updateRewardConfigUi(type);
   updateContentStatusUi();
+}
+
+function updateRewardConfigUi(type = getActiveType()) {
+  const isRewardType = type === 'benefits';
+  $('rewardConfigBlock')?.classList.toggle('hidden', !isRewardType);
+  if ($('contentCtaLabel')) $('contentCtaLabel').placeholder = isRewardType ? 'Redeem now' : 'Learn more';
 }
 
 function updateContentStatusUi() {
@@ -341,6 +350,7 @@ function syncContentEditorFromDom(type = getActiveType()) {
   editor.fullDetails = $('contentFullDetails')?.value.trim() || '';
   editor.terms = $('contentTerms')?.value.trim() || '';
   editor.ctaLabel = $('contentCtaLabel')?.value.trim() || '';
+  editor.pointsCost = Math.max(0, Number($('contentPointsCost')?.value || editor.pointsCost || 0));
   editor.coverImageUrl = $('contentCoverImageUrl')?.value.trim() || editor.coverImageUrl || '';
   setContentEditorState(type, editor);
 }
@@ -372,6 +382,7 @@ function hydrateContentEditorFromState(type = getActiveType()) {
   if ($('contentFullDetails')) $('contentFullDetails').value = editor.fullDetails || '';
   if ($('contentTerms')) $('contentTerms').value = editor.terms || '';
   if ($('contentCtaLabel')) $('contentCtaLabel').value = editor.ctaLabel || '';
+  if ($('contentPointsCost')) $('contentPointsCost').value = String(Number(editor.pointsCost || 0) || 0);
   if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = editor.coverImageUrl || '';
   if ($('contentCoverFile')) $('contentCoverFile').value = '';
   if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
@@ -512,6 +523,7 @@ function renderContentList() {
           </div>
           <div class="gallery-badge-row mt-sm">
             <span class="mini-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
+            ${type === 'benefits' && Number(item.pointsCost || 0) > 0 ? `<span class="mini-badge gold">${formatNumber(item.pointsCost)} pts</span>` : ''}
             ${Array.isArray(item.galleryImages) && item.galleryImages.length ? `<span class="mini-badge">${item.galleryImages.length} photos</span>` : ''}
           </div>
           <p>${escapeHtml(item.summary || item.body || '')}</p>
@@ -907,6 +919,7 @@ async function ensureEditingDocId(type = getActiveType()) {
     fullDetails: editor.fullDetails,
     terms: editor.terms,
     ctaLabel: editor.ctaLabel,
+    pointsCost: editor.pointsCost,
     coverImageUrl: editor.coverImageUrl,
     coverImagePath: editor.coverImagePath,
     coverImageName: editor.coverImageName,
@@ -1197,6 +1210,7 @@ async function persistCurrentContentEditor(type = getActiveType()) {
     fullDetails: editor.fullDetails,
     terms: editor.terms,
     ctaLabel: editor.ctaLabel,
+    pointsCost: editor.pointsCost,
     coverImageUrl: editor.coverImageUrl,
     coverImagePath: editor.coverImagePath,
     coverImageName: editor.coverImageName,
