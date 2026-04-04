@@ -1,12 +1,12 @@
-import { state, setMode } from './core/state.js?v=20260405residentlux2';
-import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix5';
-import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix5';
-import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js?v=20260405residentlux2';
-import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix5';
-import { showToast } from './ui/toast.js?v=20260404fix5';
-import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix5';
-import { bindFlipCards } from './ui/card-flip.js?v=20260404fix5';
-import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/session.js?v=20260405residentlux2';
+import { state, setMode } from './core/state.js';
+import { highlightCurrentNav } from './core/app-shell.js';
+import { initFirebaseServices } from './services/firebase-service.js';
+import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js';
+import { loadResidentForUser, loadUserProfile } from './services/member-service.js';
+import { showToast } from './ui/toast.js';
+import { renderResidentCard, updateStatusLabels } from './ui/renderers.js';
+import { bindFlipCards } from './ui/card-flip.js';
+import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/session.js';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';

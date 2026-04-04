@@ -10,8 +10,8 @@ import {
   browserSessionPersistence,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { doc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260405residentlux2';
-import { setResidentSessionMode } from '../core/session.js?v=20260405residentlux2';
+import { state } from '../core/state.js';
+import { setResidentSessionMode } from '../core/session.js';
 
 const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 

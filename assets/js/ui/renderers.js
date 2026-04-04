@@ -1,5 +1,5 @@
-import { $, $$ } from '../core/dom.js?v=20260404fix5';
-import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js?v=20260404fix5';
+import { $, $$ } from '../core/dom.js';
+import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js';
 
 function setAllById(id, value) {
   document.querySelectorAll(`[id="${id}"]`).forEach((node) => {

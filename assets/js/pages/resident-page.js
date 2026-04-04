@@ -1,9 +1,9 @@
-import { state, setMode } from '../core/state.js?v=20260404fix5';
-import { $ } from '../core/dom.js?v=20260404fix5';
-import { loadCollectionSafe } from '../services/content-service.js?v=20260404fix5';
-import { loadResidentPointHistory } from '../services/member-service.js?v=20260404fix5';
-import { renderCards, renderResidentCard, renderResidentPointHistoryMini, updateStatusLabels, renderVaultHome } from '../ui/renderers.js?v=20260404fix5';
-import { showToast } from '../ui/toast.js?v=20260404fix5';
+import { state, setMode } from '../core/state.js';
+import { $ } from '../core/dom.js';
+import { loadCollectionSafe } from '../services/content-service.js';
+import { loadResidentPointHistory } from '../services/member-service.js';
+import { renderCards, renderResidentCard, renderResidentPointHistoryMini, updateStatusLabels, renderVaultHome } from '../ui/renderers.js';
+import { showToast } from '../ui/toast.js';
 
 function emptyResident() {
   return {

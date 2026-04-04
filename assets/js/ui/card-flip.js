@@ -1,4 +1,4 @@
-import { $$ } from '../core/dom.js?v=20260404fix5';
+import { $$ } from '../core/dom.js';
 
 function setSide(card, side) {
   if (!card) return;

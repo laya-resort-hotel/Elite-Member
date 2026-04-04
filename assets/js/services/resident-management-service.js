@@ -11,8 +11,8 @@ import {
   orderBy,
   writeBatch,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260404fix5';
-import { residentManagementDemo } from '../data/resident-management-demo.js?v=20260404starter1';
+import { state } from '../core/state.js';
+import { residentManagementDemo } from '../data/resident-management-demo.js';
 
 const STORAGE_KEY = 'laya-resident-management-starter-v2';
 

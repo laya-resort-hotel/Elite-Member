@@ -1,14 +1,14 @@
-import { state } from '../core/state.js?v=20260404fix5';
-import { $, $$ } from '../core/dom.js?v=20260404fix5';
-import { escapeHtml, formatDate, formatNumber } from '../core/format.js?v=20260404fix5';
-import { showToast } from '../ui/toast.js?v=20260404fix5';
+import { state } from '../core/state.js';
+import { $, $$ } from '../core/dom.js';
+import { escapeHtml, formatDate, formatNumber } from '../core/format.js';
+import { showToast } from '../ui/toast.js';
 import {
   addResidentPointAdjustment,
   deleteResidentManagementRecord,
   loadResidentManagementDashboard,
   resetResidentManagementLocalStore,
   saveResidentManagementRecord,
-} from '../services/resident-management-service.js?v=20260404starter1';
+} from '../services/resident-management-service.js';
 
 const pageState = {
   mode: 'loading',

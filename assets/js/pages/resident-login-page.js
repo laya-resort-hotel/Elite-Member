@@ -1,14 +1,14 @@
-import { $ } from '../core/dom.js?v=20260405residentlux2';
-import { state } from '../core/state.js?v=20260405residentlux2';
-import { loginWithEmail, sendLoginResetEmail } from '../services/auth-service.js?v=20260405residentlux2';
+import { $ } from '../core/dom.js';
+import { state } from '../core/state.js';
+import { loginWithEmail, sendLoginResetEmail } from '../services/auth-service.js';
 import {
   getResidentLoginPreference,
   saveResidentLoginPreference,
   getResidentSessionMode,
   markResidentJustLoggedIn,
   consumeResidentJustLoggedIn,
-} from '../core/session.js?v=20260405residentlux2';
-import { showToast } from '../ui/toast.js?v=20260404fix5';
+} from '../core/session.js';
+import { showToast } from '../ui/toast.js';
 
 function setText(id, value) {
   const node = $(id);

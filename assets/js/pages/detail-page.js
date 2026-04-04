@@ -1,8 +1,8 @@
-import { $, $$ } from '../core/dom.js?v=20260404fix5';
-import { escapeHtml } from '../core/format.js?v=20260404fix5';
-import { state } from '../core/state.js?v=20260404fix5';
-import { deleteCMSItem, loadCollectionSafe, loadDocumentById } from '../services/content-service.js?v=20260404fix5';
-import { showToast } from '../ui/toast.js?v=20260404fix5';
+import { $, $$ } from '../core/dom.js';
+import { escapeHtml } from '../core/format.js';
+import { state } from '../core/state.js';
+import { deleteCMSItem, loadCollectionSafe, loadDocumentById } from '../services/content-service.js';
+import { showToast } from '../ui/toast.js';
 
 const labelMap = {
   news: 'News',
