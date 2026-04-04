@@ -4,7 +4,7 @@ import {
   runTransaction,
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js';
+import { state } from '../core/state.js?v=20260404redemptionfix2';
 
 function currentResidentId() {
   return state.currentResident?.residentId || state.currentResident?.memberId || state.currentResident?.id || state.residentId || '';

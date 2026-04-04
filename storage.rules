@@ -1,9 +1,38 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
     match /cms-covers/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if signedIn();
+    }
+
+    match /news/{docId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /promotions/{docId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /benefits/{docId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /rewards/{docId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /reward_catalog/{docId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
     }
   }
 }

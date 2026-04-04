@@ -115,7 +115,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js');
+        const mod = await import('./pages/redemption-page.js?v=20260404residentredemptionfix3');
         await mod.loadRedemptionPage();
         break;
       }
