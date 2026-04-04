@@ -8,7 +8,9 @@ import {
   query,
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js';
+import { state } from '../core/state.js?v=20260404fix2';
+
+const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 
 function normalizeMemberRecord(record = {}, id = '') {
   const ownedUnits = Array.isArray(record.ownedUnits) ? record.ownedUnits : [];
@@ -104,24 +106,33 @@ export async function loadUserProfile(uid, email) {
     if (snap.exists()) {
       const data = snap.data() || {};
       return {
-        role: data.role || (String(email || '').endsWith('@employee.layaresident.local') ? 'staff' : 'resident'),
+        role: data.role || 'resident',
         email: data.email || email,
         memberId: data.memberId || '',
         memberCode: data.publicCardCode || data.memberCode || data.memberId || '',
         publicCardCode: data.publicCardCode || '',
         displayName: data.displayName || '',
+        employeeId: data.employeeId || '',
       };
     }
   } catch (error) {
     console.warn('user profile read failed', error);
   }
-  return {
-    role: String(email || '').endsWith('@employee.layaresident.local') ? 'staff' : 'resident',
-    email,
-    memberId: '',
-    memberCode: '',
-    publicCardCode: ''
-  };
+
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (normalizedEmail.endsWith(`@${EMPLOYEE_DOMAIN}`)) {
+    return {
+      role: 'staff',
+      email: normalizedEmail,
+      employeeId: normalizedEmail.replace(`@${EMPLOYEE_DOMAIN}`, ''),
+      memberId: '',
+      memberCode: '',
+      publicCardCode: '',
+      displayName: '',
+    };
+  }
+
+  return { role: 'resident', email, memberId: '', memberCode: '', publicCardCode: '', displayName: '', employeeId: '' };
 }
 
 export async function loadResidentForUser(uid, email, memberCode) {

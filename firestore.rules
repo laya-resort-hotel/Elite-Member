@@ -19,12 +19,13 @@ service cloud.firestore {
         : null;
     }
 
-    function isAdminLike() {
-      return userRole() in ['admin', 'manager', 'staff'];
+    function isEmployeeEmailFallback() {
+      return signedIn() && request.auth.token.email is string
+        && request.auth.token.email.matches('.*@employee\.layaresident\.local$');
     }
 
-    function isResident() {
-      return userRole() == 'resident';
+    function isAdminLike() {
+      return userRole() in ['admin', 'manager', 'staff'] || isEmployeeEmailFallback();
     }
 
     function memberOwnedByCurrentUser(memberId) {

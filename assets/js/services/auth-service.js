@@ -1,6 +1,6 @@
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { doc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js';
+import { state } from '../core/state.js?v=20260404fix2';
 
 const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 

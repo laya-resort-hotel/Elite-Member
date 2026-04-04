@@ -1,9 +1,9 @@
-import { state } from '../core/state.js';
-import { $, $$ } from '../core/dom.js';
-import { createContentShell, deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
-import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
-import { escapeHtml } from '../core/format.js';
-import { showToast } from '../ui/toast.js';
+import { state } from '../core/state.js?v=20260404fix2';
+import { $, $$ } from '../core/dom.js?v=20260404fix2';
+import { createContentShell, deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js?v=20260404fix2';
+import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js?v=20260404fix2';
+import { escapeHtml } from '../core/format.js?v=20260404fix2';
+import { showToast } from '../ui/toast.js?v=20260404fix2';
 
 const labelMap = {
   news: 'News',

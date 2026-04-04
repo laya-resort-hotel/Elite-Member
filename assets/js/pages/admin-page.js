@@ -1,7 +1,7 @@
-import { state, setMode } from '../core/state.js';
-import { $, $$ } from '../core/dom.js';
-import { loadAllResidents } from '../services/member-service.js';
-import { addSpendTransaction, loadTransactions } from '../services/transaction-service.js';
+import { state, setMode } from '../core/state.js?v=20260404fix2';
+import { $, $$ } from '../core/dom.js?v=20260404fix2';
+import { loadAllResidents } from '../services/member-service.js?v=20260404fix2';
+import { addSpendTransaction, loadTransactions } from '../services/transaction-service.js?v=20260404fix2';
 import {
   createContentShell,
   deleteCMSItem,
@@ -9,8 +9,8 @@ import {
   loadDocumentById,
   saveStructuredCMS,
   updateStructuredCMS,
-} from '../services/content-service.js';
-import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
+} from '../services/content-service.js?v=20260404fix2';
+import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js?v=20260404fix2';
 import {
   createMemberShell,
   deleteMemberRecord,
@@ -19,10 +19,10 @@ import {
   loadMembersSafe,
   saveMemberRecord,
   updateMemberRecord,
-} from '../services/member-admin-service.js';
-import { renderAdminKpis, renderResidentSearchResults, renderTable, updateStatusLabels } from '../ui/renderers.js';
-import { showToast } from '../ui/toast.js';
-import { escapeHtml, formatTHB, formatNumber } from '../core/format.js';
+} from '../services/member-admin-service.js?v=20260404fix2';
+import { renderAdminKpis, renderResidentSearchResults, renderTable, updateStatusLabels } from '../ui/renderers.js?v=20260404fix2';
+import { showToast } from '../ui/toast.js?v=20260404fix2';
+import { escapeHtml, formatTHB, formatNumber } from '../core/format.js?v=20260404fix2';
 
 const labelMap = {
   news: 'News',

@@ -111,7 +111,3 @@ Notes:
 - เปิด `signup.html` เพื่อสมัครสมาชิกด้วยรหัสพนักงาน
 - ระบบจะสร้าง Firebase Authentication user และ Firestore `users/{uid}` อัตโนมัติ
 - role เริ่มต้น = `staff`
-
-
-## Important after upload
-After uploading this project, publish the included `firestore.rules` in Firebase Console > Firestore Database > Rules. The admin dashboard reads from `members`, `point_wallets`, `point_transactions`, and `spend_transactions`. If you do not publish the new rules, the admin page can show a Firestore read error even when Firebase is connected.

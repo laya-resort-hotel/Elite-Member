@@ -13,9 +13,9 @@ import {
   updateDoc,
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js';
-import { formatDate } from '../core/format.js';
-import { deleteStoragePaths } from './storage-service.js';
+import { state } from '../core/state.js?v=20260404fix2';
+import { formatDate } from '../core/format.js?v=20260404fix2';
+import { deleteStoragePaths } from './storage-service.js?v=20260404fix2';
 
 function stringValue(value = '') {
   return String(value || '').trim();

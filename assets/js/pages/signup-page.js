@@ -1,7 +1,7 @@
-import { $ } from '../core/dom.js';
-import { state } from '../core/state.js';
-import { signUpWithEmployeeId } from '../services/auth-service.js';
-import { showToast } from '../ui/toast.js';
+import { $ } from '../core/dom.js?v=20260404fix2';
+import { state } from '../core/state.js?v=20260404fix2';
+import { signUpWithEmployeeId } from '../services/auth-service.js?v=20260404fix2';
+import { showToast } from '../ui/toast.js?v=20260404fix2';
 
 function go(url) {
   window.location.href = url;
