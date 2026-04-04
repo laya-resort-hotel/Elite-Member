@@ -12,7 +12,53 @@ const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
 const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-codes']);
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
+const RESIDENT_LOADER_PAGES = new Set(['resident-login', 'signup', 'resident', 'home', 'member', 'settings', 'redemption', 'news', 'promotions', 'benefits', 'news-detail', 'promotions-detail', 'benefits-detail']);
 const pageBindings = new Set();
+
+function pageUsesResidentLoader() {
+  return RESIDENT_LOADER_PAGES.has(page);
+}
+
+function showResidentLoader() {
+  const loader = document.getElementById('residentRouteLoader');
+  if (!loader) return;
+  loader.classList.remove('is-hidden');
+  document.documentElement.classList.add('resident-loader-active');
+}
+
+function hideResidentLoader() {
+  const loader = document.getElementById('residentRouteLoader');
+  if (!loader) return;
+  loader.classList.add('is-hidden');
+  document.documentElement.classList.remove('resident-loader-active');
+}
+
+function bindResidentLoaderNavigation() {
+  if (!pageUsesResidentLoader() || document.body?.dataset?.residentLoaderBound === '1') return;
+  document.body.dataset.residentLoaderBound = '1';
+
+  document.addEventListener('click', (event) => {
+    const anchor = event.target instanceof Element ? event.target.closest('a[href]') : null;
+    if (!anchor) return;
+    if (anchor.hasAttribute('download') || anchor.target === '_blank' || anchor.dataset.noLoader === '1') return;
+    const href = anchor.getAttribute('href') || '';
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+    try {
+      const url = new URL(href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      showResidentLoader();
+    } catch (_) {
+      /* no-op */
+    }
+  }, true);
+
+  window.addEventListener('beforeunload', () => {
+    showResidentLoader();
+  });
+
+  window.__showResidentLoader = showResidentLoader;
+  window.__hideResidentLoader = hideResidentLoader;
+}
 
 function bindPageOnce(key, binder) {
   if (!key || typeof binder !== 'function' || pageBindings.has(key)) return;
@@ -66,6 +112,7 @@ function bindGlobalLogout() {
 function go(url) {
   const target = `./${url}`;
   if (window.location.href.endsWith(target) || window.location.pathname.endsWith(url)) return;
+  if (pageUsesResidentLoader()) showResidentLoader();
   window.location.href = target;
 }
 
@@ -182,6 +229,8 @@ async function initCurrentPage(isLive = false) {
     console.error('Page init failed:', error);
     updateStatusLabels({ modeState: 'Page Error' });
     showToast(error?.message || error?.toString?.() || 'Page init failed', 'error');
+  } finally {
+    hideResidentLoader();
   }
 }
 
@@ -255,6 +304,8 @@ async function initApp() {
   highlightCurrentNav();
   bindFlipCards();
   bindGlobalLogout();
+  bindResidentLoaderNavigation();
+  if (pageUsesResidentLoader()) showResidentLoader();
   updateStatusLabels({ firebaseState: 'Connecting...', authState: 'Checking...', modeState: 'Booting' });
 
   try {
@@ -281,12 +332,14 @@ async function initApp() {
         console.error('Auth callback error:', callbackError);
         updateStatusLabels({ modeState: 'Auth Error' });
         showToast(callbackError?.message || callbackError?.toString?.() || 'Auth callback failed', 'error');
+        hideResidentLoader();
       }
     });
   } catch (error) {
     console.error('Firebase init failed:', error);
     updateStatusLabels({ firebaseState: 'Error', authState: '-', modeState: 'Firebase Error' });
     showToast(error?.message || error?.toString?.() || 'Firebase init failed', 'error');
+    hideResidentLoader();
   }
 }
 

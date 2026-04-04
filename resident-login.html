@@ -11,10 +11,17 @@
   <link rel="stylesheet" href="./assets/css/layout.css" />
   <link rel="stylesheet" href="./assets/css/components.css?v=20260404invite1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
-  <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260404invite1" />
-  <script type="module" src="./assets/js/main.js?v=20260404invite1"></script>
+  <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260404residentloader1" />
+  <script type="module" src="./assets/js/main.js?v=20260404residentloader1"></script>
 </head>
-<body data-page="resident-login">
+<body data-page="resident-login" class="has-resident-loader">
+  <div id="residentRouteLoader" class="resident-route-loader" aria-hidden="false">
+    <div class="resident-route-loader__inner">
+      <div class="resident-route-loader__crest">L</div>
+      <div class="resident-route-loader__brand">LAYA</div>
+      <div class="resident-route-loader__sub">ELITE BLACK CARD</div>
+    </div>
+  </div>
   <div id="residentLoginShell" class="app-shell customer-shell resident-login-shell is-session-empty">
     <header class="vault-header vault-header-with-appbar resident-auth-header resident-auth-header-compact">
       <div class="vault-appbar-top">

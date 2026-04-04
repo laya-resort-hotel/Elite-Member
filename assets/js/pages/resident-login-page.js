@@ -87,6 +87,7 @@ async function attemptLogin() {
 
   try {
     if (submitBtn) submitBtn.disabled = true;
+    window.__showResidentLoader?.();
     await loginWithEmail(identifier, password, { rememberMe });
     saveResidentLoginPreference({ rememberMe, email: identifier });
     markResidentJustLoggedIn();
@@ -96,6 +97,7 @@ async function attemptLogin() {
     }, 260);
   } catch (error) {
     console.error(error);
+    window.__hideResidentLoader?.();
     showToast(error?.message || 'Resident login failed', 'error');
   } finally {
     if (submitBtn) submitBtn.disabled = false;
@@ -126,6 +128,7 @@ async function attemptSignup() {
 
   try {
     if (submitBtn) submitBtn.disabled = true;
+    window.__showResidentLoader?.();
     await signUpResidentWithInvite({
       email,
       pin,
@@ -141,6 +144,7 @@ async function attemptSignup() {
     }, 400);
   } catch (error) {
     console.error(error);
+    window.__hideResidentLoader?.();
     let message = error?.message || 'Account creation failed.';
     if (error?.code === 'auth/email-already-in-use') message = 'This email is already registered.';
     if (error?.code === 'auth/invalid-email') message = 'The email format is invalid.';
@@ -244,6 +248,7 @@ function bindButtons() {
   if (continueBtn && !continueBtn.dataset.bound) {
     continueBtn.dataset.bound = '1';
     continueBtn.addEventListener('click', () => {
+      window.__showResidentLoader?.();
       window.location.href = './home.html';
     });
   }
