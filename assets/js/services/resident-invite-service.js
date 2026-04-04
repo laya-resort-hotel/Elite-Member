@@ -27,8 +27,8 @@ export function parseUnitCodes(value = '') {
   }
   return [...new Set(
     String(value || '')
-      .split(/
-|,/)
+      .split(/[
+,]+/)
       .map(normalizeUnitCode)
       .filter(Boolean)
   )];
