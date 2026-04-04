@@ -66,6 +66,9 @@ const adminInviteState = {
   cache: [],
   filterStatus: 'all',
   searchTerm: '',
+  sortBy: 'created_desc',
+  pageSize: 20,
+  currentPage: 1,
 };
 
 let dragImageId = '';
@@ -1508,6 +1511,54 @@ function getInviteStatusLabel(status = 'active') {
   return 'Active';
 }
 
+function getInviteCreatedValue(item = {}) {
+  return Number(item?.createdAt?.seconds || item?.createdAt?._seconds || item?.createdAt || 0);
+}
+
+function compareUnitCode(a = '', b = '') {
+  return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+function getSortedInviteItems(items = []) {
+  const sortBy = adminInviteState.sortBy || 'created_desc';
+  const cloned = [...items];
+  if (sortBy === 'unit_asc') {
+    return cloned.sort((left, right) => compareUnitCode(left.primaryUnitCode, right.primaryUnitCode) || compareUnitCode(left.code, right.code));
+  }
+  if (sortBy === 'unit_desc') {
+    return cloned.sort((left, right) => compareUnitCode(right.primaryUnitCode, left.primaryUnitCode) || compareUnitCode(right.code, left.code));
+  }
+  return cloned.sort((left, right) => getInviteCreatedValue(right) - getInviteCreatedValue(left) || compareUnitCode(left.primaryUnitCode, right.primaryUnitCode));
+}
+
+function getVisibleInviteItems(items = []) {
+  const pageSize = Math.max(1, Number(adminInviteState.pageSize || 20));
+  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  if (adminInviteState.currentPage > totalPages) adminInviteState.currentPage = totalPages;
+  if (adminInviteState.currentPage < 1) adminInviteState.currentPage = 1;
+  const start = (adminInviteState.currentPage - 1) * pageSize;
+  return {
+    items: items.slice(start, start + pageSize),
+    totalPages,
+    totalItems: items.length,
+    startIndex: items.length ? start + 1 : 0,
+    endIndex: Math.min(start + pageSize, items.length),
+  };
+}
+
+function renderInvitePagination(totalItems = 0, totalPages = 1, startIndex = 0, endIndex = 0) {
+  const summary = $('invitePaginationSummary');
+  const prevBtn = $('invitePrevPageBtn');
+  const nextBtn = $('inviteNextPageBtn');
+  if (summary) {
+    summary.textContent = totalItems
+      ? `Showing ${startIndex}-${endIndex} of ${totalItems} · Page ${adminInviteState.currentPage} of ${totalPages}`
+      : 'Page 1 of 1';
+  }
+  if (prevBtn) prevBtn.disabled = adminInviteState.currentPage <= 1 || totalItems === 0;
+  if (nextBtn) nextBtn.disabled = adminInviteState.currentPage >= totalPages || totalItems === 0;
+}
+
 function getFilteredInviteItems() {
   const items = Array.isArray(adminInviteState.cache) ? adminInviteState.cache : [];
   const status = adminInviteState.filterStatus || 'all';
@@ -1556,7 +1607,11 @@ function renderInviteCodeList() {
   syncInviteFilterButtons();
   renderInviteSummary();
 
-  const items = getFilteredInviteItems();
+  const filteredItems = getFilteredInviteItems();
+  const sortedItems = getSortedInviteItems(filteredItems);
+  const { items, totalPages, totalItems, startIndex, endIndex } = getVisibleInviteItems(sortedItems);
+  renderInvitePagination(totalItems, totalPages, startIndex, endIndex);
+
   if (!items.length) {
     container.innerHTML = '<div class="card-item"><p>ไม่พบ invite code ตามเงื่อนไขที่เลือก</p></div>';
     return;
@@ -1604,7 +1659,7 @@ async function loadInviteCodes({ force = false } = {}) {
     return adminInviteState.cache;
   }
   try {
-    adminInviteState.cache = await loadResidentInviteCodes({ limit: 100 });
+    adminInviteState.cache = await loadResidentInviteCodes({ limit: 500 });
   } catch (error) {
     console.warn(error);
     adminInviteState.cache = [];
@@ -1650,12 +1705,96 @@ function handleInviteFilterClick(event) {
   const button = event.target.closest('[data-invite-filter]');
   if (!button) return;
   adminInviteState.filterStatus = button.dataset.inviteFilter || 'all';
+  adminInviteState.currentPage = 1;
   renderInviteCodeList();
 }
 
 function handleInviteSearchInput(event) {
   adminInviteState.searchTerm = String(event.target?.value || '').trim();
+  adminInviteState.currentPage = 1;
   renderInviteCodeList();
+}
+
+function handleInviteSortChange(event) {
+  adminInviteState.sortBy = String(event.target?.value || 'created_desc');
+  adminInviteState.currentPage = 1;
+  renderInviteCodeList();
+}
+
+function handleInvitePageSizeChange(event) {
+  adminInviteState.pageSize = Math.max(1, Number(event.target?.value || 20));
+  adminInviteState.currentPage = 1;
+  renderInviteCodeList();
+}
+
+function handleInvitePrevPage() {
+  if (adminInviteState.currentPage <= 1) return;
+  adminInviteState.currentPage -= 1;
+  renderInviteCodeList();
+}
+
+function handleInviteNextPage() {
+  const totalItems = getSortedInviteItems(getFilteredInviteItems()).length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / Math.max(1, Number(adminInviteState.pageSize || 20))));
+  if (adminInviteState.currentPage >= totalPages) return;
+  adminInviteState.currentPage += 1;
+  renderInviteCodeList();
+}
+
+function escapeExcelCell(value) {
+  const raw = String(value ?? '');
+  return raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function downloadTextFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function handleInviteExportExcel() {
+  const rows = getSortedInviteItems(getFilteredInviteItems());
+  if (!rows.length) {
+    showToast('ไม่มีรายการ invite code ให้ export', 'error');
+    return;
+  }
+
+  const tableRows = rows.map((item) => {
+    const extraRooms = Array.isArray(item.additionalUnitCodes) ? item.additionalUnitCodes.join(', ') : '';
+    return `
+      <tr>
+        <td>${escapeExcelCell(item.code || item.id || '')}</td>
+        <td>${escapeExcelCell(item.status || 'active')}</td>
+        <td>${escapeExcelCell(item.primaryUnitCode || '')}</td>
+        <td>${escapeExcelCell(extraRooms || '-')}</td>
+        <td>${escapeExcelCell(item.createdLabel || '')}</td>
+        <td>${escapeExcelCell(item.claimedLabel || '')}</td>
+        <td>${escapeExcelCell(item.claimedByEmail || '')}</td>
+        <td>${escapeExcelCell(item.claimedResidentId || '')}</td>
+      </tr>`;
+  }).join('');
+
+  const html = `<!doctype html><html><head><meta charset="UTF-8"></head><body><table border="1">
+    <tr>
+      <th>Invite Code</th>
+      <th>Status</th>
+      <th>Primary Room</th>
+      <th>Additional Rooms</th>
+      <th>Created At</th>
+      <th>Claimed At</th>
+      <th>Claimed By Email</th>
+      <th>Claimed Resident ID</th>
+    </tr>${tableRows}
+  </table></body></html>`;
+  const stamp = new Date().toISOString().slice(0, 10);
+  downloadTextFile(`resident-invite-codes-${stamp}.xls`, html, 'application/vnd.ms-excel;charset=utf-8');
+  showToast(`Exported ${rows.length} invite codes`);
 }
 
 async function handleInviteListClick(event) {
@@ -1846,6 +1985,11 @@ function bindInviteCodeManager() {
   $('adminInviteCodeList')?.addEventListener('click', handleInviteListClick);
   $('inviteFilterBar')?.addEventListener('click', handleInviteFilterClick);
   $('inviteSearchInput')?.addEventListener('input', handleInviteSearchInput);
+  $('inviteSortSelect')?.addEventListener('change', handleInviteSortChange);
+  $('invitePageSizeSelect')?.addEventListener('change', handleInvitePageSizeChange);
+  $('invitePrevPageBtn')?.addEventListener('click', handleInvitePrevPage);
+  $('inviteNextPageBtn')?.addEventListener('click', handleInviteNextPage);
+  $('exportInviteCodesBtn')?.addEventListener('click', handleInviteExportExcel);
   $('generateInviteCodeBtn')?.addEventListener('click', handleGenerateInviteCode);
   $('refreshInviteCodesBtn')?.addEventListener('click', () => loadInviteCodes({ force: true }));
   $('invitePrimaryUnitInput')?.addEventListener('blur', () => {
@@ -1860,6 +2004,8 @@ function bindInviteCodeManager() {
 
 async function loadInviteCodeManager() {
   if ($('adminInviteCodeList') || $('inviteCodeStatus') || document.body?.dataset?.page === 'invite-codes') {
+    if ($('inviteSortSelect')) $('inviteSortSelect').value = adminInviteState.sortBy || 'created_desc';
+    if ($('invitePageSizeSelect')) $('invitePageSizeSelect').value = String(adminInviteState.pageSize || 20);
     updateInviteReadonlyNote();
     await loadInviteCodes({ force: true });
   }

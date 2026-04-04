@@ -2307,3 +2307,34 @@ body.lightbox-open {
     justify-content: flex-start;
   }
 }
+
+
+.admin-invite-meta-toolbar{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,220px));
+  gap:14px;
+  align-items:end;
+}
+.compact-input{
+  min-height:48px;
+}
+.admin-pagination-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.pagination-note{
+  flex:1 1 220px;
+  text-align:center;
+}
+@media (max-width: 720px){
+  .admin-pagination-bar{
+    justify-content:center;
+  }
+  .pagination-note{
+    order:3;
+    flex-basis:100%;
+  }
+}

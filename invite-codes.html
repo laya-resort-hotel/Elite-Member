@@ -71,7 +71,10 @@
         <div class="section-head admin-cms-head">
           <div>
             <div class="eyebrow gold">Manage Existing Codes</div>
-            <h3>Search / filter / disable / regenerate</h3>
+            <h3>Search / filter / sort / export</h3>
+          </div>
+          <div class="row gap wrap">
+            <button id="exportInviteCodesBtn" class="ghost-btn" type="button">Export Excel</button>
           </div>
         </div>
         <div class="admin-invite-toolbar mt-md">
@@ -89,8 +92,31 @@
             </div>
           </div>
         </div>
+        <div class="admin-invite-meta-toolbar mt-sm">
+          <div>
+            <label class="field-label" for="inviteSortSelect">Sort</label>
+            <select id="inviteSortSelect" class="input input-select compact-input">
+              <option value="created_desc">Latest first</option>
+              <option value="unit_asc">Room A-Z</option>
+              <option value="unit_desc">Room Z-A</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="invitePageSizeSelect">Load per page</label>
+            <select id="invitePageSizeSelect" class="input input-select compact-input">
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
         <div id="inviteFilterSummary" class="readonly-note mt-sm">All 0 · Active 0 · Claimed 0 · Disabled 0</div>
         <div id="adminInviteCodeList" class="admin-invite-list mt-md"></div>
+        <div class="admin-pagination-bar mt-md">
+          <button id="invitePrevPageBtn" class="ghost-btn" type="button">← Prev</button>
+          <div id="invitePaginationSummary" class="readonly-note pagination-note">Page 1 of 1</div>
+          <button id="inviteNextPageBtn" class="ghost-btn" type="button">Next →</button>
+        </div>
       </section>
     </main>
   </div>
