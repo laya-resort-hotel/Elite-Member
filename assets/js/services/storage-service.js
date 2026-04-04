@@ -1,7 +1,7 @@
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js';
 import { state } from '../core/state.js';
 
-const ALLOWED_CONTENT_TYPES = ['news', 'promotions', 'benefits'];
+const ALLOWED_CONTENT_TYPES = ['news', 'promotions', 'benefits', 'rewards', 'reward_catalog'];
 
 function sanitizeName(name = '') {
   return String(name || 'file')

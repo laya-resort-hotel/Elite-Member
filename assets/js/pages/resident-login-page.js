@@ -61,7 +61,7 @@ function renderSessionCard() {
   setText('residentSessionStatus', activeResident ? 'Resident Session Ready' : 'No Active Session');
   setText('residentSessionName', resident.fullName || resident.displayName || state.currentUser?.displayName || 'Resident Member');
   setText('residentSessionEmail', state.currentUser?.email || resident.loginEmail || resident.email || '-');
-  setText('residentSessionMode', activeResident ? sessionLabel : 'ยังไม่มี resident session บนอุปกรณ์นี้');
+  setText('residentSessionMode', activeResident ? sessionLabel : 'No resident session is active on this device.');
   setText('residentSessionCode', resident.memberCode || resident.qrCodeValue || resident.cardNumber || '-');
   setText('residentSessionResidence', resident.residence || resident.primaryUnitCode || '-');
 
@@ -81,7 +81,7 @@ async function attemptLogin() {
   const submitBtn = $('residentLoginSubmitBtn');
 
   if (!identifier || !password) {
-    showToast('กรอก Email และรหัส 6 ตัวก่อน', 'error');
+    showToast('Enter your email and 6-digit PIN first.', 'error');
     return;
   }
 
@@ -116,11 +116,11 @@ async function attemptSignup() {
   const submitBtn = $('residentSignupSubmitBtn');
 
   if (!email || !pin || !inviteCode || !primaryUnitCode) {
-    showToast('กรอก Email, รหัส 6 ตัว, รหัสแนะนำ และห้องหลักก่อน', 'error');
+    showToast('Enter your email, 6-digit PIN, invitation code, and primary room first.', 'error');
     return;
   }
   if (!/^\d{6}$/.test(pin)) {
-    showToast('รหัส 6 ตัวต้องเป็นตัวเลข 6 หลัก', 'error');
+    showToast('Your PIN must contain exactly 6 digits.', 'error');
     return;
   }
 
@@ -135,17 +135,17 @@ async function attemptSignup() {
     });
     saveResidentLoginPreference({ rememberMe: true, email });
     markResidentJustLoggedIn();
-    showToast('สมัครสมาชิกสำเร็จ');
+    showToast('Account created successfully.');
     window.setTimeout(() => {
       window.location.href = './home.html';
     }, 400);
   } catch (error) {
     console.error(error);
-    let message = error?.message || 'สมัครสมาชิกไม่สำเร็จ';
-    if (error?.code === 'auth/email-already-in-use') message = 'อีเมลนี้ถูกสมัครแล้ว';
-    if (error?.code === 'auth/invalid-email') message = 'รูปแบบอีเมลไม่ถูกต้อง';
-    if (error?.code === 'permission-denied') message = 'Firestore Rules ยังไม่เปิดให้สมัคร Resident ผ่าน invite code';
-    if (error?.message === 'Invite code does not match the primary room entered') message = 'รหัสแนะนำไม่ตรงกับห้องหลักที่กรอก';
+    let message = error?.message || 'Account creation failed.';
+    if (error?.code === 'auth/email-already-in-use') message = 'This email is already registered.';
+    if (error?.code === 'auth/invalid-email') message = 'The email format is invalid.';
+    if (error?.code === 'permission-denied') message = 'Firebase rules do not allow resident sign-up with invitation codes yet.';
+    if (error?.message === 'Invite code does not match the primary room entered') message = 'The invitation code does not match the primary room entered.';
     showToast(message, 'error');
   } finally {
     if (submitBtn) submitBtn.disabled = false;
@@ -157,25 +157,25 @@ async function sendResetLink() {
   const btn = $('sendResetLinkBtn');
 
   if (!identifier) {
-    showToast('กรอก Email ของ Resident ก่อนส่งลิงก์รีเซ็ต', 'error');
+    showToast('Enter the resident email before sending the reset link.', 'error');
     return;
   }
 
   try {
     if (btn) btn.disabled = true;
     const email = await sendLoginResetEmail(identifier);
-    showToast(`ส่งลิงก์รีเซ็ตไปที่ ${email}`);
+    showToast(`Reset link sent to ${email}`);
     const status = $('forgotPasswordStatus');
     if (status) {
-      status.textContent = `ส่ง Password Reset ไปที่ ${email} แล้ว`;
+      status.textContent = `Password reset link sent to ${email}.`;
       status.classList.remove('hidden');
     }
   } catch (error) {
     console.error(error);
-    showToast(error?.message || 'ส่งลิงก์รีเซ็ตไม่สำเร็จ', 'error');
+    showToast(error?.message || 'Failed to send reset link.', 'error');
     const status = $('forgotPasswordStatus');
     if (status) {
-      status.textContent = error?.message || 'ส่งลิงก์รีเซ็ตไม่สำเร็จ';
+      status.textContent = error?.message || 'Failed to send reset link.';
       status.classList.remove('hidden');
     }
   } finally {
@@ -306,7 +306,7 @@ function renderJustLoggedInHint() {
 
   if (consumeResidentJustLoggedIn()) {
     notice.classList.remove('hidden');
-    notice.textContent = 'Resident session ready · กำลังเปิดหน้า Home ให้ทันที';
+    notice.textContent = 'Resident session ready · Opening Home now';
     window.setTimeout(() => {
       notice.classList.add('hidden');
     }, 2200);

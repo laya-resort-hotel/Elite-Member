@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
   <title>LAYA Resident – Access</title>
   <meta charset="UTF-8" />
@@ -40,7 +40,7 @@
         <div class="panel glass resident-auth-panel resident-auth-panel-elevated">
           <div class="resident-auth-intro resident-auth-intro-clean">
             <div class="vault-section-title resident-owner-privilege-title">Owner Privilege</div>
-            <p>ล็อกอินด้วยอีเมลและรหัส 6 ตัว หรือสมัครครั้งแรกด้วยรหัสแนะนำสำหรับเจ้าของห้อง</p>
+            <p>Sign in with your email and 6-digit PIN, or activate owner access with an invitation code for first-time registration.</p>
           </div>
 
           <div id="residentSessionFlash" class="resident-session-flash hidden"></div>
@@ -80,15 +80,15 @@
           <section id="residentLoginModePanel" class="resident-auth-mode-panel">
             <div class="resident-login-panel-head">
               <div>
-                <h3>Resident Log in</h3>
-                <p id="residentLoginHint" class="muted">ใช้อีเมลและรหัส 6 ตัวของลูกค้า Resident เพื่อเข้าใช้งาน</p>
+                <h3>Resident Log In</h3>
+                <p id="residentLoginHint" class="muted">Use your resident email and 6-digit PIN to access your account.</p>
               </div>
               <span class="pill gold-pill">Secure</span>
             </div>
 
             <label class="field-label" for="residentLoginIdentifier">Email</label>
             <input id="residentLoginIdentifier" class="input" type="email" placeholder="resident@example.com" autocomplete="username" />
-            <label class="field-label" for="residentLoginPassword">รหัส 6 ตัว</label>
+            <label class="field-label" for="residentLoginPassword">6-digit PIN</label>
             <input id="residentLoginPassword" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="current-password" />
 
             <div class="resident-login-options">
@@ -96,7 +96,7 @@
                 <input id="residentRememberMe" type="checkbox" />
                 <span>
                   <strong>Remember this device</strong>
-                  <small>เหมาะกับมือถือส่วนตัวของเจ้าของห้อง</small>
+                  <small>Recommended for the owner's personal device.</small>
                 </span>
               </label>
               <button id="forgotPasswordBtn" class="ghost-btn compact-btn" type="button">Forgot PIN?</button>
@@ -104,7 +104,7 @@
 
             <div class="row gap wrap mt-md">
               <button id="residentLoginSubmitBtn" class="primary-btn" type="button">Log in</button>
-              <button id="authModeSignupBtnInline" class="ghost-btn" type="button">สมัครสมาชิก</button>
+              <button id="authModeSignupBtnInline" class="ghost-btn" type="button">Create account</button>
             </div>
 
             <div id="forgotPasswordPanel" class="resident-reset-panel hidden">
@@ -112,11 +112,11 @@
               <div class="resident-reset-head">
                 <div>
                   <div class="eyebrow gold">PASSWORD RESET</div>
-                  <h4>ส่งลิงก์รีเซ็ตรหัสผ่าน</h4>
+                  <h4>Send a password reset link</h4>
                 </div>
                 <span class="badge-inline"><span>Method</span><strong>Email Link</strong></span>
               </div>
-              <p id="forgotPasswordHelper" class="muted">ลิงก์รีเซ็ตรหัสผ่านจะถูกส่งไปยังอีเมลของ Resident</p>
+              <p id="forgotPasswordHelper" class="muted">A password reset link will be sent to the resident email address.</p>
               <div class="row gap wrap mt-sm">
                 <button id="sendResetLinkBtn" class="secondary-btn" type="button">Send reset link</button>
               </div>
@@ -127,31 +127,31 @@
           <section id="residentSignupModePanel" class="resident-auth-mode-panel hidden">
             <div class="resident-login-panel-head">
               <div>
-                <h3>Resident Sign up</h3>
-                <p class="muted">สำหรับเจ้าของห้องที่ยังไม่เคยเปิดสิทธิ์ใช้งานในระบบ</p>
+                <h3>Resident Sign Up</h3>
+                <p class="muted">For room owners activating resident access for the first time.</p>
               </div>
               <span class="pill gold-pill">Invite only</span>
             </div>
 
-            <label class="field-label" for="residentSignupEmail">อีเมล</label>
+            <label class="field-label" for="residentSignupEmail">Email</label>
             <input id="residentSignupEmail" class="input" type="email" placeholder="owner@example.com" autocomplete="email" />
 
-            <label class="field-label" for="residentSignupPin">รหัส 6 ตัว</label>
-            <input id="residentSignupPin" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="เช่น 246810" autocomplete="new-password" />
+            <label class="field-label" for="residentSignupPin">6-digit PIN</label>
+            <input id="residentSignupPin" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="e.g. 246810" autocomplete="new-password" />
 
-            <label class="field-label" for="residentSignupInviteCode">รหัสแนะนำ</label>
-            <input id="residentSignupInviteCode" class="input" type="text" maxlength="10" placeholder="เช่น SWFKG" />
+            <label class="field-label" for="residentSignupInviteCode">Invitation code</label>
+            <input id="residentSignupInviteCode" class="input" type="text" maxlength="10" placeholder="e.g. SWFKG" />
 
-            <label class="field-label" for="residentSignupPrimaryUnit">เป็นเจ้าของห้องอะไร (ห้องหลัก)</label>
-            <input id="residentSignupPrimaryUnit" class="input" type="text" placeholder="เช่น D101" />
+            <label class="field-label" for="residentSignupPrimaryUnit">Primary room</label>
+            <input id="residentSignupPrimaryUnit" class="input" type="text" placeholder="e.g. D101" />
 
-            <label class="field-label" for="residentSignupAdditionalUnits">มีห้องเสริมอีกไหม</label>
-            <textarea id="residentSignupAdditionalUnits" class="input textarea textarea-sm" placeholder="เช่น D102, D103 หรือขึ้นบรรทัดใหม่"></textarea>
-            <div class="upload-note">หากไม่มี สามารถเว้นว่างได้</div>
+            <label class="field-label" for="residentSignupAdditionalUnits">Additional rooms</label>
+            <textarea id="residentSignupAdditionalUnits" class="input textarea textarea-sm" placeholder="e.g. D102, D103 or one per line"></textarea>
+            <div class="upload-note">Leave blank if there are no additional rooms.</div>
 
             <div class="row gap wrap mt-md">
-              <button id="residentSignupSubmitBtn" class="primary-btn" type="button">สมัครสมาชิก</button>
-              <button id="residentGoLoginBtn" class="ghost-btn" type="button">กลับไปหน้าล็อกอิน</button>
+              <button id="residentSignupSubmitBtn" class="primary-btn" type="button">Create account</button>
+              <button id="residentGoLoginBtn" class="ghost-btn" type="button">Back to log in</button>
             </div>
           </section>
         </div>
