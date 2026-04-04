@@ -16,7 +16,7 @@
 </head>
 <body data-page="resident-login">
   <div id="residentLoginShell" class="app-shell customer-shell resident-login-shell is-session-empty">
-    <header class="vault-header vault-header-with-appbar resident-auth-header">
+    <header class="vault-header vault-header-with-appbar resident-auth-header resident-auth-header-compact">
       <div class="vault-appbar-top">
         <a class="vault-appbar-icon vault-appbar-back" href="./home.html" aria-label="Back to home">
           <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5 7.5 12l7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -29,28 +29,21 @@
           <button id="logoutBtn" class="vault-auth-chip vault-auth-chip-logout hidden" type="button">Log out</button>
         </div>
       </div>
-      <div class="vault-brand-banner resident-auth-banner">
+      <div class="vault-brand-banner resident-auth-banner resident-auth-banner-compact">
         <div class="vault-brand-banner-logo">ELITE BLACK CARD</div>
       </div>
-      <div class="vault-profile-strip resident-auth-strip">
-        <div class="vault-avatar">R</div>
-        <div class="vault-profile-copy">
-          <div class="vault-profile-name">Resident Access</div>
-          <div class="vault-profile-meta">Sign in or activate owner access with invitation code</div>
-        </div>
-        <div class="vault-points-pill resident-auth-pill">
-          <strong id="residentAuthSwitchLabel">Resident Login</strong>
-          <span>Secure</span>
-        </div>
-      </div>
+      <span id="residentAuthSwitchLabel" class="sr-only">Resident Login</span>
     </header>
 
-    <main class="main-content vault-main-content resident-auth-main">
-      <section class="resident-auth-hero panel glass">
-        <div class="resident-auth-copy-block">
-          <div class="vault-section-title">Owner Privilege</div>
-          <h2>ล็อกอินหรือเปิดสิทธิ์ Resident ให้ไปในโทนเดียวกับหน้า Home ของแขก</h2>
-          <p>ลูกค้า Resident ใช้อีเมลและรหัส 6 ตัวเพื่อเข้าใช้งานได้ทันที ส่วนเจ้าของห้องที่ยังไม่เคยสมัคร สามารถใช้รหัสแนะนำที่แอดมินสร้างให้ตามห้องเพื่อเปิดสิทธิ์ได้เอง</p>
+    <main class="main-content vault-main-content resident-auth-main resident-auth-main-compact">
+      <section class="resident-auth-hero resident-auth-hero-single panel glass">
+        <div class="panel glass resident-auth-panel resident-auth-panel-elevated">
+          <div class="resident-auth-intro">
+            <div class="vault-section-title">Owner Privilege</div>
+            <h2>Resident Access</h2>
+            <p>ล็อกอินด้วยอีเมลและรหัส 6 ตัว หรือสมัครครั้งแรกด้วยรหัสแนะนำสำหรับเจ้าของห้อง</p>
+          </div>
+
           <div id="residentSessionFlash" class="resident-session-flash hidden"></div>
 
           <div id="residentSessionCard" class="resident-session-card hidden mt-md">
@@ -80,9 +73,6 @@
             </div>
           </div>
 
-        </div>
-
-        <div class="panel glass resident-auth-panel">
           <div class="resident-auth-switch" role="tablist" aria-label="Resident access mode">
             <button id="authModeLoginBtn" class="resident-auth-switch-btn active" type="button">Log in</button>
             <button id="authModeSignupBtn" class="resident-auth-switch-btn" type="button">Sign up</button>
