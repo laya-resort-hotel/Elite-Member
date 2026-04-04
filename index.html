@@ -29,12 +29,12 @@
       </div>
     </header>
     <main class="main-content">
-      <section class="hero-card glass">
-        <div class="hero-copy">
+      <section class="hero-card glass landing-hero-card">
+        <div class="hero-copy landing-hero-copy">
           <span class="eyebrow gold">Resident Privileges</span>
           <h2>แยกการใช้งานเป็น 2 path แล้ว: Resident path และ Admin path</h2>
           <p>Resident path สำหรับแขก/เจ้าของห้อง ใช้เมนูด้านล่าง 4 ปุ่ม: Home, Redemption, Member, Settings ส่วน Admin path ใช้สำหรับทีมโรงแรมและ CMS หลังบ้าน</p>
-          <div class="quick-links mt-md">
+          <div class="quick-links mt-md landing-link-grid">
             <a class="nav-link-card" href="./resident-login.html"><strong>Resident Login</strong><small>หน้า login แยกสำหรับลูกค้า Resident</small></a>
             <a class="nav-link-card" href="./home.html"><strong>Resident Home</strong><small>บัตรสมาชิก คะแนน และสรุปสิทธิ์</small></a>
             <a class="nav-link-card" href="./news.html"><strong>News</strong><small>ข่าวสาร Resident แยกหน้า</small></a>
@@ -44,7 +44,7 @@
             <a class="nav-link-card" href="./members.html"><strong>Members</strong><small>ค้นหาสมาชิกแยกหน้า</small></a>
           </div>
         </div>
-        <div class="card-showcase" data-card-flip data-default-side="front">
+        <div class="card-showcase landing-card-showcase" data-card-flip data-default-side="front">
           <div class="elite-card-toolbar">
             <span class="eyebrow gold" data-card-label>Front view</span>
             <div class="segmented-switch">
@@ -69,22 +69,28 @@
         </div>
       </section>
 
-      <section class="auth-grid">
-        <div class="panel glass">
-          <h3>เข้าสู่ระบบด้วย Firebase</h3>
+      <section class="auth-grid landing-auth-grid">
+        <div class="panel glass landing-auth-card">
+          <div class="panel-title-stack">
+            <span class="eyebrow gold">Resident Access</span>
+            <h3>เข้าสู่ระบบด้วย Firebase</h3>
+          </div>
           <p class="muted">ใช้รหัสพนักงานหรือ Email ที่สมัครไว้ใน Firebase Authentication แล้วระบบจะพาไปหน้า Resident หรือ Admin ให้อัตโนมัติ</p>
           <label class="field-label" for="loginEmail">รหัสพนักงาน หรือ Email</label>
           <input id="loginEmail" class="input" type="text" placeholder="เช่น 25381 หรือ resident@laya.com" />
           <label class="field-label" for="loginPassword">Password</label>
           <input id="loginPassword" class="input" type="password" placeholder="••••••••" />
-          <div class="row gap wrap mt-md">
+          <div class="row gap wrap mt-md landing-auth-actions">
             <button id="loginBtn" class="primary-btn">Login</button>
             <button id="goSignupBtn" class="ghost-btn">สมัครสมาชิกด้วยรหัสพนักงาน</button>
           </div>
         </div>
 
-        <div class="panel glass">
-          <h3>ใช้งานผ่าน Firebase เท่านั้น</h3>
+        <div class="panel glass landing-auth-card landing-auth-note">
+          <div class="panel-title-stack">
+            <span class="eyebrow gold">System Notice</span>
+            <h3>ใช้งานผ่าน Firebase เท่านั้น</h3>
+          </div>
           <p class="muted">โปรเจกต์นี้ปิดโหมด demo แล้ว กรุณาสร้างผู้ใช้ใน Firebase Authentication และผูกข้อมูลใน Firestore ก่อนใช้งาน</p>
           <div class="stack gap-sm">
             
