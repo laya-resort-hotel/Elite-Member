@@ -13,6 +13,7 @@ import {
   updateStructuredCMS,
 } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
+import { createResidentInviteCode, loadResidentInviteCodes, normalizeUnitCode, parseUnitCodes } from '../services/resident-invite-service.js';
 import {
   createMemberShell,
   deleteMemberRecord,
@@ -51,6 +52,10 @@ const adminMembersState = {
   cache: [],
   editor: blankMemberEditorState(),
   insights: blankMemberInsightsState(),
+};
+
+const adminInviteState = {
+  cache: [],
 };
 
 let dragImageId = '';
@@ -1471,6 +1476,111 @@ function handleGalleryDrop(event) {
   dragImageId = '';
 }
 
+
+function updateInviteReadonlyNote() {
+  const note = $('inviteAdminNote');
+  if (!note) return;
+  note.textContent = canManageContent()
+    ? 'แอดมินสามารถสร้างรหัสแนะนำตามห้องได้จากหน้านี้ เพื่อจำกัดการสมัครให้ตรงกับห้องที่ขายจริง'
+    : 'ต้อง login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จก่อน จึงจะสร้างรหัสแนะนำได้';
+}
+
+function renderInviteCodeList() {
+  const container = $('adminInviteCodeList');
+  if (!container) return;
+  const items = adminInviteState.cache || [];
+
+  if (!items.length) {
+    container.innerHTML = '<div class="card-item"><p>ยังไม่มี resident invitation code ในระบบ</p></div>';
+    return;
+  }
+
+  container.innerHTML = items.map((item) => {
+    const claimed = item.status === 'claimed';
+    const units = [item.primaryUnitCode, ...(Array.isArray(item.additionalUnitCodes) ? item.additionalUnitCodes : [])].filter(Boolean);
+    return `
+      <article class="content-admin-card ${claimed ? 'invite-claimed' : ''}">
+        <div class="content-admin-card-image fallback">${escapeHtml((item.primaryUnitCode || 'R').slice(0, 1))}</div>
+        <div class="content-admin-card-body">
+          <div class="content-admin-card-top">
+            <div>
+              <strong>${escapeHtml(item.code || item.id || '')}</strong>
+              <small>${escapeHtml(item.createdLabel || '')}</small>
+            </div>
+            <span class="mini-badge ${claimed ? 'subtle' : 'gold'}">${escapeHtml(claimed ? 'Claimed' : 'Active')}</span>
+          </div>
+          <p>Primary room: ${escapeHtml(item.primaryUnitCode || '-')}<br>${units.length > 1 ? `Extra rooms: ${escapeHtml(units.slice(1).join(', '))}` : 'Extra rooms: -'}</p>
+          <div class="content-admin-card-actions">
+            <button class="ghost-btn" type="button" data-invite-action="copy" data-invite-code="${escapeHtml(item.code || item.id || '')}">Copy code</button>
+            ${claimed
+              ? `<small class="muted">Used by ${escapeHtml(item.claimedByEmail || item.claimedResidentId || '-')}</small>`
+              : `<small class="muted">Ready for sign-up</small>`}
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function loadInviteCodes({ force = false } = {}) {
+  if (!force && adminInviteState.cache.length) {
+    renderInviteCodeList();
+    return adminInviteState.cache;
+  }
+  try {
+    adminInviteState.cache = await loadResidentInviteCodes({ limit: 20 });
+  } catch (error) {
+    console.warn(error);
+    adminInviteState.cache = [];
+  }
+  renderInviteCodeList();
+  return adminInviteState.cache;
+}
+
+async function handleGenerateInviteCode() {
+  if (!canManageContent()) {
+    showToast('ต้อง login เป็น admin / manager / staff ก่อน', 'error');
+    return;
+  }
+
+  const primaryUnitCode = normalizeUnitCode($('invitePrimaryUnitInput')?.value || '');
+  const additionalUnitCodes = parseUnitCodes($('inviteAdditionalUnitsInput')?.value || '').filter((code) => code !== primaryUnitCode);
+  if (!primaryUnitCode) {
+    showToast('กรอกห้องหลักก่อนสร้างรหัสแนะนำ', 'error');
+    return;
+  }
+
+  try {
+    const created = await createResidentInviteCode({ primaryUnitCode, additionalUnitCodes });
+    if ($('inviteCodePreviewInput')) $('inviteCodePreviewInput').value = created.code || '';
+    if ($('inviteCodeStatus')) {
+      $('inviteCodeStatus').textContent = `สร้างรหัสสำหรับห้อง ${created.primaryUnitCode} สำเร็จ: ${created.code}`;
+      $('inviteCodeStatus').classList.remove('hidden');
+    }
+    showToast(`Invite code created: ${created.code}`);
+    await loadInviteCodes({ force: true });
+  } catch (error) {
+    console.error(error);
+    showToast(error?.message || 'สร้างรหัสแนะนำไม่สำเร็จ', 'error');
+    if ($('inviteCodeStatus')) {
+      $('inviteCodeStatus').textContent = error?.message || 'สร้างรหัสแนะนำไม่สำเร็จ';
+      $('inviteCodeStatus').classList.remove('hidden');
+    }
+  }
+}
+
+function handleInviteListClick(event) {
+  const button = event.target.closest('[data-invite-action="copy"]');
+  if (!button) return;
+  const code = button.dataset.inviteCode || '';
+  copyTextToClipboard(code)
+    .then(() => showToast(`Copied ${code}`))
+    .catch((error) => {
+      console.error(error);
+      showToast(error?.message || 'Copy failed', 'error');
+    });
+}
+
 async function loadAdminOverview() {
   try {
     const [residents, transactions] = await Promise.all([
@@ -1583,6 +1693,18 @@ function bindAdminContentTabs() {
     updateUploadStatus('contentGalleryUploadStatus', count ? `เลือกรูป gallery แล้ว ${count} รูป — กด Upload Gallery Images` : '');
   });
 
+  $('adminInviteCodeList')?.addEventListener('click', handleInviteListClick);
+  $('generateInviteCodeBtn')?.addEventListener('click', handleGenerateInviteCode);
+  $('refreshInviteCodesBtn')?.addEventListener('click', () => loadInviteCodes({ force: true }));
+  $('invitePrimaryUnitInput')?.addEventListener('blur', () => {
+    const el = $('invitePrimaryUnitInput');
+    if (el) el.value = normalizeUnitCode(el.value);
+  });
+  $('inviteAdditionalUnitsInput')?.addEventListener('blur', () => {
+    const el = $('inviteAdditionalUnitsInput');
+    if (el) el.value = parseUnitCodes(el.value).join(', ');
+  });
+
   $('memberIdInput')?.addEventListener('blur', () => {
     const memberIdInput = $('memberIdInput');
     const cardCodeInput = $('memberCardCodeInput');
@@ -1627,6 +1749,8 @@ export async function loadAdminDashboard() {
   await loadAdminOverview();
   updateReadonlyNote();
   updateMemberReadonlyNote();
+  updateInviteReadonlyNote();
+  await loadInviteCodes({ force: true });
   if (!getMemberEditorState().memberId) resetMemberEditor();
   setTab(getActiveType());
   if (isMembersTab()) {

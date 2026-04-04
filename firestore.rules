@@ -132,6 +132,121 @@ service cloud.firestore {
         );
     }
 
+
+    function residentOwnedByCurrentUserAfter(residentId) {
+      return signedIn()
+        && existsAfter(/databases/$(database)/documents/residents/$(residentId))
+        && (
+          (getAfter(/databases/$(database)/documents/residents/$(residentId)).data.authUid is string && getAfter(/databases/$(database)/documents/residents/$(residentId)).data.authUid == myUid())
+          || (getAfter(/databases/$(database)/documents/residents/$(residentId)).data.linkedUserUid is string && getAfter(/databases/$(database)/documents/residents/$(residentId)).data.linkedUserUid == myUid())
+          || (getAfter(/databases/$(database)/documents/residents/$(residentId)).data.loginEmail is string && getAfter(/databases/$(database)/documents/residents/$(residentId)).data.loginEmail == myEmail())
+        );
+    }
+
+    function validSelfResidentCreate(residentId) {
+      return signedIn()
+        && request.resource.data.keys().hasOnly([
+          'id',
+          'memberCode',
+          'qrCodeValue',
+          'cardNumber',
+          'firstName',
+          'lastName',
+          'displayName',
+          'email',
+          'loginEmail',
+          'loginEmailLower',
+          'linkedUserUid',
+          'authUid',
+          'phone',
+          'status',
+          'tier',
+          'ownerType',
+          'primaryUnitCode',
+          'unitCodes',
+          'notes',
+          'totalSpend',
+          'inviteCode',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.id == residentId
+        && request.resource.data.authUid == myUid()
+        && request.resource.data.linkedUserUid == myUid()
+        && request.resource.data.loginEmail == myEmail()
+        && request.resource.data.status == 'active'
+        && request.resource.data.tier == 'elite_black'
+        && request.resource.data.totalSpend == 0;
+    }
+
+    function validSelfResidentWalletCreate(residentId) {
+      return signedIn()
+        && residentOwnedByCurrentUserAfter(residentId)
+        && request.resource.data.keys().hasOnly([
+          'residentId',
+          'currentPoints',
+          'pendingPoints',
+          'lifetimeEarned',
+          'lifetimeRedeemed',
+          'updatedAt'
+        ])
+        && request.resource.data.residentId == residentId
+        && request.resource.data.currentPoints == 0
+        && request.resource.data.pendingPoints == 0
+        && request.resource.data.lifetimeEarned == 0
+        && request.resource.data.lifetimeRedeemed == 0;
+    }
+
+    function validSelfResidentCardCreate(residentId) {
+      return signedIn()
+        && residentOwnedByCurrentUserAfter(residentId)
+        && request.resource.data.keys().hasOnly([
+          'residentId',
+          'memberCode',
+          'cardNumber',
+          'qrCodeValue',
+          'status',
+          'issuedAt',
+          'updatedAt'
+        ])
+        && request.resource.data.residentId == residentId
+        && request.resource.data.status == 'active';
+    }
+
+    function validSelfInviteClaim(code) {
+      return signedIn()
+        && resource.data.code == code
+        && resource.data.status == 'active'
+        && (!(resource.data.claimedByUid is string) || resource.data.claimedByUid == '')
+        && request.resource.data.keys().hasOnly([
+          'code',
+          'status',
+          'primaryUnitCode',
+          'additionalUnitCodes',
+          'usageLimit',
+          'createdByUid',
+          'createdByEmail',
+          'createdAt',
+          'updatedAt',
+          'claimedAt',
+          'claimedByUid',
+          'claimedByEmail',
+          'claimedResidentId'
+        ])
+        && request.resource.data.code == resource.data.code
+        && request.resource.data.primaryUnitCode == resource.data.primaryUnitCode
+        && request.resource.data.additionalUnitCodes == resource.data.additionalUnitCodes
+        && request.resource.data.usageLimit == resource.data.usageLimit
+        && request.resource.data.createdByUid == resource.data.createdByUid
+        && request.resource.data.createdByEmail == resource.data.createdByEmail
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.status == 'claimed'
+        && request.resource.data.claimedByUid == myUid()
+        && request.resource.data.claimedByEmail == myEmail()
+        && request.resource.data.claimedResidentId is string
+        && residentOwnedByCurrentUserAfter(request.resource.data.claimedResidentId);
+    }
+
     match /users/{uid} {
       allow get: if signedIn() && (myUid() == uid || isAdminLike());
       allow list: if isAdminLike();
@@ -195,21 +310,31 @@ service cloud.firestore {
     match /residents/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUserDoc();
       allow list: if isAdminLike();
-      allow create, update, delete: if isAdminLike();
+      allow create: if isAdminLike() || validSelfResidentCreate(residentId);
+      allow update, delete: if isAdminLike();
     }
 
     match /resident_wallets/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
       allow list: if isAdminLike();
-      allow create, update: if isAdminLike();
+      allow create: if isAdminLike() || validSelfResidentWalletCreate(residentId);
+      allow update: if isAdminLike();
       allow delete: if isAdminLike();
     }
 
     match /resident_cards/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
       allow list: if isAdminLike();
-      allow create, update: if isAdminLike();
+      allow create: if isAdminLike() || validSelfResidentCardCreate(residentId);
+      allow update: if isAdminLike();
       allow delete: if isAdminLike();
+    }
+
+    match /resident_invite_codes/{code} {
+      allow get: if true;
+      allow list: if isAdminLike();
+      allow create, delete: if isAdminLike();
+      allow update: if isAdminLike() || validSelfInviteClaim(code);
     }
 
     match /resident_point_transactions/{transactionId} {

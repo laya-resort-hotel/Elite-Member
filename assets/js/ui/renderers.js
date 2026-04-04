@@ -13,19 +13,29 @@ export function updateStatusLabels({ firebaseState, authState, modeState }) {
   if (modeState !== undefined && $('modeState')) $('modeState').textContent = modeState;
 }
 
-export function renderCards(listEl, items = [], emptyText = 'No data') {
+export function renderCards(listEl, items = [], emptyText = 'No data', options = {}) {
   if (!listEl) return;
   if (!items.length) {
     listEl.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
     return;
   }
-  listEl.innerHTML = items.map((item) => `
-    <div class="card-item">
-      <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
-      <p>${escapeHtml(item.body || item.description || '')}</p>
-      ${item.createdLabel ? `<small>${escapeHtml(item.createdLabel)}</small>` : ''}
-    </div>
-  `).join('');
+
+  const contentType = typeof options === 'string' ? options : options.contentType;
+  listEl.innerHTML = items.map((item) => {
+    const href = contentType ? buildContentDetailHref(contentType, item, `./${contentType}.html`) : '';
+    const wrapperTag = href ? 'a' : 'div';
+    const wrapperAttrs = href
+      ? `class="card-item card-item-link" href="${href}" aria-label="${escapeHtml(item.title || item.outlet || contentType || 'detail')}"`
+      : 'class="card-item"';
+
+    return `
+      <${wrapperTag} ${wrapperAttrs}>
+        <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
+        <p>${escapeHtml(item.summary || item.body || item.description || '')}</p>
+        ${item.createdLabel ? `<small>${escapeHtml(item.createdLabel)}</small>` : ''}
+      </${wrapperTag}>
+    `;
+  }).join('');
 }
 
 function buildContentDetailHref(type, item, fallbackHref) {

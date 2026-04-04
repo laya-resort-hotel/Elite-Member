@@ -43,9 +43,9 @@ export async function loadResidentDashboard() {
     if ($('homeNewsHero') || $('homePromotionGrid')) {
       renderVaultHome(news[0] || null, promotions);
     }
-    if ($('benefitsList')) renderCards($('benefitsList'), benefits, 'No benefits yet');
-    if ($('newsList')) renderCards($('newsList'), news, 'No news yet');
-    if ($('promoList')) renderCards($('promoList'), promotions, 'No promotions yet');
+    if ($('benefitsList')) renderCards($('benefitsList'), benefits, 'No benefits yet', { contentType: 'benefits' });
+    if ($('newsList')) renderCards($('newsList'), news, 'No news yet', { contentType: 'news' });
+    if ($('promoList')) renderCards($('promoList'), promotions, 'No promotions yet', { contentType: 'promotions' });
     if ($('residentPointHistoryMini')) renderResidentPointHistoryMini($('residentPointHistoryMini'), pointHistory, 'No point history yet');
   } catch (error) {
     console.error(error);

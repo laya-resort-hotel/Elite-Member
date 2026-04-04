@@ -2047,3 +2047,49 @@ body.lightbox-open {
     flex-direction: column;
   }
 }
+
+
+.resident-auth-switch {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 8px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.resident-auth-switch-btn {
+  min-height: 46px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: transparent;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.resident-auth-switch-btn.active {
+  background: linear-gradient(180deg, rgba(216,188,124,.22), rgba(216,188,124,.08));
+  border-color: rgba(216,188,124,.28);
+  color: #f7ecd2;
+}
+
+.admin-invite-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-invite-panel .content-admin-card {
+  align-items: center;
+}
+
+.admin-invite-panel .content-admin-card-image.fallback {
+  min-width: 74px;
+  min-height: 74px;
+  font-size: 24px;
+}
+
+.invite-claimed {
+  opacity: .86;
+}
