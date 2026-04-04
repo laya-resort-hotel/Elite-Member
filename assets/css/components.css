@@ -1828,38 +1828,3 @@ body.lightbox-open {
     justify-items: start;
   }
 }
-
-
-.member-auth-panel {
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(212, 178, 87, 0.16);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-}
-
-.member-auth-panel h5 {
-  margin: 0;
-  font-size: 15px;
-}
-
-
-/* Members focus mode */
-body.members-focus #adminHeroMetrics,
-body.members-focus #adminHeroActions,
-body.members-focus #adminOverviewGrid,
-body.members-focus .admin-content-layout:not(#adminMembersLayout) {
-  display: none !important;
-}
-
-body.members-focus #adminHeroSection {
-  padding-bottom: 18px;
-}
-
-body.members-focus #adminHeroSection .page-intro {
-  margin-bottom: 0;
-}
-
-#memberSignupPanel {
-  scroll-margin-top: 24px;
-}

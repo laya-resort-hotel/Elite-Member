@@ -1,15 +1,8 @@
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml } from '../core/format.js';
 import { state } from '../core/state.js';
-import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
 import { deleteCMSItem, loadCollectionSafe, loadDocumentById } from '../services/content-service.js';
 import { showToast } from '../ui/toast.js';
-
-const demoMap = {
-  news: demoNews,
-  promotions: demoPromotions,
-  benefits: demoBenefits,
-};
 
 const labelMap = {
   news: 'News',
@@ -35,8 +28,7 @@ function canManageContent() {
 function getParams() {
   const params = new URLSearchParams(window.location.search);
   return {
-    id: params.get('id') || '',
-    demo: params.get('demo') || '',
+    id: params.get('id') || ''
   };
 }
 
@@ -94,7 +86,7 @@ function renderRelated(type, items = []) {
     return;
   }
   target.innerHTML = items.map((item) => {
-    const href = item.createdLabel ? `./${type}-detail.html?id=${encodeURIComponent(item.id)}` : `./${type}-detail.html?demo=${encodeURIComponent(item.id)}`;
+    const href = `./${type}-detail.html?id=${encodeURIComponent(item.id)}`;
     return `
     <a class="card-item detail-link-card" href="${href}">
       <div class="eyebrow gold">Related ${escapeHtml(labelMap[type])}</div>
@@ -117,7 +109,7 @@ function renderAdminTools(type, item) {
   if (note) {
     note.textContent = manageable
       ? 'รายการนี้เป็นข้อมูลจริงจาก Firebase สามารถกดแก้ไขหรือลบได้'
-      : 'โหมดนี้เป็นรายการ demo หรือยังไม่มีสิทธิ์แก้ไข';
+      : 'ยังไม่มีสิทธิ์แก้ไขรายการนี้';
   }
   if (editBtn) {
     editBtn.classList.toggle('hidden', !canManageContent());
@@ -257,33 +249,27 @@ function renderDetail(type, item) {
 }
 
 async function resolveItem(type) {
-  const { id, demo } = getParams();
-  if (id && state.firebaseReady) {
-    try {
-      const liveItem = await loadDocumentById(type, id);
-      if (liveItem) return liveItem;
-    } catch (error) {
-      console.warn(error);
-      showToast('อ่านข้อมูล detail จาก Firestore ไม่ได้ ใช้ข้อมูลตัวอย่างแทน', 'error');
-    }
+  const { id } = getParams();
+  if (!id || !state.firebaseReady) return null;
+  try {
+    return await loadDocumentById(type, id);
+  } catch (error) {
+    console.warn(error);
+    showToast('อ่านข้อมูล detail จาก Firestore ไม่ได้', 'error');
+    return null;
   }
-  if (demo) {
-    return demoMap[type].find((item) => item.id === demo) || null;
-  }
-  return demoMap[type][0] || null;
 }
 
 async function loadRelatedItems(type, current) {
-  if (current?.id && current?.createdLabel && state.firebaseReady) {
+  if (current?.id && state.firebaseReady) {
     try {
       const rows = await loadCollectionSafe(type, { limit: 6 });
-      const related = getRelated(rows, current.id);
-      if (related.length) return related;
+      return getRelated(rows, current.id);
     } catch (error) {
       console.warn(error);
     }
   }
-  return getRelated(demoMap[type], current?.id);
+  return [];
 }
 
 function switchMainImage(url, index) {

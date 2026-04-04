@@ -1,29 +1,69 @@
 <!doctype html>
 <html lang="th">
 <head>
+  <title>LAYA Resident – Members</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta http-equiv="refresh" content="0; url=./admin.html?tab=members" />
-  <title>Redirecting to Members tab…</title>
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident Elite Black Card web app" />
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
   <link rel="stylesheet" href="./assets/css/components.css" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js"></script>
 </head>
-<body data-page="members-redirect">
+<body data-page="members">
   <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
     <main class="main-content">
-      <section class="panel page-hero">
-        <div class="eyebrow gold">Redirecting</div>
-        <h2>Opening Members tab…</h2>
-        <p class="page-intro">หน้านี้ถูกรวมเข้ากับ Admin Dashboard แล้ว ระบบจะพาไปที่ <strong>Admin → Members</strong> อัตโนมัติ</p>
-        <div class="row gap wrap mt-md">
-          <a class="primary-btn" href="./admin.html?tab=members">Open Members Tab</a>
-          <a class="ghost-btn" href="./admin.html">Open Admin Dashboard</a>
+      <section class="page-hero panel">
+        <div class="eyebrow gold">Members Page</div>
+        <h2>Resident members</h2>
+        <p class="page-intro">หน้านี้ถูกแยกออกมาจาก Admin dashboard เป็นไฟล์ HTML จริงแล้ว เพื่อให้จัดการข้อมูลสมาชิกได้ชัดขึ้นและขยายฟังก์ชันภายหลังได้ง่ายกว่าเดิม</p>
+        <div class="subnav">
+          <a class="nav-btn" href="./admin.html">Admin Dashboard</a>
+          <a class="nav-btn" href="./member.html">Resident Home</a>
         </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <div>
+            <h3 style="margin:0">Search Members</h3>
+            <p class="readonly-note">ค้นหาจากชื่อ member code หรือ email</p>
+          </div>
+          <span id="memberCountBadge" class="badge-inline">0 members</span>
+        </div>
+        <div class="row gap stretch mt-sm">
+          <input id="membersSearch" class="input" type="text" placeholder="Search resident" />
+          <button id="membersSearchBtn" class="secondary-btn">Search</button>
+        </div>
+        <div id="membersList" class="card-list mt-md"></div>
       </section>
     </main>
   </div>
-  <script>window.location.replace('./admin.html?tab=members');</script>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="./admin.html">Admin</a>
+    <a class="nav-btn" href="./members.html">Members</a>
+    <a class="nav-btn" href="./news.html">News</a>
+    <a class="nav-btn" href="./promotions.html">Promotions</a>
+    <a class="nav-btn" href="./benefits.html">Benefits</a>
+    <a class="nav-btn" href="./home.html">Resident Path</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
 </body>
 </html>

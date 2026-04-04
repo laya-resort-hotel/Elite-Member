@@ -1,3 +1,4 @@
+
 import {
   collection,
   doc,
@@ -8,25 +9,6 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
-import { demoResident } from '../data/demo.js';
-
-function normalizeLegacyResident(record = {}, id = '') {
-  return {
-    id: id || record.id || record.memberId || record.memberCode || 'resident',
-    memberId: record.memberId || record.id || '',
-    publicCardCode: record.publicCardCode || record.memberCode || '',
-    memberCode: record.publicCardCode || record.memberCode || record.memberId || 'LAYA-0001',
-    fullName: record.fullName || 'Resident Member',
-    tier: record.tier || 'Elite Black',
-    status: record.status || 'ACTIVE',
-    residence: record.residence || record.roomNo || '-',
-    email: record.email || '',
-    phone: record.phone || '',
-    preferredLanguage: record.preferredLanguage || 'en',
-    points: Number(record.points || 0),
-    totalSpend: Number(record.totalSpend || 0),
-  };
-}
 
 function normalizeMemberRecord(record = {}, id = '') {
   const ownedUnits = Array.isArray(record.ownedUnits) ? record.ownedUnits : [];
@@ -36,7 +18,7 @@ function normalizeMemberRecord(record = {}, id = '') {
     id: id || record.memberId || record.publicCardCode || 'resident',
     memberId: record.memberId || id || '',
     publicCardCode: record.publicCardCode || '',
-    memberCode: record.publicCardCode || record.memberId || 'LAYA-0001',
+    memberCode: record.publicCardCode || record.memberId || '',
     fullName: record.fullName || [record.firstName, record.lastName].filter(Boolean).join(' ') || 'Resident Member',
     tier: record.tier === 'elite_black' ? 'Elite Black' : (record.tier || 'Elite Black'),
     status: String(record.status || 'ACTIVE').replace(/_/g, ' ').toUpperCase(),
@@ -64,6 +46,7 @@ async function attachWalletSummary(resident = {}) {
       pendingPoints: Number(wallet.pendingPoints ?? 0),
       lifetimeEarned: Number(wallet.lifetimeEarned ?? 0),
       lifetimeRedeemed: Number(wallet.lifetimeRedeemed ?? 0),
+      lifetimeExpired: Number(wallet.lifetimeExpired ?? 0),
       tier: wallet.tier === 'elite_black' ? 'Elite Black' : (resident.tier || 'Elite Black'),
       wallet,
     };
@@ -73,10 +56,30 @@ async function attachWalletSummary(resident = {}) {
   }
 }
 
+async function attachSpendSummary(resident = {}) {
+  const memberId = resident.memberId || resident.raw?.memberId;
+  if (!memberId) return resident;
+
+  try {
+    const spendSnap = await getDocs(query(collection(state.db, 'spend_transactions'), where('memberId', '==', memberId), limit(200)));
+    const totalSpend = spendSnap.docs.reduce((sum, row) => sum + Number(row.data()?.amountEligible ?? row.data()?.amountGross ?? 0), 0);
+    return { ...resident, totalSpend };
+  } catch (error) {
+    console.warn('spend lookup failed', error);
+    return resident;
+  }
+}
+
+async function attachMemberSummaries(resident = {}) {
+  let row = await attachWalletSummary(resident);
+  row = await attachSpendSummary(row);
+  return row;
+}
+
 async function findMemberByAuth(uid, email, memberKey) {
   const membersRef = collection(state.db, 'members');
-
   let snap;
+
   if (memberKey) {
     snap = await getDocs(query(membersRef, where('publicCardCode', '==', memberKey), limit(1)));
     if (!snap.empty) return snap.docs[0];
@@ -87,23 +90,11 @@ async function findMemberByAuth(uid, email, memberKey) {
   snap = await getDocs(query(membersRef, where('authUid', '==', uid), limit(1)));
   if (!snap.empty) return snap.docs[0];
 
-  snap = await getDocs(query(membersRef, where('email', '==', email), limit(1)));
-  if (!snap.empty) return snap.docs[0];
-
-  return null;
-}
-
-async function findLegacyResident(uid, email, memberKey) {
-  const residentsRef = collection(state.db, 'residents');
-  let snap;
-  if (memberKey) {
-    snap = await getDocs(query(residentsRef, where('memberCode', '==', memberKey), limit(1)));
+  if (email) {
+    snap = await getDocs(query(membersRef, where('email', '==', email), limit(1)));
     if (!snap.empty) return snap.docs[0];
   }
-  snap = await getDocs(query(residentsRef, where('uid', '==', uid), limit(1)));
-  if (!snap.empty) return snap.docs[0];
-  snap = await getDocs(query(residentsRef, where('email', '==', email), limit(1)));
-  if (!snap.empty) return snap.docs[0];
+
   return null;
 }
 
@@ -124,50 +115,31 @@ export async function loadUserProfile(uid, email) {
   } catch (error) {
     console.warn('user profile read failed', error);
   }
-  return { role: 'resident', email, memberId: '', memberCode: '' };
+  return { role: 'resident', email, memberId: '', memberCode: '', publicCardCode: '' };
 }
 
 export async function loadResidentForUser(uid, email, memberCode) {
   try {
     const memberDoc = await findMemberByAuth(uid, email, memberCode);
-    if (memberDoc) {
-      const resident = normalizeMemberRecord(memberDoc.data(), memberDoc.id);
-      return await attachWalletSummary(resident);
-    }
+    if (!memberDoc) return null;
+    const resident = normalizeMemberRecord(memberDoc.data(), memberDoc.id);
+    return await attachMemberSummaries(resident);
   } catch (error) {
     console.warn('member lookup failed', error);
+    return null;
   }
-
-  try {
-    const legacyDoc = await findLegacyResident(uid, email, memberCode);
-    if (legacyDoc) {
-      return normalizeLegacyResident(legacyDoc.data(), legacyDoc.id);
-    }
-  } catch (error) {
-    console.warn('resident lookup failed', error);
-  }
-
-  return demoResident;
 }
 
 export async function loadAllResidents() {
   try {
     const membersSnap = await getDocs(collection(state.db, 'members'));
-    if (!membersSnap.empty) {
-      return await Promise.all(
-        membersSnap.docs.map(async (d) => attachWalletSummary(normalizeMemberRecord(d.data(), d.id)))
-      );
-    }
+    if (membersSnap.empty) return [];
+    return await Promise.all(
+      membersSnap.docs.map(async (d) => attachMemberSummaries(normalizeMemberRecord(d.data(), d.id)))
+    );
   } catch (error) {
     console.warn('load members failed', error);
-  }
-
-  try {
-    const snap = await getDocs(collection(state.db, 'residents'));
-    return snap.docs.map((d) => normalizeLegacyResident(d.data(), d.id));
-  } catch (error) {
-    console.warn('load residents failed', error);
-    return [demoResident];
+    return [];
   }
 }
 

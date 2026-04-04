@@ -30,23 +30,23 @@
     </header>
 
     <main class="main-content">
-      <section id="adminHeroSection" class="panel page-hero">
+      <section class="panel page-hero">
         <div class="eyebrow gold">Admin Dashboard</div>
         <h2>Single-page CMS</h2>
         <p class="page-intro">รวมการจัดการ News / Promotions / Benefits ไว้ในหน้าเดียวแบบแท็บ เพื่อให้ทำงานหลังบ้านง่ายขึ้น ไม่ต้องสลับหลายหน้า</p>
-        <div id="adminHeroMetrics" class="grid-3 compact-grid">
+        <div class="grid-3 compact-grid">
           <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
           <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
           <div class="metric-card"><span>Total Spend</span><strong id="kpiSpend">฿0</strong></div>
         </div>
-        <div id="adminHeroActions" class="row gap wrap mt-md">
+        <div class="row gap wrap mt-md">
           <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
-          <a class="ghost-btn" href="./admin.html?tab=members">Open Members Tab</a>
+          <a class="ghost-btn" href="./members.html">Legacy Members Page</a>
           <a class="ghost-btn" href="./home.html">Resident Path</a>
         </div>
       </section>
 
-      <section id="adminOverviewGrid" class="admin-grid mt-lg">
+      <section class="admin-grid mt-lg">
         <div class="panel">
           <div class="section-head">
             <h3>Member Preview</h3>
@@ -254,30 +254,6 @@
               </div>
             </div>
 
-            <div id="memberSignupPanel" class="member-auth-panel mt-md">
-              <div class="panel-title-row compact-row">
-                <div>
-                  <div class="eyebrow gold">Resident Login Account</div>
-                  <h5>Create Firebase login from admin side</h5>
-                </div>
-                <span class="mini-badge subtle" id="memberAccountStatusBadge">No login yet</span>
-              </div>
-              <div class="upload-note" id="memberSignupStatus">ใช้ Email ด้านบน + Temporary password เพื่อสร้าง login ให้ Resident</div>
-              <div class="grid-2 mt-sm admin-editor-grid">
-                <div>
-                  <label class="field-label" for="memberSignupPasswordInput">Temporary password</label>
-                  <input id="memberSignupPasswordInput" class="input" type="password" placeholder="At least 6 characters" />
-                </div>
-                <div>
-                  <label class="field-label" for="memberSignupConfirmInput">Confirm password</label>
-                  <input id="memberSignupConfirmInput" class="input" type="password" placeholder="Confirm password" />
-                </div>
-              </div>
-              <div class="row gap wrap mt-sm">
-                <button id="createMemberLoginBtn" class="primary-btn" type="button">Create Login Account</button>
-              </div>
-            </div>
-
             <div class="grid-4 mt-md admin-editor-grid member-grid-4">
               <div>
                 <label class="field-label" for="memberStatusInput">Status</label>
@@ -430,7 +406,7 @@
 
   <nav class="bottom-nav">
     <a class="nav-btn" href="./admin.html">Admin</a>
-    <a class="nav-btn" href="./admin.html?tab=members">Members</a>
+    <a class="nav-btn" href="./members.html">Members</a>
     <a class="nav-btn" href="./home.html">Resident Path</a>
   </nav>
   <div id="toast" class="toast hidden"></div>

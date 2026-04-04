@@ -1,6 +1,5 @@
 import { state, setMode } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
-import { demoResident, demoTransactions, demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
 import { loadAllResidents } from '../services/member-service.js';
 import { addSpendTransaction, loadTransactions } from '../services/transaction-service.js';
 import {
@@ -13,7 +12,6 @@ import {
 } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import {
-  createMemberLoginAccount,
   createMemberShell,
   deleteMemberRecord,
   loadMemberById,
@@ -26,12 +24,6 @@ import { renderAdminKpis, renderResidentSearchResults, renderTable, updateStatus
 import { showToast } from '../ui/toast.js';
 import { escapeHtml, formatTHB, formatNumber } from '../core/format.js';
 
-const demoContentMap = {
-  news: demoNews,
-  promotions: demoPromotions,
-  benefits: demoBenefits,
-};
-
 const labelMap = {
   news: 'News',
   promotions: 'Promotions',
@@ -39,31 +31,8 @@ const labelMap = {
   members: 'Members',
 };
 
-const demoMembers = [
-  {
-    id: demoResident.memberId || 'ECB000001',
-    memberId: demoResident.memberId || 'ECB000001',
-    publicCardCode: demoResident.memberCode || 'LAYA-DEMO01',
-    fullName: demoResident.name || 'Demo Resident',
-    firstName: 'Demo',
-    lastName: 'Resident',
-    email: demoResident.email || 'resident@example.com',
-    phone: demoResident.phone || '',
-    status: 'active',
-    tier: 'elite_black',
-    ownerType: 'resident_owner',
-    preferredLanguage: 'en',
-    authUid: '',
-    avatarUrl: '',
-    notes: 'Demo member',
-    ownedUnits: [{ unitNo: demoResident.roomNo || 'A101', roomType: '1BR', ownershipStatus: 'owned' }],
-    createdLabel: 'Demo member',
-    updatedLabel: 'Demo member',
-  },
-];
-
 const adminContentState = {
-  activeType: 'members',
+  activeType: 'news',
   cache: {
     news: [],
     promotions: [],
@@ -161,17 +130,6 @@ function getActiveType() {
 
 function isMembersTab(type = getActiveType()) {
   return type === 'members';
-}
-
-function resolveInitialAdminTab() {
-  try {
-    const params = new URLSearchParams(window.location.search || '');
-    const tab = (params.get('tab') || window.location.hash.replace('#', '') || '').trim();
-    if (['news', 'promotions', 'benefits', 'members'].includes(tab)) return tab;
-  } catch (error) {
-    console.warn('resolveInitialAdminTab failed', error);
-  }
-  return 'members';
 }
 
 function getContentEditorState(type = getActiveType()) {
@@ -350,40 +308,6 @@ function hydrateMemberEditorFromState() {
   if ($('memberEditorModeLabel')) $('memberEditorModeLabel').textContent = editor.isExisting ? 'Editing member' : 'Create new member';
   if ($('memberEditorDocIdLabel')) $('memberEditorDocIdLabel').textContent = editor.memberId || 'Not created';
   renderMemberQrPreview();
-  updateMemberSignupUi();
-}
-
-function updateMemberSignupUi(message = '') {
-  const editor = getMemberEditorState();
-  const linked = !!String(editor.authUid || '').trim();
-  const adminCanCreate = state.firebaseReady && state.currentRole === 'admin';
-
-  const badge = $('memberAccountStatusBadge');
-  if (badge) {
-    badge.textContent = linked ? 'Auth linked' : 'No login yet';
-    badge.classList.toggle('gold', linked);
-    badge.classList.toggle('subtle', !linked);
-  }
-
-  const note = $('memberSignupStatus');
-  if (note) {
-    note.textContent = message || (linked
-      ? `Linked auth UID: ${editor.authUid}`
-      : (adminCanCreate
-        ? 'ใช้ Email ด้านบน + Temporary password เพื่อสร้าง login ให้ Resident'
-        : 'การสร้าง Firebase login ทำได้เฉพาะตอน login เป็น admin'));
-    note.classList.remove('hidden');
-  }
-
-  const passwordInput = $('memberSignupPasswordInput');
-  const confirmInput = $('memberSignupConfirmInput');
-  const createBtn = $('createMemberLoginBtn');
-  if (passwordInput) passwordInput.disabled = linked || !adminCanCreate;
-  if (confirmInput) confirmInput.disabled = linked || !adminCanCreate;
-  if (createBtn) {
-    createBtn.disabled = linked || !adminCanCreate;
-    createBtn.textContent = linked ? 'Login already created' : 'Create Login Account';
-  }
 }
 
 function updateCoverPreview() {
@@ -786,16 +710,7 @@ async function loadAdminContent(type, { force = false } = {}) {
     return adminContentState.cache[type];
   }
 
-  if (canManageContent()) {
-    adminContentState.cache[type] = await loadCollectionSafe(type, { limit: 40 });
-  } else {
-    adminContentState.cache[type] = demoContentMap[type].map((item) => ({
-      ...item,
-      createdLabel: 'Demo item',
-      updatedLabel: 'Demo item',
-    }));
-  }
-
+  adminContentState.cache[type] = await loadCollectionSafe(type, { limit: 40 });
   renderContentList();
   return adminContentState.cache[type];
 }
@@ -806,20 +721,13 @@ async function loadMembersTab({ force = false } = {}) {
     return adminMembersState.cache;
   }
 
-  if (canManageContent()) {
-    adminMembersState.cache = await loadMembersSafe({ limit: 50 });
-  } else {
-    adminMembersState.cache = demoMembers;
-  }
-
+  adminMembersState.cache = await loadMembersSafe({ limit: 50 });
   renderMembersList();
   return adminMembersState.cache;
 }
 
 async function loadEditorItem(type, itemId) {
-  const item = canManageContent()
-    ? await loadDocumentById(type, itemId)
-    : (demoContentMap[type].find((row) => row.id === itemId) || null);
+  const item = await loadDocumentById(type, itemId);
 
   if (!item) {
     showToast('ไม่พบรายการที่ต้องการเปิด', 'error');
@@ -828,11 +736,13 @@ async function loadEditorItem(type, itemId) {
 
   setContentEditorState(type, {
     docId: item.id,
-    isExisting: canManageContent(),
+    isExisting: true,
     title: item.title || '',
     summary: item.summary || item.body || '',
-    fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : ''),
-    terms: Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || ''),
+    fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('
+') : ''),
+    terms: Array.isArray(item.terms) ? item.terms.join('
+') : (item.terms || ''),
     ctaLabel: item.ctaLabel || '',
     coverImageUrl: item.coverImageUrl || '',
     coverImagePath: item.coverImagePath || '',
@@ -845,9 +755,7 @@ async function loadEditorItem(type, itemId) {
 }
 
 async function loadMemberEditorItem(memberId) {
-  const item = canManageContent()
-    ? await loadMemberById(memberId)
-    : (demoMembers.find((row) => row.memberId === memberId || row.id === memberId) || null);
+  const item = await loadMemberById(memberId);
 
   if (!item) {
     showToast('ไม่พบสมาชิกที่ต้องการเปิด', 'error');
@@ -870,7 +778,7 @@ async function loadMemberEditorItem(memberId) {
     avatarUrl: item.avatarUrl || '',
     ownedUnitsText: unitsToText(item.ownedUnits || []),
     notes: item.notes || '',
-    isExisting: canManageContent(),
+    isExisting: true,
   });
 
   hydrateMemberEditorFromState();
@@ -893,10 +801,7 @@ function resetMemberEditor() {
     publicCardCode: makeCardCodeFromMemberId(memberId),
   });
   setMemberInsightsState(blankMemberInsightsState());
-  if ($('memberSignupPasswordInput')) $('memberSignupPasswordInput').value = '';
-  if ($('memberSignupConfirmInput')) $('memberSignupConfirmInput').value = '';
   hydrateMemberEditorFromState();
-  updateMemberSignupUi();
   renderMemberInsights();
 }
 
@@ -912,19 +817,11 @@ async function ensureEditingDocId(type = getActiveType()) {
 function toggleAdminPanels(type) {
   $('adminContentLayout')?.classList.toggle('hidden', type === 'members');
   $('adminMembersLayout')?.classList.toggle('hidden', type !== 'members');
-  document.body?.classList.toggle('members-focus', type === 'members');
 }
 
 function setTab(type) {
   syncCurrentEditorFromDom();
   adminContentState.activeType = type;
-  try {
-    const url = new URL(window.location.href);
-    url.searchParams.set('tab', type);
-    history.replaceState({}, '', url.toString());
-  } catch (error) {
-    console.warn('setTab replaceState failed', error);
-  }
 
   $$('.admin-tab-btn').forEach((btn) => {
     const active = btn.dataset.adminTab === type;
@@ -952,16 +849,6 @@ function setTab(type) {
     updateMemberReadonlyNote();
     hydrateMemberEditorFromState();
     renderMembersList();
-    const signupPanel = $('memberSignupPanel');
-    if (signupPanel) {
-      requestAnimationFrame(() => {
-        signupPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    }
-    const nameInput = $('memberFullNameInput');
-    if (nameInput) {
-      setTimeout(() => nameInput.focus(), 50);
-    }
     return;
   }
 
@@ -1285,7 +1172,6 @@ async function saveCurrentMember() {
       isExisting: true,
     });
     hydrateMemberEditorFromState();
-    updateMemberSignupUi();
     await refreshMemberInsights({ memberId });
     await loadMembersTab({ force: true });
     await loadAdminOverview();
@@ -1293,113 +1179,6 @@ async function saveCurrentMember() {
   } catch (error) {
     console.error(error);
     showToast(error.message || 'บันทึก member ไม่สำเร็จ', 'error');
-  }
-}
-
-async function handleCreateMemberLoginAccount() {
-  if (!state.firebaseReady) {
-    showToast('Firebase not ready', 'error');
-    return;
-  }
-
-  if (state.currentRole !== 'admin') {
-    showToast('Create Login Account ใช้ได้เฉพาะ admin', 'error');
-    updateMemberSignupUi();
-    return;
-  }
-
-  syncMemberEditorFromDom();
-  const editor = getMemberEditorState();
-  const password = $('memberSignupPasswordInput')?.value || '';
-  const confirmPassword = $('memberSignupConfirmInput')?.value || '';
-
-  if (editor.authUid) {
-    showToast('Member นี้มี login อยู่แล้ว', 'error');
-    updateMemberSignupUi();
-    return;
-  }
-
-  if (!editor.fullName) {
-    showToast('กรอก Full name ก่อน', 'error');
-    return;
-  }
-
-  if (!editor.email) {
-    showToast('กรอก Email ก่อนสร้าง login', 'error');
-    return;
-  }
-
-  if (password.length < 6) {
-    showToast('Password ต้องอย่างน้อย 6 ตัวอักษร', 'error');
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    showToast('Confirm password ไม่ตรงกัน', 'error');
-    return;
-  }
-
-  const memberId = editor.memberId || createMemberShell();
-  const publicCardCode = editor.publicCardCode || makeCardCodeFromMemberId(memberId);
-  const payload = {
-    memberId,
-    publicCardCode,
-    authUid: editor.authUid,
-    fullName: editor.fullName,
-    firstName: editor.firstName,
-    lastName: editor.lastName,
-    email: editor.email,
-    phone: editor.phone,
-    status: editor.status,
-    tier: editor.tier,
-    ownerType: editor.ownerType,
-    preferredLanguage: editor.preferredLanguage,
-    avatarUrl: editor.avatarUrl,
-    ownedUnits: parseUnitsText(editor.ownedUnitsText),
-    notes: editor.notes,
-  };
-
-  try {
-    updateMemberSignupUi('Creating Firebase login account...');
-
-    if (editor.isExisting) {
-      await updateMemberRecord(memberId, payload);
-    } else {
-      await saveMemberRecord(payload, { memberId });
-    }
-
-    const createdUser = await createMemberLoginAccount({
-      memberId,
-      email: editor.email,
-      password,
-      displayName: editor.fullName,
-      publicCardCode,
-    });
-
-    setMemberEditorState({
-      ...editor,
-      memberId,
-      publicCardCode,
-      authUid: createdUser.uid,
-      isExisting: true,
-    });
-
-    if ($('memberSignupPasswordInput')) $('memberSignupPasswordInput').value = '';
-    if ($('memberSignupConfirmInput')) $('memberSignupConfirmInput').value = '';
-
-    hydrateMemberEditorFromState();
-    await refreshMemberInsights({ memberId });
-    await loadMembersTab({ force: true });
-    await loadAdminOverview();
-    updateMemberSignupUi(`Login created for ${editor.email}`);
-    showToast('Resident login account created');
-  } catch (error) {
-    console.error(error);
-    const message = error?.code === 'auth/email-already-in-use'
-      ? 'Email นี้ถูกใช้ใน Firebase Auth แล้ว'
-      : (error.message || 'Create login account failed');
-    updateMemberSignupUi(message);
-    showToast(message, 'error');
   }
 }
 
@@ -1536,31 +1315,19 @@ async function loadAdminOverview() {
     const totalPoints = transactions.reduce((sum, row) => sum + Number(row.points || 0), 0);
     const totalSpend = transactions.reduce((sum, row) => sum + Number(row.amount || 0), 0);
     renderAdminKpis({ residents: residents.length, points: totalPoints, spend: totalSpend });
-    renderTable($('adminTransactionsTable'), transactions);
+    renderTable($('adminTransactionsTable'), transactions, 'No transactions yet');
     renderResidentSearchResults($('residentSearchResults'), residents.slice(0, 6));
   } catch (error) {
     console.warn(error);
-    renderAdminKpis({
-      residents: 1,
-      points: demoTransactions.reduce((a, b) => a + b.points, 0),
-      spend: demoTransactions.reduce((a, b) => a + b.amount, 0),
-    });
-    renderTable($('adminTransactionsTable'), demoTransactions);
-    renderResidentSearchResults($('residentSearchResults'), [demoResident]);
-    showToast('แสดงข้อมูล demo admin เพราะยังอ่าน Firestore ไม่ได้', 'error');
+    renderAdminKpis({ residents: 0, points: 0, spend: 0 });
+    renderTable($('adminTransactionsTable'), [], 'No transactions yet');
+    renderResidentSearchResults($('residentSearchResults'), []);
+    showToast('อ่านข้อมูลจาก Firestore ไม่สำเร็จ', 'error');
   }
 }
 
 export function openDemoAdmin() {
-  renderAdminKpis({
-    residents: 1,
-    points: demoTransactions.reduce((a, b) => a + b.points, 0),
-    spend: demoTransactions.reduce((a, b) => a + b.amount, 0),
-  });
-  renderResidentSearchResults($('residentSearchResults'), [demoResident]);
-  renderTable($('adminTransactionsTable'), demoTransactions);
-  setMode('demo-admin');
-  updateStatusLabels({ modeState: 'demo-admin' });
+  return null;
 }
 
 async function refreshCurrentTab(force = true) {
@@ -1611,7 +1378,6 @@ function bindAdminContentTabs() {
   $('saveMemberBtn')?.addEventListener('click', saveCurrentMember);
   $('cancelMemberEditBtn')?.addEventListener('click', resetMemberEditor);
   $('deleteMemberBtn')?.addEventListener('click', deleteCurrentMember);
-  $('createMemberLoginBtn')?.addEventListener('click', handleCreateMemberLoginAccount);
   $('copyMemberCardCodeBtn')?.addEventListener('click', handleCopyMemberCardCode);
   $('downloadMemberQrBtn')?.addEventListener('click', handleDownloadMemberQr);
 
@@ -1667,7 +1433,6 @@ function bindSpendForm() {
 }
 
 export async function loadAdminDashboard() {
-  adminContentState.activeType = resolveInitialAdminTab();
   await loadAdminOverview();
   updateReadonlyNote();
   updateMemberReadonlyNote();
@@ -1681,10 +1446,8 @@ export async function loadAdminDashboard() {
 }
 
 export function bindAdminPage() {
-  adminContentState.activeType = resolveInitialAdminTab();
   bindSpendForm();
   bindAdminContentTabs();
-  setTab(getActiveType());
 
   if ($('loadAdminDataBtn')) {
     $('loadAdminDataBtn').addEventListener('click', async () => {
@@ -1693,8 +1456,7 @@ export function bindAdminPage() {
         await refreshCurrentTab(true);
         return;
       }
-      openDemoAdmin();
-      await refreshCurrentTab(true);
+      showToast('ต้อง login ก่อนใช้งานหลังบ้าน', 'error');
     });
   }
 }

@@ -1,66 +1,67 @@
+
 import { state, setMode } from '../core/state.js';
 import { $ } from '../core/dom.js';
-import { demoBenefits, demoNews, demoPromotions, demoResident, demoTransactions } from '../data/demo.js';
 import { loadCollectionSafe } from '../services/content-service.js';
 import { loadTransactions } from '../services/transaction-service.js';
 import { renderCards, renderResidentCard, renderTable, renderVaultHome, updateStatusLabels } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
 
+function emptyResident() {
+  return {
+    fullName: 'No member linked',
+    tier: 'Elite Black',
+    status: 'INACTIVE',
+    residence: '-',
+    memberCode: '-',
+    publicCardCode: '-',
+    points: 0,
+    totalSpend: 0,
+  };
+}
+
 export async function loadResidentDashboard() {
-  const resident = state.currentResident || demoResident;
+  const resident = state.currentResident || emptyResident();
   renderResidentCard(resident);
+
+  if (!state.currentResident) {
+    showToast('ไม่พบข้อมูลสมาชิกใน Firebase สำหรับบัญชีนี้', 'error');
+  }
+
   try {
     const [benefits, news, promotions, transactions] = await Promise.all([
       loadCollectionSafe('benefits', { limit: 3 }),
       loadCollectionSafe('news', { limit: 3 }),
       loadCollectionSafe('promotions', { limit: 3 }),
-      loadTransactions({ limit: 10, whereMemberCode: resident.memberCode, orderBy: false }),
+      state.currentResident?.memberCode ? loadTransactions({ limit: 10, whereMemberCode: resident.memberCode }) : Promise.resolve([]),
     ]);
-    const finalBenefits = benefits.length ? benefits : demoBenefits;
-    const finalNews = news.length ? news : demoNews;
-    const finalPromotions = promotions.length ? promotions : demoPromotions;
+
     if ($('homeNewsHero') || $('homePromotionGrid')) {
-      renderVaultHome(finalNews[0] || demoNews[0], finalPromotions);
+      renderVaultHome(news[0] || null, promotions);
     }
-    if ($('benefitsList')) renderCards($('benefitsList'), finalBenefits, 'No benefits yet');
-    if ($('newsList')) renderCards($('newsList'), finalNews, 'No news yet');
-    if ($('promoList')) renderCards($('promoList'), finalPromotions, 'No promotions yet');
-    if ($('transactionsTable')) renderTable($('transactionsTable'), transactions.length ? transactions : demoTransactions);
+    if ($('benefitsList')) renderCards($('benefitsList'), benefits, 'No benefits yet');
+    if ($('newsList')) renderCards($('newsList'), news, 'No news yet');
+    if ($('promoList')) renderCards($('promoList'), promotions, 'No promotions yet');
+    if ($('transactionsTable')) renderTable($('transactionsTable'), transactions, 'No transactions yet');
   } catch (error) {
-    console.warn(error);
-    if ($('homeNewsHero') || $('homePromotionGrid')) {
-      renderVaultHome(demoNews[0], demoPromotions);
-    }
-    if ($('benefitsList')) renderCards($('benefitsList'), demoBenefits);
-    if ($('newsList')) renderCards($('newsList'), demoNews);
-    if ($('promoList')) renderCards($('promoList'), demoPromotions);
-    if ($('transactionsTable')) renderTable($('transactionsTable'), demoTransactions);
-    showToast('ใช้ข้อมูลตัวอย่างชั่วคราว เพราะอ่าน Firestore ไม่ได้', 'error');
+    console.error(error);
+    if ($('benefitsList')) renderCards($('benefitsList'), [], 'No benefits yet');
+    if ($('newsList')) renderCards($('newsList'), [], 'No news yet');
+    if ($('promoList')) renderCards($('promoList'), [], 'No promotions yet');
+    if ($('transactionsTable')) renderTable($('transactionsTable'), [], 'No transactions yet');
+    showToast('อ่านข้อมูลจาก Firebase ไม่สำเร็จ', 'error');
   }
 }
 
 export function openDemoResident() {
-  state.currentResident = demoResident;
-  renderResidentCard(demoResident);
-  if ($('homeNewsHero') || $('homePromotionGrid')) {
-    renderVaultHome(demoNews[0], demoPromotions);
-  }
-  if ($('benefitsList')) renderCards($('benefitsList'), demoBenefits);
-  if ($('newsList')) renderCards($('newsList'), demoNews);
-  if ($('promoList')) renderCards($('promoList'), demoPromotions);
-  if ($('transactionsTable')) renderTable($('transactionsTable'), demoTransactions);
-  setMode('demo-resident');
-  updateStatusLabels({ modeState: 'demo-resident' });
+  setMode('resident-live');
+  updateStatusLabels({ modeState: 'resident-live' });
 }
 
 export function bindResidentPage() {
-  if ($('refreshResidentBtn')) {
+  if ($('refreshResidentBtn') && !$('refreshResidentBtn').dataset.bound) {
+    $('refreshResidentBtn').dataset.bound = '1';
     $('refreshResidentBtn').addEventListener('click', async () => {
-      if (state.currentMode.includes('live')) {
-        await loadResidentDashboard();
-        return;
-      }
-      openDemoResident();
+      await loadResidentDashboard();
     });
   }
 }

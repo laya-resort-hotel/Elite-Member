@@ -1,33 +1,61 @@
+
 import { state } from '../core/state.js';
 import { $ } from '../core/dom.js';
-import { demoResident } from '../data/demo.js';
-import { demoRewards } from '../data/rewards.js';
 import { escapeHtml, formatNumber } from '../core/format.js';
 import { renderResidentCard } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
+import { loadCollectionSafe } from '../services/content-service.js';
 
-export function loadRedemptionPage() {
-  const resident = state.currentResident || demoResident;
+function emptyResident() {
+  return {
+    fullName: 'No member linked',
+    tier: 'Elite Black',
+    status: 'INACTIVE',
+    residence: '-',
+    memberCode: '-',
+    publicCardCode: '-',
+    points: 0,
+    totalSpend: 0,
+  };
+}
+
+export async function loadRedemptionPage() {
+  const resident = state.currentResident || emptyResident();
   renderResidentCard(resident);
   const points = Number(resident.points || 0);
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
-  renderRewards(points);
+
+  try {
+    const benefits = await loadCollectionSafe('benefits', { limit: 50 });
+    const rewards = benefits.filter((item) => item.isActive !== false && (item.pointsCost || item.redemptionMode === 'points' || item.benefitType === 'reward'));
+    renderRewards(rewards, points);
+  } catch (error) {
+    console.error(error);
+    renderRewards([], points);
+    showToast('อ่าน rewards จาก Firebase ไม่สำเร็จ', 'error');
+  }
 }
 
-function renderRewards(points) {
+function renderRewards(rewards = [], points) {
   const container = $('rewardList');
   if (!container) return;
-  container.innerHTML = demoRewards.map((reward) => {
-    const canRedeem = points >= reward.pointsRequired;
+  if (!rewards.length) {
+    container.innerHTML = '<div class="card-item"><p>No rewards available</p></div>';
+    return;
+  }
+  container.innerHTML = rewards.map((reward) => {
+    const pointsRequired = Number(reward.pointsCost || 0);
+    const canRedeem = points >= pointsRequired;
+    const imageUrl = reward.coverImageUrl || reward.galleryImages?.[0]?.url || '';
     return `
       <div class="reward-card vault-reward-card">
-        <div class="reward-thumb vault-reward-thumb">${reward.imageUrl ? `<img src="${escapeHtml(reward.imageUrl)}" alt="${escapeHtml(reward.title)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
+        <div class="reward-thumb vault-reward-thumb">${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(reward.title || 'Reward')}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
         <div class="reward-info vault-reward-info">
-          <h3>${escapeHtml(reward.title)}</h3>
-          <div class="reward-meta vault-points-text">${formatNumber(reward.pointsRequired)} Point(s)</div>
+          <h3>${escapeHtml(reward.title || 'Reward')}</h3>
+          <div class="reward-meta vault-points-text">${formatNumber(pointsRequired)} Point(s)</div>
         </div>
         <div class="reward-action vault-reward-action">
-          <button type="button" class="vault-redeem-btn ${canRedeem ? 'ready' : 'disabled'}" data-reward-id="${escapeHtml(reward.id)}" ${canRedeem ? '' : 'disabled'}>Redeem</button>
+          <button type="button" class="vault-redeem-btn ${canRedeem ? 'ready' : 'disabled'}" data-reward-id="${escapeHtml(reward.id || '')}" ${canRedeem ? '' : 'disabled'}>Redeem</button>
         </div>
       </div>
     `;

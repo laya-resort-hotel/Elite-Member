@@ -1,33 +1,115 @@
 
-import { $ } from './core/dom.js';
 import { state, setMode } from './core/state.js';
-import { getDemoMode, clearDemoMode } from './core/session.js';
 import { highlightCurrentNav } from './core/app-shell.js';
 import { initFirebaseServices } from './services/firebase-service.js';
 import { subscribeAuth } from './services/auth-service.js';
 import { loadResidentForUser, loadUserProfile } from './services/member-service.js';
 import { showToast } from './ui/toast.js';
 import { renderResidentCard, updateStatusLabels } from './ui/renderers.js';
-import { bindAuthPage } from './pages/auth-page.js';
-import { bindResidentPage, loadResidentDashboard, openDemoResident } from './pages/resident-page.js';
-import { loadRedemptionPage } from './pages/redemption-page.js';
-import { bindAdminPage, loadAdminDashboard, openDemoAdmin } from './pages/admin-page.js';
-import { applyContentPageState, bindContentPage, loadContentPage } from './pages/content-page.js';
-import { bindDetailPage, loadDetailPage } from './pages/detail-page.js';
 import { bindFlipCards } from './ui/card-flip.js';
-import { demoResident } from './data/demo.js';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
+const PROTECTED_PAGES = new Set(['admin', 'members', 'resident', 'home', 'member', 'settings', 'redemption']);
 
 function go(url) {
-  if (window.location.pathname.endsWith(url)) return;
-  window.location.href = `./${url}`;
+  const target = `./${url}`;
+  if (window.location.href.endsWith(target) || window.location.pathname.endsWith(url)) return;
+  window.location.href = target;
+}
+
+function emptyResident() {
+  return {
+    fullName: 'No member linked',
+    tier: 'Elite Black',
+    status: 'INACTIVE',
+    residence: '-',
+    memberCode: '-',
+    publicCardCode: '-',
+    points: 0,
+    totalSpend: 0,
+  };
+}
+
+async function initCurrentPage(isLive = false) {
+  try {
+    switch (page) {
+      case 'index': {
+        const { bindAuthPage } = await import('./pages/auth-page.js');
+        bindAuthPage();
+        break;
+      }
+      case 'resident':
+      case 'home':
+      case 'member': {
+        const mod = await import('./pages/resident-page.js');
+        mod.bindResidentPage();
+        await mod.loadResidentDashboard();
+        break;
+      }
+      case 'redemption': {
+        const mod = await import('./pages/redemption-page.js');
+        await mod.loadRedemptionPage();
+        break;
+      }
+      case 'settings': {
+        renderResidentCard(state.currentResident || emptyResident());
+        const btn = document.getElementById('changeLanguageBtn');
+        if (btn && !btn.dataset.bound) {
+          btn.dataset.bound = '1';
+          btn.addEventListener('click', () => showToast('ระบบสลับภาษาจะทำต่อในรอบถัดไป'));
+        }
+        break;
+      }
+      case 'news':
+      case 'promotions':
+      case 'benefits': {
+        const mod = await import('./pages/content-page.js');
+        mod.applyContentPageState(contentType);
+        mod.bindContentPage(contentType);
+        await mod.loadContentPage(contentType);
+        const note = document.getElementById('cmsReadOnlyNote');
+        if (note) {
+          note.textContent = isLive && ['admin', 'manager', 'staff'].includes(state.currentRole)
+            ? 'คุณกำลังอยู่ในโหมดแก้ไขข้อมูลจริงผ่าน Firebase'
+            : 'หน้านี้อ่านข้อมูลจาก Firebase เท่านั้น';
+        }
+        break;
+      }
+      case 'news-detail':
+      case 'promotions-detail':
+      case 'benefits-detail': {
+        const mod = await import('./pages/detail-page.js');
+        mod.bindDetailPage(contentType);
+        await mod.loadDetailPage(contentType);
+        break;
+      }
+      case 'admin': {
+        const mod = await import('./pages/admin-page.js');
+        mod.bindAdminPage();
+        await mod.loadAdminDashboard();
+        break;
+      }
+      case 'members': {
+        const mod = await import('./pages/members-page.js');
+        mod.bindMembersPage();
+        await mod.loadMembersPage();
+        break;
+      }
+      default:
+        break;
+    }
+  } catch (error) {
+    console.error('Page init failed:', error);
+    updateStatusLabels({ modeState: 'Page Error' });
+    showToast(error?.message || 'Page init failed', 'error');
+  }
 }
 
 async function renderPageForRole(role, user) {
   if (['admin', 'manager', 'staff'].includes(role)) {
     state.currentRole = role;
+    state.currentResident = null;
     setMode('admin-live');
     updateStatusLabels({ modeState: 'admin-live' });
     if (page === 'index') {
@@ -49,103 +131,64 @@ async function renderPageForRole(role, user) {
   await initCurrentPage(true);
 }
 
-async function initCurrentPage(isLive = false) {
-  switch (page) {
-    case 'index':
-      break;
-    case 'resident':
-    case 'home':
-    case 'member':
-      bindResidentPage();
-      if (isLive) await loadResidentDashboard();
-      else openDemoResident();
-      break;
-    case 'redemption':
-      await loadRedemptionPage();
-      break;
-    case 'settings':
-      renderResidentCard(state.currentResident || demoResident);
-      if ($('changeLanguageBtn')) {
-        $('changeLanguageBtn').addEventListener('click', () => showToast('ระบบสลับภาษาจะทำต่อได้ในรอบถัดไป'));
-      }
-      break;
-    case 'news':
-    case 'promotions':
-    case 'benefits':
-      applyContentPageState(contentType);
-      bindContentPage(contentType);
-      await loadContentPage(contentType);
-      if ($('cmsReadOnlyNote')) {
-        $('cmsReadOnlyNote').textContent = isLive && ['admin', 'manager', 'staff'].includes(state.currentRole)
-          ? 'คุณกำลังอยู่ในโหมดแก้ไขข้อมูลจริงผ่าน Firebase'
-          : 'หน้านี้อ่านข้อมูลได้ แต่การบันทึกจะใช้ได้เมื่อ login เป็น admin/staff';
-      }
-      break;
-    case 'news-detail':
-    case 'promotions-detail':
-    case 'benefits-detail':
-      bindDetailPage(contentType);
-      await loadDetailPage(contentType);
-      break;
-    case 'admin':
-      bindAdminPage();
-      if (isLive) await loadAdminDashboard();
-      else openDemoAdmin();
-      break;
-    case 'members':
-      go('admin.html?tab=members');
-      return;
-    default:
-      break;
+async function handleSignedOut() {
+  state.currentUser = null;
+  state.currentRole = null;
+  state.currentResident = null;
+  state.memberCode = '';
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.classList.add('hidden');
+  updateStatusLabels({ authState: 'Not signed in', modeState: 'auth' });
+  setMode('auth');
+
+  if (page === 'index') {
+    await initCurrentPage(true);
+    return;
   }
+
+  if (PROTECTED_PAGES.has(page)) {
+    showToast('กรุณา login ก่อนใช้งาน', 'error');
+    go('index.html');
+    return;
+  }
+
+  await initCurrentPage(true);
 }
 
 async function initApp() {
   highlightCurrentNav();
-  bindAuthPage();
   bindFlipCards();
+  updateStatusLabels({ firebaseState: 'Connecting...', authState: 'Checking...', modeState: 'Booting' });
 
   try {
     initFirebaseServices();
     updateStatusLabels({ firebaseState: 'Connected' });
 
     subscribeAuth(async (user) => {
-      state.currentUser = user;
-      updateStatusLabels({ authState: user?.email || 'Not signed in' });
-      if ($('logoutBtn')) $('logoutBtn').classList.toggle('hidden', !user && !getDemoMode());
+      try {
+        state.currentUser = user || null;
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.classList.toggle('hidden', !user);
 
-      if (!user) {
-        const demoMode = getDemoMode();
-        if (demoMode === 'admin') {
-          state.currentRole = 'admin';
-          setMode('demo-admin');
-          updateStatusLabels({ modeState: 'demo-admin' });
-          await initCurrentPage(false);
+        if (!user) {
+          await handleSignedOut();
           return;
         }
-        if (demoMode === 'resident') {
-          state.currentRole = 'resident';
-          setMode('demo-resident');
-          updateStatusLabels({ modeState: 'demo-resident' });
-          await initCurrentPage(false);
-          return;
-        }
-        setMode(page === 'index' ? 'auth' : 'guest');
-        updateStatusLabels({ modeState: page === 'index' ? 'auth' : 'guest' });
-        await initCurrentPage(false);
-        return;
+
+        updateStatusLabels({ authState: user.email || user.uid || 'Signed in' });
+        const profile = await loadUserProfile(user.uid, user.email || '');
+        state.memberCode = profile.publicCardCode || profile.memberCode || profile.memberId || '';
+        await renderPageForRole(profile.role, user);
+      } catch (callbackError) {
+        console.error('Auth callback error:', callbackError);
+        updateStatusLabels({ modeState: 'Auth Error' });
+        showToast(callbackError?.message || 'Auth callback failed', 'error');
       }
-
-      clearDemoMode();
-      const profile = await loadUserProfile(user.uid, user.email);
-      state.memberCode = profile.publicCardCode || profile.memberCode || profile.memberId || '';
-      await renderPageForRole(profile.role, user);
     });
   } catch (error) {
-    console.error(error);
-    updateStatusLabels({ firebaseState: 'Error' });
-    showToast('Firebase init failed, using demo mode', 'error');
-    await initCurrentPage(false);
+    console.error('Firebase init failed:', error);
+    updateStatusLabels({ firebaseState: 'Error', authState: '-', modeState: 'Firebase Error' });
+    showToast(error?.message || 'Firebase init failed', 'error');
   }
 }
 

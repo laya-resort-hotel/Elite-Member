@@ -1,16 +1,9 @@
 import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
-import { demoBenefits, demoNews, demoPromotions } from '../data/demo.js';
 import { createContentShell, deleteCMSItem, loadCollectionSafe, loadDocumentById, saveStructuredCMS, updateStructuredCMS } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
-
-const demoMap = {
-  news: demoNews,
-  promotions: demoPromotions,
-  benefits: demoBenefits,
-};
 
 const labelMap = {
   news: 'News',
@@ -41,9 +34,7 @@ function clearEditRequestId() {
 }
 
 function detailHref(type, item) {
-  if (item.id && item.createdLabel) return `./${type}-detail.html?id=${encodeURIComponent(item.id)}`;
-  const demoId = item.id || '';
-  return `./${type}-detail.html?demo=${encodeURIComponent(demoId)}`;
+  return `./${type}-detail.html?id=${encodeURIComponent(item.id || '')}`;
 }
 
 function normalizeGalleryImages(value = []) {
@@ -532,7 +523,7 @@ async function confirmDelete(type, id) {
     return;
   }
   if (!id) {
-    showToast('รายการตัวอย่างยังลบไม่ได้', 'error');
+    showToast('ไม่พบ id ของรายการ', 'error');
     return;
   }
   const ok = window.confirm(`ยืนยันลบ ${labelMap[type].slice(0, -1)} นี้?`);
@@ -575,7 +566,7 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
         </div>
         <div class="content-entry-side">
           ${galleryCount ? `<span class="badge-inline photo-badge"><span>Photos</span><strong>${galleryCount}</strong></span>` : ''}
-          ${item.createdLabel && item.createdLabel !== '-' ? `<small>${escapeHtml(item.createdLabel)}</small>` : '<small>Demo content</small>'}
+          ${item.createdLabel && item.createdLabel !== '-' ? `<small>${escapeHtml(item.createdLabel)}</small>` : '<small>Firebase content</small>'}
         </div>
       </div>
       <p>${escapeHtml(item.summary || item.body || item.description || '')}</p>
@@ -599,12 +590,12 @@ export async function loadContentPage(type) {
   const target = $('contentList');
   try {
     const rows = await loadCollectionSafe(type, { limit: 20 });
-    renderContentCards(target, type, rows.length ? rows : demoMap[type], `No ${labelMap[type]} yet`);
+    renderContentCards(target, type, rows, `No ${labelMap[type]} yet`);
     await hydrateEditRequest(type);
   } catch (error) {
     console.warn(error);
-    renderContentCards(target, type, demoMap[type], `No ${labelMap[type]} yet`);
-    showToast('ใช้ข้อมูลตัวอย่างชั่วคราว เพราะอ่าน Firestore ไม่ได้', 'error');
+    renderContentCards(target, type, [], `No ${labelMap[type]} yet`);
+    showToast('อ่านข้อมูลจาก Firestore ไม่สำเร็จ', 'error');
   }
 }
 
