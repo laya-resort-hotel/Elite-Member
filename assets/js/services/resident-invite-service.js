@@ -17,6 +17,23 @@ import { formatDate } from '../core/format.js';
 const INVITE_COLLECTION = 'resident_invite_codes';
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
+
+function isPermissionError(error) {
+  return error?.code === 'permission-denied' || /Missing or insufficient permissions/i.test(String(error?.message || ''));
+}
+
+export function explainInvitePermissionError(error) {
+  if (!isPermissionError(error)) return error?.message || 'Invite code action failed';
+  return 'ไม่มีสิทธิ์เขียน resident_invite_codes ใน Firestore ตอนนี้ ให้ตรวจ 2 จุด: 1) login ด้วยบัญชี staff/admin 2) deploy firestore.rules ชุดล่าสุดขึ้น Firebase';
+}
+
+function assertAdminInviteRole() {
+  const role = String(state.currentRole || '');
+  if (!['admin', 'manager', 'staff'].includes(role)) {
+    throw new Error('ต้อง login ด้วยบัญชี admin / manager / staff ก่อนสร้างหรือจัดการ invite code');
+  }
+}
+
 export function normalizeUnitCode(value = '') {
   return String(value || '').trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9-]/g, '');
 }
@@ -72,6 +89,7 @@ function mapInviteSnapshot(snap) {
 
 export async function createResidentInviteCode(payload = {}) {
   if (!state.db) throw new Error('Firestore is not ready');
+  assertAdminInviteRole();
 
   const primaryUnitCode = normalizeUnitCode(payload.primaryUnitCode || '');
   if (!primaryUnitCode) throw new Error('Primary room is required');
@@ -123,6 +141,7 @@ export async function getResidentInviteByCode(code = '') {
 
 export async function disableResidentInviteCode(code = '') {
   if (!state.db) throw new Error('Firestore is not ready');
+  assertAdminInviteRole();
   const normalized = normalizeInviteCode(code);
   if (!normalized) throw new Error('Invite code is required');
   const ref = doc(state.db, INVITE_COLLECTION, normalized);
@@ -141,6 +160,7 @@ export async function disableResidentInviteCode(code = '') {
 
 export async function regenerateResidentInviteCode(code = '') {
   if (!state.db) throw new Error('Firestore is not ready');
+  assertAdminInviteRole();
   const normalized = normalizeInviteCode(code);
   if (!normalized) throw new Error('Invite code is required');
 

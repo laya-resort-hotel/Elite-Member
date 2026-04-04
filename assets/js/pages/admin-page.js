@@ -20,6 +20,7 @@ import {
   normalizeUnitCode,
   parseUnitCodes,
   regenerateResidentInviteCode,
+  explainInvitePermissionError,
 } from '../services/resident-invite-service.js';
 import {
   createMemberShell,
@@ -1636,9 +1637,10 @@ async function handleGenerateInviteCode() {
     await loadInviteCodes({ force: true });
   } catch (error) {
     console.error(error);
-    showToast(error?.message || 'สร้างรหัสแนะนำไม่สำเร็จ', 'error');
+    const inviteErrorMessage = explainInvitePermissionError(error);
+    showToast(inviteErrorMessage, 'error');
     if ($('inviteCodeStatus')) {
-      $('inviteCodeStatus').textContent = error?.message || 'สร้างรหัสแนะนำไม่สำเร็จ';
+      $('inviteCodeStatus').textContent = inviteErrorMessage;
       $('inviteCodeStatus').classList.remove('hidden');
     }
   }
@@ -1688,7 +1690,7 @@ async function handleInviteListClick(event) {
       renderInviteCodeList();
     } catch (error) {
       console.error(error);
-      showToast(error?.message || 'Disable failed', 'error');
+      showToast(explainInvitePermissionError(error), 'error');
     } finally {
       button.disabled = false;
     }
@@ -1710,7 +1712,7 @@ async function handleInviteListClick(event) {
       await loadInviteCodes({ force: true });
     } catch (error) {
       console.error(error);
-      showToast(error?.message || 'Regenerate failed', 'error');
+      showToast(explainInvitePermissionError(error), 'error');
     } finally {
       button.disabled = false;
     }
