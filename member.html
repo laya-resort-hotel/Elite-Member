@@ -9,10 +9,11 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260404autodoc1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260404luxsys1" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260406flip3"></script>
+  <script type="module" src="./assets/js/main.js?v=20260404autodoc1"></script>
 </head>
 <body data-page="member">
   <div id="app" class="app-shell customer-shell vault-shell">
@@ -26,12 +27,8 @@
           <div class="vault-appbar-subtitle">layaresortphuket.com</div>
         </div>
         <div class="vault-appbar-actions">
-          <button class="vault-appbar-icon" type="button" aria-label="More options">
-            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
-          </button>
-          <button id="logoutBtn" class="vault-appbar-icon hidden" type="button" aria-label="Close and logout">
-            <svg viewBox="0 0 24 24" fill="none"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
-          </button>
+          <a id="residentLoginBtn" class="vault-auth-chip hidden" href="./resident-login.html">Log in</a>
+          <button id="logoutBtn" class="vault-auth-chip vault-auth-chip-logout hidden" type="button">Log out</button>
         </div>
       </div>
       <div class="vault-brand-banner">
@@ -60,16 +57,9 @@
                 <div class="eyebrow gold">MEMBER</div>
               </div>
             </div>
-            <div class="resident-card-flip-wrap" data-card-flip data-default-side="front" data-side="front">
-              <div class="elite-card-scene large" aria-label="Elite Black Card preview" role="button" tabindex="0">
-                <div class="elite-card-flipper">
-                  <div class="elite-card-face elite-card-front" aria-hidden="false">
-                    <img src="./assets/images/elite-black-card-front.png" alt="LAYA Elite Black Card front" />
-                  </div>
-                  <div class="elite-card-face elite-card-back" aria-hidden="true">
-                    <img src="./assets/images/elite-black-card-back.png" alt="LAYA Elite Black Card back" />
-                  </div>
-                </div>
+            <div class="elite-card-scene large" aria-label="Elite Black Card front preview">
+              <div class="elite-card-face elite-card-front is-static-front">
+                <img src="./assets/images/elite-black-card-front.png" alt="LAYA Elite Black Card front" />
               </div>
             </div>
           </div>
@@ -101,8 +91,27 @@
                 <strong id="memberPoints">42,580</strong>
               </div>
               <div class="metric-card dark-tile">
-                <span class="small-label">Total Spend</span>
-                <strong id="memberSpend">฿238,900</strong>
+                <span class="small-label">Pending Points</span>
+                <strong id="memberPendingPoints">0</strong>
+              </div>
+              <div class="metric-card dark-tile">
+                <span class="small-label">Lifetime Earned</span>
+                <strong id="memberLifetimeEarned">0</strong>
+              </div>
+              <div class="metric-card dark-tile">
+                <span class="small-label">Lifetime Redeemed</span>
+                <strong id="memberLifetimeRedeemed">0</strong>
+              </div>
+            </div>
+
+            <div class="member-key-grid mt-md">
+              <div class="metric-card dark-tile">
+                <span class="small-label">Card Number</span>
+                <strong id="memberCardNumber" class="member-strong-code">CARD-0001</strong>
+              </div>
+              <div class="metric-card dark-tile">
+                <span class="small-label">Resident Login</span>
+                <strong id="memberLoginEmail" class="member-strong-code">resident@example.com</strong>
               </div>
             </div>
 
@@ -118,6 +127,11 @@
                 <div class="small-label">QR code value</div>
                 <strong id="memberQrCodeText" class="member-strong-code">LAYA-0001</strong>
               </div>
+            </div>
+
+            <div class="member-history-panel mt-md">
+              <div class="small-label">Recent Point History</div>
+              <div id="residentPointHistoryMini"></div>
             </div>
 
             <div class="member-links-grid mt-md">

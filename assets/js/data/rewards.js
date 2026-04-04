@@ -1,4 +1,4 @@
-import { demoBenefits, demoPromotions } from './demo.js?v=20260404fix5';
+import { demoBenefits, demoPromotions } from './demo.js';
 
 function imageOf(item) {
   return item.coverImageUrl || item.galleryImages?.[0]?.url || '';

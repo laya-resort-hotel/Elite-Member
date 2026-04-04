@@ -3,18 +3,18 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  query,
   runTransaction,
   serverTimestamp,
   setDoc,
-  query,
   where,
   orderBy,
   writeBatch,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260404fix5';
-import { residentManagementDemo } from '../data/resident-management-demo.js?v=20260404starter1';
+import { state } from '../core/state.js';
+import { residentManagementDemo } from '../data/resident-management-demo.js';
 
-const STORAGE_KEY = 'laya-resident-management-starter-v1';
+const STORAGE_KEY = 'laya-resident-management-starter-v2';
 
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -54,7 +54,7 @@ function normalizeResidentPayload(payload = {}, existing = {}, context = {}) {
   const firstName = String(payload.firstName ?? existing.firstName ?? '').trim();
   const lastName = String(payload.lastName ?? existing.lastName ?? '').trim();
   const fallbackName = [firstName, lastName].filter(Boolean).join(' ').trim();
-  const displayName = String(payload.displayName ?? existing.displayName ?? fallbackName || 'Resident Member').trim();
+  const displayName = String((payload.displayName ?? existing.displayName ?? fallbackName) || 'Resident Member').trim();
   const unitCodes = parseUnitCodes({
     unitCodes: payload.unitCodes,
     unitCodesText: payload.unitCodesText,
@@ -65,6 +65,8 @@ function normalizeResidentPayload(payload = {}, existing = {}, context = {}) {
   const memberCode = String(payload.memberCode ?? existing.memberCode ?? context.memberCode ?? '').trim();
   const qrCodeValue = String(payload.qrCodeValue ?? existing.qrCodeValue ?? (memberCode ? `LAYA-${memberCode}` : '')).trim();
   const cardNumber = String(payload.cardNumber ?? existing.cardNumber ?? context.cardNumber ?? '').trim();
+  const linkedUserUid = String(payload.linkedUserUid ?? payload.authUid ?? existing.linkedUserUid ?? existing.authUid ?? '').trim();
+  const loginEmail = String(payload.loginEmail ?? existing.loginEmail ?? payload.email ?? existing.email ?? '').trim();
 
   return {
     id: String(payload.id ?? existing.id ?? context.id ?? makeId('resident')).trim(),
@@ -75,6 +77,10 @@ function normalizeResidentPayload(payload = {}, existing = {}, context = {}) {
     lastName,
     displayName,
     email: String(payload.email ?? existing.email ?? '').trim(),
+    loginEmail,
+    loginEmailLower: loginEmail.toLowerCase(),
+    linkedUserUid,
+    authUid: linkedUserUid,
     phone: String(payload.phone ?? existing.phone ?? '').trim(),
     status: String(payload.status ?? existing.status ?? 'active').trim() || 'active',
     tier: String(payload.tier ?? existing.tier ?? 'elite_black').trim() || 'elite_black',
@@ -82,6 +88,7 @@ function normalizeResidentPayload(payload = {}, existing = {}, context = {}) {
     primaryUnitCode,
     unitCodes: unitCodes.length ? unitCodes : (primaryUnitCode ? [primaryUnitCode] : []),
     notes: String(payload.notes ?? existing.notes ?? '').trim(),
+    totalSpend: Number(payload.totalSpend ?? existing.totalSpend ?? 0),
     createdAt: existing.createdAt || nowIso(),
     updatedAt: nowIso(),
   };
@@ -276,8 +283,27 @@ async function loadFirebaseSnapshot() {
   return normalizeSnapshot({ residents, wallets, cards, pointTransactions });
 }
 
+async function syncLinkedUserDoc(record) {
+  const linkedUid = String(record.linkedUserUid || record.authUid || '').trim();
+  if (!linkedUid) return;
+  await setDoc(doc(state.db, 'users', linkedUid), {
+    uid: linkedUid,
+    displayName: record.displayName,
+    email: record.loginEmail || record.email || '',
+    role: 'resident',
+    employeeId: '',
+    residentId: record.id,
+    memberId: record.id,
+    memberCode: record.memberCode,
+    publicCardCode: record.qrCodeValue,
+    isActive: record.status !== 'inactive',
+    updatedAt: serverTimestamp(),
+    lastLoginAt: serverTimestamp(),
+  }, { merge: true });
+}
+
 async function saveFirebaseResident(payload = {}) {
-  const current = await loadFirebaseSnapshot().catch(() => ({ residents: [] }));
+  const current = await loadFirebaseSnapshot().catch(() => ({ residents: [], wallets: {}, cards: {} }));
   const existing = current.residents.find((row) => row.id === payload.id) || {};
   const nextMemberCode = payload.memberCode || existing.memberCode || nextNumberFromCodes(current.residents.map((row) => row.memberCode), 'RES');
   const nextCardNumber = payload.cardNumber || existing.cardNumber || nextNumberFromCodes(current.residents.map((row) => row.cardNumber), 'CARD');
@@ -309,6 +335,7 @@ async function saveFirebaseResident(payload = {}) {
     updatedAt: serverTimestamp(),
   }, { merge: true });
 
+  await syncLinkedUserDoc(record);
   return loadFirebaseSnapshot();
 }
 
