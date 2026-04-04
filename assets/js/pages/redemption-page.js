@@ -23,42 +23,46 @@ function emptyResident() {
 }
 
 async function resolveResidentForRedemptionPage() {
-  if (state.currentResident?.residentId || state.currentResident?.memberId || state.currentResident?.id) {
-    return state.currentResident;
-  }
-
   const uid = state.currentUser?.uid || '';
   const email = state.currentUser?.email || '';
+  const existingResident = state.currentResident || null;
   let profile = state.currentProfile || {};
 
   if (uid && (!profile || Object.keys(profile).length === 0)) {
     try {
       profile = await loadUserProfile(uid, email);
       state.currentProfile = profile || {};
-      state.memberCode = profile?.publicCardCode || profile?.memberCode || profile?.memberId || state.memberCode || '';
-      state.residentId = profile?.residentId || profile?.memberId || state.residentId || '';
     } catch (error) {
       console.warn('redemption user profile retry failed', error);
     }
   }
 
+  const residentLookup = {
+    residentId: profile?.residentId || profile?.memberId || existingResident?.residentId || existingResident?.memberId || state.residentId || '',
+    memberId: profile?.memberId || existingResident?.memberId || existingResident?.residentId || state.residentId || '',
+    memberCode: profile?.memberCode || profile?.publicCardCode || existingResident?.memberCode || existingResident?.publicCardCode || existingResident?.memberId || state.memberCode || '',
+    publicCardCode: profile?.publicCardCode || profile?.memberCode || existingResident?.publicCardCode || existingResident?.memberCode || state.memberCode || '',
+  };
+
+  state.residentId = residentLookup.residentId || state.residentId || '';
+  state.memberCode = residentLookup.publicCardCode || residentLookup.memberCode || state.memberCode || '';
+
   if (uid) {
     try {
-      const resident = await loadResidentForUser(uid, email, {
-        residentId: profile?.residentId || profile?.memberId || state.residentId || '',
-        memberId: profile?.memberId || state.residentId || '',
-        memberCode: profile?.memberCode || profile?.publicCardCode || profile?.memberId || state.memberCode || '',
-        publicCardCode: profile?.publicCardCode || profile?.memberCode || state.memberCode || '',
-      });
+      const resident = await loadResidentForUser(uid, email, residentLookup);
       if (resident) {
         state.currentResident = resident;
-        state.residentId = resident.residentId || resident.memberId || state.residentId || '';
-        state.memberCode = resident.memberCode || resident.publicCardCode || resident.memberId || state.memberCode || '';
+        state.residentId = resident.residentId || resident.memberId || residentLookup.residentId || '';
+        state.memberCode = resident.memberCode || resident.publicCardCode || resident.memberId || residentLookup.memberCode || '';
         return resident;
       }
     } catch (error) {
       console.warn('redemption resident retry failed', error);
     }
+  }
+
+  if (existingResident?.residentId || existingResident?.memberId || existingResident?.id) {
+    return existingResident;
   }
 
   const emailPrefix = String(email || '').trim().split('@')[0] || '';
@@ -68,8 +72,8 @@ async function resolveResidentForRedemptionPage() {
     fullName: guessedName,
     displayName: guessedName,
     email: email || profile?.email || '',
-    memberCode: profile?.memberCode || profile?.publicCardCode || profile?.memberId || '-',
-    publicCardCode: profile?.publicCardCode || profile?.memberCode || profile?.memberId || '-',
+    memberCode: residentLookup.memberCode || residentLookup.publicCardCode || '-',
+    publicCardCode: residentLookup.publicCardCode || residentLookup.memberCode || '-',
     status: state.currentUser ? 'ACTIVE' : 'INACTIVE',
   };
 }

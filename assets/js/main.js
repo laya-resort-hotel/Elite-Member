@@ -162,7 +162,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260405residentredemptionlink1');
+        const mod = await import('./pages/redemption-page.js?v=20260405residentredemptionlink2');
         await mod.loadRedemptionPage();
         break;
       }
