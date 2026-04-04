@@ -2394,6 +2394,57 @@ body.lightbox-open {
   margin: 0;
   font-size: 15px;
 }
+.admin-upload-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.admin-upload-head > div {
+  min-width: 0;
+}
+.admin-upload-help {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.72);
+}
+.badge-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(214,179,92,.35);
+  background: rgba(214,179,92,.10);
+  color: #e7d39b;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.admin-advanced-block {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  padding: 10px 12px 12px;
+  background: rgba(255,255,255,.02);
+}
+.admin-advanced-block summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  color: rgba(255,255,255,.78);
+}
+.admin-advanced-block summary::-webkit-details-marker {
+  display: none;
+}
+.admin-advanced-block[open] summary {
+  margin-bottom: 10px;
+}
+.admin-advanced-block .input {
+  margin-top: 0;
+}
 .cms-cover-preview-wrap {
   gap: 12px;
 }
@@ -2457,6 +2508,13 @@ body.lightbox-open {
   }
 }
 @media (max-width: 768px) {
+  .admin-upload-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .badge-soft {
+    align-self: flex-start;
+  }
   .admin-upload-panel {
     padding: 14px;
     border-radius: 18px;

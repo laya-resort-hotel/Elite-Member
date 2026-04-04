@@ -193,30 +193,43 @@
 
             <div class="admin-editor-grid admin-media-grid mt-md">
               <div class="cms-cover-preview-wrap admin-upload-panel">
-                <div class="panel-title-row compact-row">
-                  <h5>Cover image</h5>
+                <div class="admin-upload-head">
+                  <div>
+                    <div class="eyebrow gold">Main image</div>
+                    <h5>Cover image</h5>
+                    <p class="admin-upload-help">ใช้เป็นรูปหลักของการ์ด, หน้า list และรูปเด่นด้านบนของหน้า detail ถ้ามีแค่รูปเดียว ใช้ช่องนี้พอ</p>
+                  </div>
                   <button id="clearCoverBtn" class="ghost-btn" type="button">Clear cover</button>
                 </div>
                 <div class="cms-cover-preview">
                   <img id="contentCoverPreview" class="hidden" alt="Cover preview" />
                   <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No cover selected</div>
                 </div>
+                <label class="field-label no-margin" for="contentCoverFile">Select cover image</label>
                 <input id="contentCoverFile" class="input" type="file" accept="image/*" />
                 <div class="row gap wrap admin-upload-actions">
                   <button id="uploadCoverBtn" class="primary-btn" type="button">Upload Cover</button>
                 </div>
-                <input id="contentCoverImageUrl" class="input" type="text" placeholder="Cover image URL (auto-filled after upload)" />
                 <div id="contentCoverMeta" class="upload-note hidden"></div>
                 <div id="contentUploadStatus" class="upload-note hidden"></div>
+                <details class="admin-advanced-block">
+                  <summary>Advanced: cover image URL</summary>
+                  <input id="contentCoverImageUrl" class="input" type="text" placeholder="Cover image URL (auto-filled after upload)" />
+                </details>
               </div>
 
               <div class="admin-upload-panel">
-                <div class="panel-title-row compact-row">
-                  <h5>Gallery images</h5>
-                  <span id="contentGalleryCount" class="muted">0 images</span>
+                <div class="admin-upload-head">
+                  <div>
+                    <div class="eyebrow gold">Optional extra images</div>
+                    <h5>Gallery images</h5>
+                    <p class="admin-upload-help">รูปเสริมสำหรับหน้า detail เท่านั้น ใช้เมื่ออยากโชว์หลายมุม หลายภาพ หรือภาพบรรยากาศเพิ่มเติม</p>
+                  </div>
+                  <span id="contentGalleryCount" class="badge-soft">0 images</span>
                 </div>
+                <label class="field-label no-margin" for="contentGalleryFiles">Select one or more gallery images</label>
                 <input id="contentGalleryFiles" class="input" type="file" accept="image/*" multiple />
-                <div class="row gap wrap mt-sm admin-upload-actions">
+                <div class="row gap wrap admin-upload-actions">
                   <button id="uploadGalleryBtn" class="primary-btn" type="button">Upload Gallery Images</button>
                 </div>
                 <div id="contentGalleryUploadStatus" class="upload-note hidden"></div>
