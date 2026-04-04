@@ -34,7 +34,7 @@ function updateModeBadge(mode) {
   if (modeLabel) modeLabel.textContent = mode === 'firebase' ? 'Firebase Live' : 'Demo Local';
   if (note) {
     note.textContent = mode === 'firebase'
-      ? 'หน้านี้กำลังอ่านและเขียนข้อมูลจริงใน Firestore collections สำหรับ Resident Management'
+      ? 'หน้านี้กำลังอ่านและเขียนข้อมูลจริงใน Firestore collections สำหรับ Resident Management และ sync link ไปที่ users/{uid}'
       : 'หน้านี้อยู่ในโหมด demo localStorage พร้อม mock data เพื่อเริ่มเทส flow ก่อนขึ้น Firebase';
   }
 }
@@ -56,7 +56,7 @@ function collectFilters() {
 function filteredResidents() {
   const filters = collectFilters();
   return pageState.residents.filter((row) => {
-    const matchesQuery = !filters.query || [row.displayName, row.memberCode, row.email, row.primaryUnitCode, row.qrCodeValue]
+    const matchesQuery = !filters.query || [row.displayName, row.memberCode, row.email, row.loginEmail, row.primaryUnitCode, row.qrCodeValue, row.linkedUserUid]
       .some((field) => String(field || '').toLowerCase().includes(filters.query));
     const matchesStatus = filters.status === 'all' || row.status === filters.status;
     return matchesQuery && matchesStatus;
@@ -78,7 +78,7 @@ function renderResidentList() {
         <strong>${escapeHtml(row.displayName || 'Resident')}</strong>
         <span>${escapeHtml(row.memberCode || '-')}</span>
       </div>
-      <div class="resident-list-sub">${escapeHtml(row.primaryUnitCode || '-')} · ${escapeHtml(row.email || '-')}</div>
+      <div class="resident-list-sub">${escapeHtml(row.primaryUnitCode || '-')} · ${escapeHtml(row.loginEmail || row.email || '-')}</div>
       <div class="resident-list-meta">
         <span class="mini-badge gold">${escapeHtml(row.tier || 'elite_black')}</span>
         <span class="mini-badge ${row.status === 'active' ? 'subtle' : ''}">${escapeHtml(row.status || 'active')}</span>
@@ -107,6 +107,8 @@ function setFormValues(resident) {
   $('residentFirstNameInput').value = resident?.firstName || '';
   $('residentLastNameInput').value = resident?.lastName || '';
   $('residentEmailInput').value = resident?.email || '';
+  $('residentLoginEmailInput').value = resident?.loginEmail || resident?.email || '';
+  $('residentLinkedUidInput').value = resident?.linkedUserUid || resident?.authUid || '';
   $('residentPhoneInput').value = resident?.phone || '';
   $('residentStatusInput').value = resident?.status || 'active';
   $('residentTierInput').value = resident?.tier || 'elite_black';
@@ -189,6 +191,8 @@ function renderSelectedResident() {
   $('residentCardPreviewTier').textContent = resident.tier || 'elite_black';
   $('residentCardPreviewStatus').textContent = resident.status || 'active';
   $('residentCardPreviewOwner').textContent = resident.ownerType || 'resident_owner';
+  if ($('residentLinkedLoginPreview')) $('residentLinkedLoginPreview').textContent = resident.loginEmail || resident.email || '-';
+  if ($('residentLinkedUidPreview')) $('residentLinkedUidPreview').textContent = resident.linkedUserUid || resident.authUid || '-';
   $('residentWalletCurrent').textContent = formatNumber(resident.wallet?.currentPoints || 0);
   $('residentWalletPending').textContent = formatNumber(resident.wallet?.pendingPoints || 0);
   $('residentWalletEarned').textContent = formatNumber(resident.wallet?.lifetimeEarned || 0);
@@ -226,6 +230,8 @@ function collectResidentFormPayload() {
     firstName: $('residentFirstNameInput')?.value.trim() || '',
     lastName: $('residentLastNameInput')?.value.trim() || '',
     email: $('residentEmailInput')?.value.trim() || '',
+    loginEmail: $('residentLoginEmailInput')?.value.trim() || '',
+    linkedUserUid: $('residentLinkedUidInput')?.value.trim() || '',
     phone: $('residentPhoneInput')?.value.trim() || '',
     status: $('residentStatusInput')?.value || 'active',
     tier: $('residentTierInput')?.value || 'elite_black',
@@ -318,6 +324,8 @@ function handleNewResident() {
   $('residentCardPreviewTier').textContent = 'elite_black';
   $('residentCardPreviewStatus').textContent = 'active';
   $('residentCardPreviewOwner').textContent = 'resident_owner';
+  if ($('residentLinkedLoginPreview')) $('residentLinkedLoginPreview').textContent = '-';
+  if ($('residentLinkedUidPreview')) $('residentLinkedUidPreview').textContent = '-';
   $('residentWalletCurrent').textContent = '0';
   $('residentWalletPending').textContent = '0';
   $('residentWalletEarned').textContent = '0';

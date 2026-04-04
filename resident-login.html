@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Log in</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident login" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script type="module" src="./assets/js/main.js?v=20260405residentauth1"></script>
+</head>
+<body data-page="resident-login">
+  <div id="app" class="app-shell customer-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./resident-login.html">Resident Login</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden" type="button">Log out</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="hero-card glass resident-login-hero">
+        <div class="hero-copy">
+          <span class="eyebrow gold">ELITE BLACK CARD</span>
+          <h2>เข้าสู่ระบบสำหรับ Resident โดยตรง</h2>
+          <p>ลูกค้า Resident สามารถ log in จากหน้านี้ได้เลย โดยไม่ต้องผ่านหน้า login หลักของระบบหลังบ้าน</p>
+          <div class="quick-links mt-md">
+            <a class="nav-link-card" href="./home.html"><strong>Resident Home</strong><small>หลัง login แล้วระบบจะพาไปหน้า Home อัตโนมัติ</small></a>
+            <a class="nav-link-card" href="./member.html"><strong>Member Card</strong><small>ดูคะแนน บัตร และ QR ของตัวเอง</small></a>
+          </div>
+        </div>
+
+        <div class="panel glass resident-login-panel">
+          <h3>Resident Account</h3>
+          <p class="muted">ใช้ Email และ Password ของลูกค้า Resident ที่ผูกไว้ใน Firebase Authentication</p>
+          <label class="field-label" for="residentLoginIdentifier">Email</label>
+          <input id="residentLoginIdentifier" class="input" type="email" placeholder="resident@example.com" />
+          <label class="field-label" for="residentLoginPassword">Password</label>
+          <input id="residentLoginPassword" class="input" type="password" placeholder="••••••••" />
+          <div class="row gap wrap mt-md">
+            <button id="residentLoginSubmitBtn" class="primary-btn" type="button">Log in</button>
+            <a class="ghost-btn" href="./index.html">ไปหน้า Main Login</a>
+          </div>
+          <div class="divider"></div>
+          <div class="info-note">ถ้า login สำเร็จ ระบบจะเปิดหน้า Resident Home และปุ่ม Log out จะอยู่ในหน้า Resident ของลูกค้าด้วย</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" data-page-link="resident-login" href="./resident-login.html">Resident Login</a>
+    <a class="nav-btn" href="./home.html">Resident Home</a>
+    <a class="nav-btn" href="./index.html">Main Login</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

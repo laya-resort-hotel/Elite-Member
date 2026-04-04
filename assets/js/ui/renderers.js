@@ -1,6 +1,12 @@
 import { $, $$ } from '../core/dom.js?v=20260404fix5';
 import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js?v=20260404fix5';
 
+function setAllById(id, value) {
+  document.querySelectorAll(`[id="${id}"]`).forEach((node) => {
+    node.textContent = value;
+  });
+}
+
 export function updateStatusLabels({ firebaseState, authState, modeState }) {
   if (firebaseState !== undefined && $('firebaseState')) $('firebaseState').textContent = firebaseState;
   if (authState !== undefined && $('authState')) $('authState').textContent = authState;
@@ -85,20 +91,28 @@ export function renderTable(container, rows = [], emptyText = 'No transactions y
   `;
 }
 
-export function renderResidentCard(resident) {
-  const fullName = resident.fullName || 'Resident Member';
+export function renderResidentCard(resident = {}) {
+  const fullName = resident.fullName || resident.displayName || 'Resident Member';
   const initials = fullName.trim().charAt(0).toUpperCase() || 'R';
-  const qrCode = resident.publicCardCode || resident.memberCode || resident.memberId || 'LAYA-0001';
-  if ($('memberName')) $('memberName').textContent = fullName;
-  if ($('vaultMemberName')) $('vaultMemberName').textContent = fullName;
-  if ($('memberTier')) $('memberTier').textContent = resident.tier || 'Elite Black';
-  if ($('memberStatusPill')) $('memberStatusPill').textContent = resident.status || 'ACTIVE';
-  if ($('memberCode')) $('memberCode').textContent = qrCode;
-  if ($('memberResidence')) $('memberResidence').textContent = resident.residence || '-';
-  if ($('memberPoints')) $('memberPoints').textContent = formatNumber(resident.points || 0);
-  if ($('memberSpend')) $('memberSpend').textContent = formatTHB(resident.totalSpend || 0);
+  const qrCode = resident.qrCodeValue || resident.publicCardCode || resident.memberCode || resident.memberId || 'LAYA-0001';
+  const currentPoints = formatNumber(resident.points || 0);
+
+  setAllById('memberName', fullName);
+  setAllById('memberTier', resident.tier || 'Elite Black');
+  setAllById('memberStatusPill', resident.status || 'ACTIVE');
+  setAllById('memberCode', resident.memberCode || qrCode);
+  setAllById('memberResidence', resident.residence || '-');
+  setAllById('memberPoints', currentPoints);
+  setAllById('memberSpend', formatTHB(resident.totalSpend || 0));
+  setAllById('memberQrCodeText', qrCode);
+  setAllById('memberCardNumber', resident.cardNumber || '-');
+  setAllById('memberLoginEmail', resident.email || resident.contactEmail || '-');
+  setAllById('memberPendingPoints', formatNumber(resident.pendingPoints || 0));
+  setAllById('memberLifetimeEarned', formatNumber(resident.lifetimeEarned || 0));
+  setAllById('memberLifetimeRedeemed', formatNumber(resident.lifetimeRedeemed || 0));
+
   if ($('memberAvatarLetter')) $('memberAvatarLetter').textContent = initials;
-  if ($('memberQrCodeText')) $('memberQrCodeText').textContent = qrCode;
+  if ($('vaultMemberName')) $('vaultMemberName').textContent = fullName;
   renderQr(qrCode);
 }
 
@@ -113,7 +127,8 @@ export function renderResidentSearchResults(container, residents = []) {
       <h4>${escapeHtml(resident.fullName || resident.memberName || '-')}</h4>
       <p>${escapeHtml(resident.memberCode || '-')}
       <br>${escapeHtml(resident.email || '')}
-      <br>${escapeHtml(resident.residence || '')}</p>
+      <br>${escapeHtml(resident.residence || '')}
+      <br><small>${escapeHtml(resident.cardNumber || resident.qrCodeValue || '')}</small></p>
     </div>
   `).join('');
 }
@@ -122,6 +137,34 @@ export function renderAdminKpis({ residents = 0, points = 0, spend = 0 }) {
   if ($('kpiResidents')) $('kpiResidents').textContent = formatNumber(residents);
   if ($('kpiPoints')) $('kpiPoints').textContent = formatNumber(points);
   if ($('kpiSpend')) $('kpiSpend').textContent = formatTHB(spend);
+}
+
+export function renderResidentPointHistoryMini(container, rows = [], emptyText = 'No point history yet') {
+  if (!container) return;
+  if (!rows.length) {
+    container.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
+    return;
+  }
+
+  container.innerHTML = rows.map((row) => {
+    const delta = Number(row.pointsDelta || 0);
+    const sign = delta > 0 ? '+' : '';
+    return `
+      <div class="card-item">
+        <div class="row space-between gap">
+          <div>
+            <strong>${escapeHtml(row.type || 'transaction')}</strong>
+            <p>${escapeHtml(row.source || '-')} · ${escapeHtml(row.referenceNo || '-')}</p>
+            ${row.note ? `<small>${escapeHtml(row.note)}</small>` : ''}
+          </div>
+          <div class="text-right">
+            <strong class="${delta < 0 ? 'text-danger' : 'text-gold'}">${sign}${formatNumber(delta)}</strong>
+            <p><small>${escapeHtml(formatDate(row.createdAt))}</small></p>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderQr(text) {

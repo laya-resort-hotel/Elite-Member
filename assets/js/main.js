@@ -10,8 +10,23 @@ import { bindFlipCards } from './ui/card-flip.js?v=20260404fix5';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
-const PROTECTED_PAGES = new Set(['admin', 'members', 'resident-management', 'resident', 'home', 'member', 'settings', 'redemption']);
+const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management']);
+const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
 
+function getSignedOutTarget() {
+  if (state.currentRole === 'resident' || page === 'resident-login' || RESIDENT_PAGES.has(page)) {
+    return 'resident-login.html';
+  }
+  return 'index.html';
+}
+
+function syncAuthActionButtons(user) {
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.classList.toggle('hidden', !user);
+
+  const residentLoginBtn = document.getElementById('residentLoginBtn');
+  if (residentLoginBtn) residentLoginBtn.classList.toggle('hidden', !!user);
+}
 
 function bindGlobalLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
@@ -26,9 +41,10 @@ function bindGlobalLogout() {
       state.currentRole = null;
       state.currentResident = null;
       state.memberCode = '';
+      state.residentId = '';
       setMode('auth');
       updateStatusLabels({ authState: 'Not signed in', modeState: 'auth' });
-      go('index.html');
+      go(getSignedOutTarget());
     } catch (error) {
       console.error('Logout failed:', error);
       showToast(error?.message || 'Logout failed', 'error');
@@ -52,8 +68,14 @@ function emptyResident() {
     residence: '-',
     memberCode: '-',
     publicCardCode: '-',
+    qrCodeValue: '-',
+    cardNumber: '-',
     points: 0,
     totalSpend: 0,
+    pendingPoints: 0,
+    lifetimeEarned: 0,
+    lifetimeRedeemed: 0,
+    email: '',
   };
 }
 
@@ -68,6 +90,11 @@ async function initCurrentPage(isLive = false) {
       case 'signup': {
         const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix5');
         bindSignupPage();
+        break;
+      }
+      case 'resident-login': {
+        const { bindResidentLoginPage } = await import('./pages/resident-login-page.js?v=20260405residentauth1');
+        bindResidentLoginPage();
         break;
       }
       case 'resident':
@@ -143,13 +170,13 @@ async function initCurrentPage(isLive = false) {
   }
 }
 
-async function renderPageForRole(role, user) {
+async function renderPageForRole(role, user, profile = {}) {
   if (['admin', 'manager', 'staff'].includes(role)) {
     state.currentRole = role;
     state.currentResident = null;
     setMode('admin-live');
     updateStatusLabels({ modeState: 'admin-live' });
-    if (page === 'index') {
+    if (page === 'index' || page === 'resident-login' || RESIDENT_PAGES.has(page)) {
       go('admin.html');
       return;
     }
@@ -158,14 +185,19 @@ async function renderPageForRole(role, user) {
   }
 
   state.currentRole = role || 'resident';
-  state.currentResident = await loadResidentForUser(user.uid, user.email, state.memberCode);
+  state.currentResident = await loadResidentForUser(user.uid, user.email, profile);
   setMode('resident-live');
   updateStatusLabels({ modeState: 'resident-live' });
-  if (page === 'index') {
+
+  if (!state.currentResident && RESIDENT_PAGES.has(page)) {
+    showToast('บัญชีนี้ยังไม่ได้ link กับ Resident profile ในระบบ', 'error');
+  }
+
+  if (page === 'index' || page === 'resident-login') {
     go('home.html');
     return;
   }
-  if (page === 'admin' || page === 'members' || page === 'resident-management') {
+  if (ADMIN_PAGES.has(page)) {
     showToast('บัญชีนี้ไม่มีสิทธิ์เข้า Admin Dashboard', 'error');
     go('home.html');
     return;
@@ -178,19 +210,25 @@ async function handleSignedOut() {
   state.currentRole = null;
   state.currentResident = null;
   state.memberCode = '';
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) logoutBtn.classList.add('hidden');
+  state.residentId = '';
+  syncAuthActionButtons(null);
   updateStatusLabels({ authState: 'Not signed in', modeState: 'auth' });
   setMode('auth');
 
-  if (page === 'index') {
+  if (page === 'index' || page === 'resident-login') {
     await initCurrentPage(true);
     return;
   }
 
-  if (PROTECTED_PAGES.has(page)) {
-    showToast('กรุณา login ก่อนใช้งาน', 'error');
+  if (ADMIN_PAGES.has(page)) {
+    showToast('กรุณา login ก่อนใช้งานหลังบ้าน', 'error');
     go('index.html');
+    return;
+  }
+
+  if (RESIDENT_PAGES.has(page)) {
+    showToast('กรุณา log in ผ่านหน้า Resident ก่อนใช้งาน', 'error');
+    go('resident-login.html');
     return;
   }
 
@@ -210,8 +248,7 @@ async function initApp() {
     subscribeAuth(async (user) => {
       try {
         state.currentUser = user || null;
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) logoutBtn.classList.toggle('hidden', !user);
+        syncAuthActionButtons(user);
 
         if (!user) {
           await handleSignedOut();
@@ -222,7 +259,8 @@ async function initApp() {
         await touchLastLogin(user.uid);
         const profile = await loadUserProfile(user.uid, user.email || '');
         state.memberCode = profile.publicCardCode || profile.memberCode || profile.memberId || '';
-        await renderPageForRole(profile.role, user);
+        state.residentId = profile.residentId || '';
+        await renderPageForRole(profile.role, user, profile);
       } catch (callbackError) {
         console.error('Auth callback error:', callbackError);
         updateStatusLabels({ modeState: 'Auth Error' });
