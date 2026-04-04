@@ -54,7 +54,7 @@ function normalizeResidentPayload(payload = {}, existing = {}, context = {}) {
   const firstName = String(payload.firstName ?? existing.firstName ?? '').trim();
   const lastName = String(payload.lastName ?? existing.lastName ?? '').trim();
   const fallbackName = [firstName, lastName].filter(Boolean).join(' ').trim();
-  const displayName = String(payload.displayName ?? existing.displayName ?? fallbackName || 'Resident Member').trim();
+  const displayName = String((payload.displayName ?? existing.displayName ?? fallbackName) || 'Resident Member').trim();
   const unitCodes = parseUnitCodes({
     unitCodes: payload.unitCodes,
     unitCodesText: payload.unitCodesText,
