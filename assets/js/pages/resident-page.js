@@ -1,10 +1,10 @@
 
-import { state, setMode } from '../core/state.js?v=20260404fix4';
-import { $ } from '../core/dom.js?v=20260404fix4';
-import { loadCollectionSafe } from '../services/content-service.js?v=20260404fix4';
-import { loadTransactions } from '../services/transaction-service.js?v=20260404fix4';
-import { renderCards, renderResidentCard, renderTable, renderVaultHome, updateStatusLabels } from '../ui/renderers.js?v=20260404fix4';
-import { showToast } from '../ui/toast.js?v=20260404fix4';
+import { state, setMode } from '../core/state.js?v=20260404fix5';
+import { $ } from '../core/dom.js?v=20260404fix5';
+import { loadCollectionSafe } from '../services/content-service.js?v=20260404fix5';
+import { loadTransactions } from '../services/transaction-service.js?v=20260404fix5';
+import { renderCards, renderResidentCard, renderTable, renderVaultHome, updateStatusLabels } from '../ui/renderers.js?v=20260404fix5';
+import { showToast } from '../ui/toast.js?v=20260404fix5';
 
 function emptyResident() {
   return {

@@ -1,5 +1,5 @@
-import { $, $$ } from '../core/dom.js?v=20260404fix4';
-import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js?v=20260404fix4';
+import { $, $$ } from '../core/dom.js?v=20260404fix5';
+import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js?v=20260404fix5';
 
 export function updateStatusLabels({ firebaseState, authState, modeState }) {
   if (firebaseState !== undefined && $('firebaseState')) $('firebaseState').textContent = firebaseState;

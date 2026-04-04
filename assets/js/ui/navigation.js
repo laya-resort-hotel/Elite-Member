@@ -1,4 +1,4 @@
-import { $$ } from '../core/dom.js?v=20260404fix4';
+import { $$ } from '../core/dom.js?v=20260404fix5';
 
 const screens = () => $$('.screen');
 const navButtons = () => $$('[data-screen]');

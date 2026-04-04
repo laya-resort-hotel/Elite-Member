@@ -1,16 +1,42 @@
 
-import { state, setMode } from './core/state.js?v=20260404fix4';
-import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix4';
-import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix4';
-import { subscribeAuth, touchLastLogin } from './services/auth-service.js?v=20260404fix4';
-import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix4';
-import { showToast } from './ui/toast.js?v=20260404fix4';
-import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix4';
-import { bindFlipCards } from './ui/card-flip.js?v=20260404fix4';
+import { state, setMode } from './core/state.js?v=20260404fix5';
+import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix5';
+import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix5';
+import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js?v=20260404fix5';
+import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix5';
+import { showToast } from './ui/toast.js?v=20260404fix5';
+import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix5';
+import { bindFlipCards } from './ui/card-flip.js?v=20260404fix5';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
 const PROTECTED_PAGES = new Set(['admin', 'members', 'resident', 'home', 'member', 'settings', 'redemption']);
+
+
+function bindGlobalLogout() {
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (!logoutBtn || logoutBtn.dataset.bound) return;
+
+  logoutBtn.dataset.bound = '1';
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      logoutBtn.disabled = true;
+      await logoutCurrentUser();
+      state.currentUser = null;
+      state.currentRole = null;
+      state.currentResident = null;
+      state.memberCode = '';
+      setMode('auth');
+      updateStatusLabels({ authState: 'Not signed in', modeState: 'auth' });
+      go('index.html');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      showToast(error?.message || 'Logout failed', 'error');
+    } finally {
+      logoutBtn.disabled = false;
+    }
+  });
+}
 
 function go(url) {
   const target = `./${url}`;
@@ -35,25 +61,25 @@ async function initCurrentPage(isLive = false) {
   try {
     switch (page) {
       case 'index': {
-        const { bindAuthPage } = await import('./pages/auth-page.js?v=20260404fix4');
+        const { bindAuthPage } = await import('./pages/auth-page.js?v=20260404fix5');
         bindAuthPage();
         break;
       }
       case 'signup': {
-        const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix4');
+        const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix5');
         bindSignupPage();
         break;
       }
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js?v=20260404fix4');
+        const mod = await import('./pages/resident-page.js?v=20260404fix5');
         mod.bindResidentPage();
         await mod.loadResidentDashboard();
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260404fix4');
+        const mod = await import('./pages/redemption-page.js?v=20260404fix5');
         await mod.loadRedemptionPage();
         break;
       }
@@ -69,7 +95,7 @@ async function initCurrentPage(isLive = false) {
       case 'news':
       case 'promotions':
       case 'benefits': {
-        const mod = await import('./pages/content-page.js?v=20260404fix4');
+        const mod = await import('./pages/content-page.js?v=20260404fix5');
         mod.applyContentPageState(contentType);
         mod.bindContentPage(contentType);
         await mod.loadContentPage(contentType);
@@ -84,19 +110,19 @@ async function initCurrentPage(isLive = false) {
       case 'news-detail':
       case 'promotions-detail':
       case 'benefits-detail': {
-        const mod = await import('./pages/detail-page.js?v=20260404fix4');
+        const mod = await import('./pages/detail-page.js?v=20260404fix5');
         mod.bindDetailPage(contentType);
         await mod.loadDetailPage(contentType);
         break;
       }
       case 'admin': {
-        const mod = await import('./pages/admin-page.js?v=20260404fix4');
+        const mod = await import('./pages/admin-page.js?v=20260404fix5');
         mod.bindAdminPage();
         await mod.loadAdminDashboard();
         break;
       }
       case 'members': {
-        const mod = await import('./pages/members-page.js?v=20260404fix4');
+        const mod = await import('./pages/members-page.js?v=20260404fix5');
         mod.bindMembersPage();
         await mod.loadMembersPage();
         break;
@@ -168,6 +194,7 @@ async function handleSignedOut() {
 async function initApp() {
   highlightCurrentNav();
   bindFlipCards();
+  bindGlobalLogout();
   updateStatusLabels({ firebaseState: 'Connecting...', authState: 'Checking...', modeState: 'Booting' });
 
   try {

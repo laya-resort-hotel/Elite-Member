@@ -1,4 +1,4 @@
-import { $$ } from './dom.js?v=20260404fix4';
+import { $$ } from './dom.js?v=20260404fix5';
 
 export function highlightCurrentNav() {
   const page = document.body?.dataset?.page || '';
