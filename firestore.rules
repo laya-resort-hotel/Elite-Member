@@ -391,6 +391,12 @@ function validResidentPointRedeemCreate() {
       allow update, delete: if false;
     }
 
+    match /resident_spend_transactions/{transactionId} {
+      allow get, list: if isAdminLike();
+      allow create: if isAdminLike();
+      allow update, delete: if false;
+    }
+
     match /transactions/{transactionId} {
       allow read, write: if isAdminLike();
     }

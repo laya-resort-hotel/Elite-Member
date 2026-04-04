@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Staff QR Points</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="Staff QR scan to add resident points" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260404residentpoints1" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <link rel="stylesheet" href="./assets/css/resident-points.css?v=20260404residentpoints1" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js?v=20260404residentpoints1"></script>
+</head>
+<body data-page="resident-points">
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Resident Point Scanner</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel page-hero">
+        <div class="eyebrow gold">Staff Point Entry</div>
+        <h2>Scan resident QR and add points automatically</h2>
+        <p class="page-intro">พนักงานสแกน QR ของแขกหรือกรอกรหัสสมาชิก แล้วใส่ยอดใช้จ่าย ระบบจะคำนวณคะแนนอัตโนมัติด้วยสูตรเดียวกันทั้งระบบ</p>
+        <div class="row gap wrap mt-md">
+          <span class="badge-inline"><span>Point Formula</span><strong id="residentPointFormulaText">35 THB = 10 points</strong></span>
+          <span class="badge-inline"><span>Access</span><strong>Staff / Manager / Admin</strong></span>
+          <a class="ghost-btn" href="./admin.html">Back to Admin</a>
+          <a class="ghost-btn" href="./resident-management.html">Resident CRM</a>
+        </div>
+      </section>
+
+      <section class="resident-points-grid mt-lg">
+        <section class="panel resident-points-scanner-panel">
+          <div class="section-head">
+            <div>
+              <h3>1. Scan resident QR</h3>
+              <span class="eyebrow">Camera or manual code</span>
+            </div>
+            <span id="residentPointRateBadge" class="mini-badge gold">35:10</span>
+          </div>
+
+          <div class="resident-scanner-video-wrap mt-md">
+            <video id="residentQrVideo" class="resident-scanner-video" muted playsinline></video>
+            <div class="resident-scanner-frame" aria-hidden="true"></div>
+          </div>
+          <div id="residentScanStatus" class="readonly-note mt-sm" data-tone="info">Ready</div>
+
+          <div class="row gap wrap mt-md">
+            <button id="startResidentScannerBtn" class="primary-btn" type="button">Start scanner</button>
+            <button id="stopResidentScannerBtn" class="ghost-btn" type="button">Stop scanner</button>
+          </div>
+
+          <label class="field-label mt-md" for="residentScanValueInput">QR value / member code</label>
+          <div class="resident-scan-input-row">
+            <input id="residentScanValueInput" class="input" type="text" placeholder="Scan QR or paste member code" />
+            <button id="resolveResidentBtn" class="primary-btn" type="button">Find resident</button>
+            <button id="clearResidentScanBtn" class="ghost-btn" type="button">Clear</button>
+          </div>
+
+          <div class="upload-note mt-sm">รองรับ QR จากบัตรสมาชิกหรือหน้า Member ของลูกค้า ถ้าเครื่องไม่รองรับสแกนสด สามารถวางรหัสสมาชิกหรือ QR value ได้</div>
+        </section>
+
+        <section class="panel resident-points-target-panel">
+          <div class="section-head">
+            <div>
+              <h3>2. Linked resident</h3>
+              <span class="eyebrow">Resident wallet preview</span>
+            </div>
+          </div>
+
+          <div id="residentSelectedCard" class="resident-target-card is-empty mt-md">
+            <div class="resident-target-main">
+              <div class="resident-target-avatar">R</div>
+              <div>
+                <h4 id="selectedResidentName">No resident selected</h4>
+                <p id="selectedResidentMeta">Scan QR or enter member code to load resident</p>
+                <div class="member-strong-code" id="selectedResidentCode">-</div>
+              </div>
+            </div>
+            <div class="resident-target-metrics">
+              <div class="metric-card"><span>Current points</span><strong id="selectedResidentPoints">0</strong></div>
+              <div class="metric-card"><span>Lifetime earned</span><strong id="selectedResidentEarned">0</strong></div>
+              <div class="metric-card"><span>Total spend</span><strong id="selectedResidentSpend">฿0</strong></div>
+            </div>
+          </div>
+
+          <div class="section-head mt-lg">
+            <div>
+              <h3>3. Add spend</h3>
+              <span class="eyebrow">35 THB = 10 points</span>
+            </div>
+          </div>
+
+          <div class="resident-outlet-chip-row mt-sm">
+            <button class="ghost-btn resident-outlet-chip" data-outlet="The Taste" type="button">The Taste</button>
+            <button class="ghost-btn resident-outlet-chip" data-outlet="Mangrove" type="button">Mangrove</button>
+            <button class="ghost-btn resident-outlet-chip" data-outlet="Aroonsawat" type="button">Aroonsawat</button>
+            <button class="ghost-btn resident-outlet-chip" data-outlet="Room Service" type="button">Room Service</button>
+          </div>
+
+          <div class="grid-2 mt-md">
+            <div>
+              <label class="field-label" for="residentSpendOutletInput">Outlet</label>
+              <input id="residentSpendOutletInput" class="input" type="text" placeholder="Aroonsawat" />
+            </div>
+            <div>
+              <label class="field-label" for="residentSpendReferenceInput">Reference / bill no.</label>
+              <input id="residentSpendReferenceInput" class="input" type="text" placeholder="CHK-240404-001" />
+            </div>
+          </div>
+
+          <div class="grid-2 mt-md">
+            <div>
+              <label class="field-label" for="residentSpendAmountInput">Spend amount (THB)</label>
+              <input id="residentSpendAmountInput" class="input" type="number" min="0" step="0.01" placeholder="2500" />
+            </div>
+            <div>
+              <label class="field-label" for="residentEarnedPointsInput">Auto calculated points</label>
+              <input id="residentEarnedPointsInput" class="input" type="number" value="0" readonly />
+            </div>
+          </div>
+
+          <div class="readonly-note mt-sm" id="residentPointPreviewText">0 THB → 0 pts</div>
+
+          <label class="field-label mt-md" for="residentSpendNoteInput">Internal note</label>
+          <textarea id="residentSpendNoteInput" class="input textarea textarea-sm" placeholder="Optional note for this spend"></textarea>
+
+          <div class="row gap wrap mt-md">
+            <button id="residentRewardActionBtn" class="primary-btn" type="button" disabled>Save spend & add points</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel mt-lg">
+        <div class="section-head">
+          <div>
+            <h3>Recent point entries</h3>
+            <span class="eyebrow">Latest resident spend logs</span>
+          </div>
+        </div>
+        <div id="residentSpendTransactionList" class="resident-spend-list mt-md"></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

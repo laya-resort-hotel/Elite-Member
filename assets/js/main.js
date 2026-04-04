@@ -10,7 +10,7 @@ import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/sess
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
-const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-codes']);
+const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-codes', 'resident-points']);
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
 const RESIDENT_LOADER_PAGES = new Set(['resident-login', 'signup', 'resident', 'home', 'member', 'settings', 'redemption', 'news', 'promotions', 'benefits', 'news-detail', 'promotions-detail', 'benefits-detail']);
 const pageBindings = new Set();
@@ -220,6 +220,12 @@ async function initCurrentPage(isLive = false) {
         const mod = await import('./pages/resident-management-page.js');
         bindPageOnce('resident-management', mod.bindResidentManagementPage);
         await mod.loadResidentManagementPage();
+        break;
+      }
+      case 'resident-points': {
+        const mod = await import('./pages/resident-points-page.js?v=20260404residentpoints1');
+        bindPageOnce('resident-points', mod.bindResidentPointScannerPage);
+        await mod.loadResidentPointScannerPage();
         break;
       }
       default:

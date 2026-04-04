@@ -2368,9 +2368,32 @@ body.lightbox-open {
 .admin-editor-panel > .field-label:first-of-type {
   margin-top: 0;
 }
+.admin-media-intro {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 12px;
+}
+.admin-media-intro-card {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.025);
+  min-width: 0;
+}
+.admin-media-intro-card h5 {
+  margin: 4px 0 6px;
+  font-size: 15px;
+}
+.admin-media-intro-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.72);
+}
 .admin-media-grid {
+  grid-template-columns: 1fr;
   align-items: start;
-  gap: 20px;
+  gap: 16px;
 }
 .admin-upload-panel {
   display: grid;
@@ -2502,7 +2525,35 @@ body.lightbox-open {
 .reward-config-note {
   min-width: 0;
 }
+
+.admin-step-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  background: rgba(214,179,92,.14);
+  border: 1px solid rgba(214,179,92,.28);
+  color: #e7d39b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.admin-upload-field-stack {
+  display: grid;
+  gap: 10px;
+}
+.admin-upload-btn {
+  justify-content: center;
+  min-width: 0;
+}
 @media (max-width: 1100px) {
+  .admin-media-intro {
+    grid-template-columns: 1fr;
+  }
   .admin-media-grid {
     grid-template-columns: 1fr;
   }
@@ -2515,7 +2566,8 @@ body.lightbox-open {
   .badge-soft {
     align-self: flex-start;
   }
-  .admin-upload-panel {
+  .admin-upload-panel,
+  .admin-media-intro-card {
     padding: 14px;
     border-radius: 18px;
   }

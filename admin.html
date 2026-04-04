@@ -42,6 +42,7 @@
         <div class="row gap wrap mt-md">
           <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
           <a class="ghost-btn" href="./resident-management.html">Resident CRM</a>
+          <a class="ghost-btn" href="./resident-points.html">Resident Point Scanner</a>
           <a class="ghost-btn" href="./members.html">Legacy Members Page</a>
           <a class="ghost-btn" href="./home.html">Resident Path</a>
         </div>
@@ -57,27 +58,16 @@
         </div>
         <div class="panel">
           <div class="section-head">
-            <h3>Add Spend & Points</h3>
+            <h3>Resident Point Scanner</h3>
             <span class="eyebrow">QR / Manual entry</span>
           </div>
-          <label class="field-label" for="spendMemberCode">Member Code</label>
-          <input id="spendMemberCode" class="input" type="text" placeholder="LAYA-0001" />
-          <label class="field-label" for="spendMemberName">Member Name</label>
-          <input id="spendMemberName" class="input" type="text" placeholder="Noi Resident" />
-          <label class="field-label" for="spendOutlet">Outlet</label>
-          <input id="spendOutlet" class="input" type="text" placeholder="Aroonsawat" />
-          <div class="grid-2 mt-sm">
-            <div>
-              <label class="field-label" for="spendAmount">Amount (THB)</label>
-              <input id="spendAmount" class="input" type="number" placeholder="2500" />
-            </div>
-            <div>
-              <label class="field-label" for="pointRate">Point Rate</label>
-              <input id="pointRate" class="input" type="number" value="1" min="0" step="0.1" />
-            </div>
+          <p class="page-intro">เปิดหน้าแยกสำหรับพนักงานสแกน QR ของแขก ใส่ยอดใช้จ่าย แล้วระบบจะคำนวณคะแนนอัตโนมัติด้วยสูตรเดียวกันทุกครั้ง</p>
+          <div class="grid-2 compact-grid mt-sm">
+            <div class="metric-card"><span>Point rule</span><strong>35 THB = 10 pts</strong></div>
+            <div class="metric-card"><span>Flow</span><strong>Scan → Amount → Save</strong></div>
           </div>
           <div class="row gap wrap mt-md">
-            <button id="addSpendBtn" class="primary-btn">Save Transaction</button>
+            <a class="primary-btn" href="./resident-points.html">Open Resident Point Scanner</a>
           </div>
         </div>
       </section>
@@ -191,24 +181,37 @@
             <label class="field-label" for="contentTerms">Terms</label>
             <textarea id="contentTerms" class="input textarea textarea-sm" placeholder="One term per line"></textarea>
 
+            <div class="admin-media-intro mt-md">
+              <div class="admin-media-intro-card">
+                <div class="eyebrow gold">Main image</div>
+                <h5>Cover = รูปหลักของรายการ</h5>
+                <p>ใช้บนการ์ด, หน้า list และรูปเด่นด้านบนของหน้า detail ถ้ามีแค่รูปเดียว อัปเฉพาะ Cover ก็พอ</p>
+              </div>
+              <div class="admin-media-intro-card">
+                <div class="eyebrow gold">Optional extra images</div>
+                <h5>Gallery = รูปเสริมในหน้ารายละเอียด</h5>
+                <p>ใช้เพิ่มหลายมุม หลายบรรยากาศ หรือรูปประกอบเพิ่มเติม ไม่จำเป็นต้องมีทุกครั้ง</p>
+              </div>
+            </div>
+
             <div class="admin-editor-grid admin-media-grid mt-md">
               <div class="cms-cover-preview-wrap admin-upload-panel">
                 <div class="admin-upload-head">
                   <div>
-                    <div class="eyebrow gold">Main image</div>
-                    <h5>Cover image</h5>
-                    <p class="admin-upload-help">ใช้เป็นรูปหลักของการ์ด, หน้า list และรูปเด่นด้านบนของหน้า detail ถ้ามีแค่รูปเดียว ใช้ช่องนี้พอ</p>
+                    <div class="admin-step-chip">Step 1</div>
+                    <h5>Upload main cover image</h5>
+                    <p class="admin-upload-help">แนะนำให้อัปอย่างน้อย 1 รูปในช่องนี้ก่อน เพื่อให้รายการดูสมบูรณ์บนหน้า Resident</p>
                   </div>
                   <button id="clearCoverBtn" class="ghost-btn" type="button">Clear cover</button>
                 </div>
                 <div class="cms-cover-preview">
                   <img id="contentCoverPreview" class="hidden" alt="Cover preview" />
-                  <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No cover selected</div>
+                  <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No main image selected</div>
                 </div>
-                <label class="field-label no-margin" for="contentCoverFile">Select cover image</label>
-                <input id="contentCoverFile" class="input" type="file" accept="image/*" />
-                <div class="row gap wrap admin-upload-actions">
-                  <button id="uploadCoverBtn" class="primary-btn" type="button">Upload Cover</button>
+                <div class="admin-upload-field-stack">
+                  <label class="field-label no-margin" for="contentCoverFile">Choose main image</label>
+                  <input id="contentCoverFile" class="input" type="file" accept="image/*" />
+                  <button id="uploadCoverBtn" class="primary-btn admin-upload-btn" type="button">Upload main image</button>
                 </div>
                 <div id="contentCoverMeta" class="upload-note hidden"></div>
                 <div id="contentUploadStatus" class="upload-note hidden"></div>
@@ -221,16 +224,16 @@
               <div class="admin-upload-panel">
                 <div class="admin-upload-head">
                   <div>
-                    <div class="eyebrow gold">Optional extra images</div>
-                    <h5>Gallery images</h5>
-                    <p class="admin-upload-help">รูปเสริมสำหรับหน้า detail เท่านั้น ใช้เมื่ออยากโชว์หลายมุม หลายภาพ หรือภาพบรรยากาศเพิ่มเติม</p>
+                    <div class="admin-step-chip">Step 2</div>
+                    <h5>Upload optional gallery images</h5>
+                    <p class="admin-upload-help">ถ้ามีรูปเสริม ให้เพิ่มในส่วนนี้ ระบบจะเอาไปใช้ในหน้า detail และสามารถมีหลายรูปได้</p>
                   </div>
                   <span id="contentGalleryCount" class="badge-soft">0 images</span>
                 </div>
-                <label class="field-label no-margin" for="contentGalleryFiles">Select one or more gallery images</label>
-                <input id="contentGalleryFiles" class="input" type="file" accept="image/*" multiple />
-                <div class="row gap wrap admin-upload-actions">
-                  <button id="uploadGalleryBtn" class="primary-btn" type="button">Upload Gallery Images</button>
+                <div class="admin-upload-field-stack">
+                  <label class="field-label no-margin" for="contentGalleryFiles">Choose one or more extra images</label>
+                  <input id="contentGalleryFiles" class="input" type="file" accept="image/*" multiple />
+                  <button id="uploadGalleryBtn" class="primary-btn admin-upload-btn" type="button">Upload extra images</button>
                 </div>
                 <div id="contentGalleryUploadStatus" class="upload-note hidden"></div>
                 <div id="contentGalleryPreviewList" class="gallery-preview-list admin-gallery-list"></div>
