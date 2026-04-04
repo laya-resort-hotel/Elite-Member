@@ -10,7 +10,7 @@ import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/sess
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
-const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management']);
+const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-codes']);
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
 const pageBindings = new Set();
 
@@ -155,6 +155,12 @@ async function initCurrentPage(isLive = false) {
         const mod = await import('./pages/admin-page.js');
         bindPageOnce('admin', mod.bindAdminPage);
         await mod.loadAdminDashboard();
+        break;
+      }
+      case 'invite-codes': {
+        const mod = await import('./pages/admin-page.js');
+        bindPageOnce('invite-codes', mod.bindInviteCodeManagerPage);
+        await mod.loadInviteCodeManagerPage();
         break;
       }
       case 'members': {

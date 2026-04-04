@@ -1832,6 +1832,17 @@ function bindAdminContentTabs() {
     updateUploadStatus('contentGalleryUploadStatus', count ? `เลือกรูป gallery แล้ว ${count} รูป — กด Upload Gallery Images` : '');
   });
 
+  $('memberIdInput')?.addEventListener('blur', () => {
+    const memberIdInput = $('memberIdInput');
+    const cardCodeInput = $('memberCardCodeInput');
+    if (!memberIdInput || !cardCodeInput) return;
+    if (memberIdInput.value.trim() && !cardCodeInput.value.trim()) {
+      cardCodeInput.value = makeCardCodeFromMemberId(memberIdInput.value.trim());
+    }
+  });
+}
+
+function bindInviteCodeManager() {
   $('adminInviteCodeList')?.addEventListener('click', handleInviteListClick);
   $('inviteFilterBar')?.addEventListener('click', handleInviteFilterClick);
   $('inviteSearchInput')?.addEventListener('input', handleInviteSearchInput);
@@ -1845,15 +1856,13 @@ function bindAdminContentTabs() {
     const el = $('inviteAdditionalUnitsInput');
     if (el) el.value = parseUnitCodes(el.value).join(', ');
   });
+}
 
-  $('memberIdInput')?.addEventListener('blur', () => {
-    const memberIdInput = $('memberIdInput');
-    const cardCodeInput = $('memberCardCodeInput');
-    if (!memberIdInput || !cardCodeInput) return;
-    if (memberIdInput.value.trim() && !cardCodeInput.value.trim()) {
-      cardCodeInput.value = makeCardCodeFromMemberId(memberIdInput.value.trim());
-    }
-  });
+async function loadInviteCodeManager() {
+  if ($('adminInviteCodeList') || $('inviteCodeStatus') || document.body?.dataset?.page === 'invite-codes') {
+    updateInviteReadonlyNote();
+    await loadInviteCodes({ force: true });
+  }
 }
 
 function bindSpendForm() {
@@ -1890,8 +1899,10 @@ export async function loadAdminDashboard() {
   await loadAdminOverview();
   updateReadonlyNote();
   updateMemberReadonlyNote();
-  updateInviteReadonlyNote();
-  await loadInviteCodes({ force: true });
+  if ($('adminInviteCodeList') || $('inviteCodeStatus') || document.body?.dataset?.page === 'invite-codes') {
+    updateInviteReadonlyNote();
+    await loadInviteCodes({ force: true });
+  }
   if (!getMemberEditorState().memberId) resetMemberEditor();
   setTab(getActiveType());
   if (isMembersTab()) {
@@ -1915,4 +1926,12 @@ export function bindAdminPage() {
       showToast('ต้อง login ก่อนใช้งานหลังบ้าน', 'error');
     });
   }
+}
+
+export function bindInviteCodeManagerPage() {
+  bindInviteCodeManager();
+}
+
+export async function loadInviteCodeManagerPage() {
+  await loadInviteCodeManager();
 }

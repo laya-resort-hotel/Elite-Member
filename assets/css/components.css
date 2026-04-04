@@ -2261,3 +2261,49 @@ body.lightbox-open {
     width: 100%;
   }
 }
+
+
+.admin-invite-launch-panel {
+  overflow: hidden;
+}
+
+.admin-launch-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.9fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.admin-launch-copy {
+  min-width: 0;
+}
+
+.admin-launch-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.admin-launch-actions .ghost-btn,
+.admin-launch-actions .primary-btn {
+  min-width: 220px;
+  justify-content: center;
+}
+
+.invite-manager-hero .row {
+  align-items: center;
+}
+
+.invite-manager-panel {
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .admin-launch-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-launch-actions {
+    justify-content: flex-start;
+  }
+}
