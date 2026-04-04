@@ -23,8 +23,10 @@ function emptyResident() {
 }
 
 async function resolveResidentForRedemptionPage() {
-  const uid = state.currentUser?.uid || '';
-  const email = state.currentUser?.email || '';
+  const authUser = state.currentUser || state.auth?.currentUser || null;
+  if (authUser && !state.currentUser) state.currentUser = authUser;
+  const uid = authUser?.uid || '';
+  const email = authUser?.email || '';
   const existingResident = state.currentResident || null;
   let profile = state.currentProfile || {};
 
@@ -66,7 +68,7 @@ async function resolveResidentForRedemptionPage() {
   }
 
   const emailPrefix = String(email || '').trim().split('@')[0] || '';
-  const guessedName = state.currentUser?.displayName?.trim() || profile?.displayName || emailPrefix || 'Resident Member';
+  const guessedName = authUser?.displayName?.trim() || profile?.displayName || emailPrefix || 'Resident Member';
   return {
     ...emptyResident(),
     fullName: guessedName,
@@ -74,7 +76,7 @@ async function resolveResidentForRedemptionPage() {
     email: email || profile?.email || '',
     memberCode: residentLookup.memberCode || residentLookup.publicCardCode || '-',
     publicCardCode: residentLookup.publicCardCode || residentLookup.memberCode || '-',
-    status: state.currentUser ? 'ACTIVE' : 'INACTIVE',
+    status: authUser ? 'ACTIVE' : 'INACTIVE',
   };
 }
 

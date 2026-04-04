@@ -6,6 +6,12 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
 
+function getCurrentUser() {
+  const authUser = state.currentUser || state.auth?.currentUser || null;
+  if (authUser && !state.currentUser) state.currentUser = authUser;
+  return authUser;
+}
+
 function currentResidentId() {
   return state.currentResident?.residentId || state.currentResident?.memberId || state.currentResident?.id || state.residentId || '';
 }
@@ -15,7 +21,8 @@ function currentMemberCode() {
 }
 
 export async function redeemReward(rewardId) {
-  if (!state.firebaseReady || !state.db || !state.currentUser) {
+  const currentUser = getCurrentUser();
+  if (!state.firebaseReady || !state.db || !currentUser) {
     throw new Error('Please log in before redeeming rewards');
   }
 
@@ -72,8 +79,8 @@ export async function redeemReward(rewardId) {
       pointsCost,
       publicCardCode: state.currentResident?.publicCardCode || '',
       memberCode: currentMemberCode(),
-      requestedByUid: state.currentUser.uid,
-      requestedByEmail: state.currentUser.email || '',
+      requestedByUid: currentUser.uid,
+      requestedByEmail: currentUser.email || '',
       status: 'issued',
       source: 'resident_redemption',
       createdAt: serverTimestamp(),
@@ -92,8 +99,8 @@ export async function redeemReward(rewardId) {
       sourceRefId: redemptionRef.id,
       rewardId,
       rewardTitle: title,
-      createdByUid: state.currentUser.uid,
-      createdByName: state.currentUser.email || 'Resident',
+      createdByUid: currentUser.uid,
+      createdByName: currentUser.email || currentUser.displayName || 'Resident',
       createdAt: serverTimestamp(),
       note: `Redeemed reward: ${title}`,
     });
@@ -112,7 +119,7 @@ export async function redeemReward(rewardId) {
       transaction.update(rewardRef, {
         stockRemaining: nextStock,
         updatedAt: serverTimestamp(),
-        updatedBy: state.currentUser.email || 'resident',
+        updatedBy: currentUser.email || currentUser.displayName || 'resident',
       });
     }
 
