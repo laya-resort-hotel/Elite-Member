@@ -1,8 +1,8 @@
-import { $ } from '../core/dom.js';
-import { state, setMode } from '../core/state.js';
-import { loginWithEmail, logoutCurrentUser } from '../services/auth-service.js';
-import { showToast } from '../ui/toast.js';
-import { updateStatusLabels } from '../ui/renderers.js';
+import { $ } from '../core/dom.js?v=20260404fix5';
+import { state, setMode } from '../core/state.js?v=20260404fix5';
+import { loginWithEmail, logoutCurrentUser } from '../services/auth-service.js?v=20260404fix5';
+import { showToast } from '../ui/toast.js?v=20260404fix5';
+import { updateStatusLabels } from '../ui/renderers.js?v=20260404fix5';
 
 function go(url) {
   window.location.href = url;

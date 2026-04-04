@@ -1,9 +1,10 @@
-import { state, setMode } from '../core/state.js';
-import { $ } from '../core/dom.js';
-import { loadCollectionSafe } from '../services/content-service.js';
-import { loadResidentPointHistory } from '../services/member-service.js';
-import { renderCards, renderResidentCard, renderResidentPointHistoryMini, updateStatusLabels, renderVaultHome } from '../ui/renderers.js';
-import { showToast } from '../ui/toast.js';
+
+import { state, setMode } from '../core/state.js?v=20260404fix5';
+import { $ } from '../core/dom.js?v=20260404fix5';
+import { loadCollectionSafe } from '../services/content-service.js?v=20260404fix5';
+import { loadTransactions } from '../services/transaction-service.js?v=20260404fix5';
+import { renderCards, renderResidentCard, renderTable, renderVaultHome, updateStatusLabels } from '../ui/renderers.js?v=20260404fix5';
+import { showToast } from '../ui/toast.js?v=20260404fix5';
 
 function emptyResident() {
   return {
@@ -13,14 +14,8 @@ function emptyResident() {
     residence: '-',
     memberCode: '-',
     publicCardCode: '-',
-    qrCodeValue: '-',
-    cardNumber: '-',
     points: 0,
     totalSpend: 0,
-    pendingPoints: 0,
-    lifetimeEarned: 0,
-    lifetimeRedeemed: 0,
-    email: '',
   };
 }
 
@@ -33,26 +28,26 @@ export async function loadResidentDashboard() {
   }
 
   try {
-    const [benefits, news, promotions, pointHistory] = await Promise.all([
+    const [benefits, news, promotions, transactions] = await Promise.all([
       loadCollectionSafe('benefits', { limit: 3 }),
       loadCollectionSafe('news', { limit: 3 }),
       loadCollectionSafe('promotions', { limit: 3 }),
-      state.currentResident?.residentId ? loadResidentPointHistory(state.currentResident.residentId, 8) : Promise.resolve([]),
+      state.currentResident?.memberCode ? loadTransactions({ limit: 10, whereMemberCode: resident.memberCode }) : Promise.resolve([]),
     ]);
 
     if ($('homeNewsHero') || $('homePromotionGrid')) {
       renderVaultHome(news[0] || null, promotions);
     }
-    if ($('benefitsList')) renderCards($('benefitsList'), benefits, 'No benefits yet', { contentType: 'benefits' });
-    if ($('newsList')) renderCards($('newsList'), news, 'No news yet', { contentType: 'news' });
-    if ($('promoList')) renderCards($('promoList'), promotions, 'No promotions yet', { contentType: 'promotions' });
-    if ($('residentPointHistoryMini')) renderResidentPointHistoryMini($('residentPointHistoryMini'), pointHistory, 'No point history yet');
+    if ($('benefitsList')) renderCards($('benefitsList'), benefits, 'No benefits yet');
+    if ($('newsList')) renderCards($('newsList'), news, 'No news yet');
+    if ($('promoList')) renderCards($('promoList'), promotions, 'No promotions yet');
+    if ($('transactionsTable')) renderTable($('transactionsTable'), transactions, 'No transactions yet');
   } catch (error) {
     console.error(error);
     if ($('benefitsList')) renderCards($('benefitsList'), [], 'No benefits yet');
     if ($('newsList')) renderCards($('newsList'), [], 'No news yet');
     if ($('promoList')) renderCards($('promoList'), [], 'No promotions yet');
-    if ($('residentPointHistoryMini')) renderResidentPointHistoryMini($('residentPointHistoryMini'), [], 'No point history yet');
+    if ($('transactionsTable')) renderTable($('transactionsTable'), [], 'No transactions yet');
     showToast('อ่านข้อมูลจาก Firebase ไม่สำเร็จ', 'error');
   }
 }

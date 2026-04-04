@@ -9,32 +9,14 @@ service cloud.firestore {
       return request.auth.uid;
     }
 
-    function myEmail() {
-      return signedIn() && request.auth.token.email is string
-        ? request.auth.token.email
-        : '';
-    }
-
     function hasUserDoc() {
       return signedIn() && exists(/databases/$(database)/documents/users/$(myUid()));
     }
 
-    function currentUserDoc() {
-      return hasUserDoc()
-        ? get(/databases/$(database)/documents/users/$(myUid())).data
-        : null;
-    }
-
     function userRole() {
       return hasUserDoc()
-        ? currentUserDoc().role
+        ? get(/databases/$(database)/documents/users/$(myUid())).data.role
         : null;
-    }
-
-    function currentUserResidentId() {
-      return hasUserDoc() && currentUserDoc().residentId is string
-        ? currentUserDoc().residentId
-        : '';
     }
 
     function isEmployeeEmailFallback() {
@@ -59,14 +41,16 @@ service cloud.firestore {
           'memberId',
           'memberCode',
           'publicCardCode',
-          'residentId',
           'isActive',
           'createdAt',
           'updatedAt',
           'lastLoginAt'
         ])
         && request.resource.data.role in ['resident', 'staff']
-        && (!request.resource.data.keys().hasAny(['uid']) || request.resource.data.uid == myUid());
+        && (
+          !request.resource.data.keys().hasAny(['uid'])
+          || request.resource.data.uid == myUid()
+        );
     }
 
     function validSelfUserUpdate(uid) {
@@ -81,7 +65,6 @@ service cloud.firestore {
           'memberId',
           'memberCode',
           'publicCardCode',
-          'residentId',
           'isActive',
           'createdAt',
           'updatedAt',
@@ -89,7 +72,6 @@ service cloud.firestore {
         ])
         && request.resource.data.role == resource.data.role
         && request.resource.data.employeeId == resource.data.employeeId
-        && request.resource.data.residentId == resource.data.residentId
         && request.resource.data.createdAt == resource.data.createdAt;
     }
 
@@ -103,148 +85,15 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/members/$(memberId)).data.authUid == myUid();
     }
 
-    function residentDocMatchesCurrentUser(data) {
-      return signedIn() && (
-        (data.authUid is string && data.authUid == myUid())
-        || (data.linkedUserUid is string && data.linkedUserUid == myUid())
-        || (currentUserResidentId() != '' && currentUserResidentId() == data.id)
-        || (data.loginEmail is string && data.loginEmail == myEmail())
-      );
-    }
-
     function residentOwnedByCurrentUserDoc() {
-      return signedIn() && (
-        (resource.data.authUid is string && resource.data.authUid == myUid())
-        || (resource.data.linkedUserUid is string && resource.data.linkedUserUid == myUid())
-        || (currentUserResidentId() != '' && currentUserResidentId() == resource.data.id)
-        || (resource.data.loginEmail is string && resource.data.loginEmail == myEmail())
-      );
+      return signedIn() && resource.data.authUid is string && resource.data.authUid == myUid();
     }
 
     function residentOwnedByCurrentUser(residentId) {
       return signedIn()
         && exists(/databases/$(database)/documents/residents/$(residentId))
-        && (
-          (get(/databases/$(database)/documents/residents/$(residentId)).data.authUid is string && get(/databases/$(database)/documents/residents/$(residentId)).data.authUid == myUid())
-          || (get(/databases/$(database)/documents/residents/$(residentId)).data.linkedUserUid is string && get(/databases/$(database)/documents/residents/$(residentId)).data.linkedUserUid == myUid())
-          || (currentUserResidentId() != '' && currentUserResidentId() == residentId)
-          || (get(/databases/$(database)/documents/residents/$(residentId)).data.loginEmail is string && get(/databases/$(database)/documents/residents/$(residentId)).data.loginEmail == myEmail())
-        );
-    }
-
-
-    function residentOwnedByCurrentUserAfter(residentId) {
-      return signedIn()
-        && existsAfter(/databases/$(database)/documents/residents/$(residentId))
-        && (
-          (getAfter(/databases/$(database)/documents/residents/$(residentId)).data.authUid is string && getAfter(/databases/$(database)/documents/residents/$(residentId)).data.authUid == myUid())
-          || (getAfter(/databases/$(database)/documents/residents/$(residentId)).data.linkedUserUid is string && getAfter(/databases/$(database)/documents/residents/$(residentId)).data.linkedUserUid == myUid())
-          || (getAfter(/databases/$(database)/documents/residents/$(residentId)).data.loginEmail is string && getAfter(/databases/$(database)/documents/residents/$(residentId)).data.loginEmail == myEmail())
-        );
-    }
-
-    function validSelfResidentCreate(residentId) {
-      return signedIn()
-        && request.resource.data.keys().hasOnly([
-          'id',
-          'memberCode',
-          'qrCodeValue',
-          'cardNumber',
-          'firstName',
-          'lastName',
-          'displayName',
-          'email',
-          'loginEmail',
-          'loginEmailLower',
-          'linkedUserUid',
-          'authUid',
-          'phone',
-          'status',
-          'tier',
-          'ownerType',
-          'primaryUnitCode',
-          'unitCodes',
-          'notes',
-          'totalSpend',
-          'inviteCode',
-          'createdAt',
-          'updatedAt'
-        ])
-        && request.resource.data.id == residentId
-        && request.resource.data.authUid == myUid()
-        && request.resource.data.linkedUserUid == myUid()
-        && request.resource.data.loginEmail == myEmail()
-        && request.resource.data.status == 'active'
-        && request.resource.data.tier == 'elite_black'
-        && request.resource.data.totalSpend == 0;
-    }
-
-    function validSelfResidentWalletCreate(residentId) {
-      return signedIn()
-        && residentOwnedByCurrentUserAfter(residentId)
-        && request.resource.data.keys().hasOnly([
-          'residentId',
-          'currentPoints',
-          'pendingPoints',
-          'lifetimeEarned',
-          'lifetimeRedeemed',
-          'updatedAt'
-        ])
-        && request.resource.data.residentId == residentId
-        && request.resource.data.currentPoints == 0
-        && request.resource.data.pendingPoints == 0
-        && request.resource.data.lifetimeEarned == 0
-        && request.resource.data.lifetimeRedeemed == 0;
-    }
-
-    function validSelfResidentCardCreate(residentId) {
-      return signedIn()
-        && residentOwnedByCurrentUserAfter(residentId)
-        && request.resource.data.keys().hasOnly([
-          'residentId',
-          'memberCode',
-          'cardNumber',
-          'qrCodeValue',
-          'status',
-          'issuedAt',
-          'updatedAt'
-        ])
-        && request.resource.data.residentId == residentId
-        && request.resource.data.status == 'active';
-    }
-
-    function validSelfInviteClaim(code) {
-      return signedIn()
-        && resource.data.code == code
-        && resource.data.status == 'active'
-        && (!(resource.data.claimedByUid is string) || resource.data.claimedByUid == '')
-        && request.resource.data.keys().hasOnly([
-          'code',
-          'status',
-          'primaryUnitCode',
-          'additionalUnitCodes',
-          'usageLimit',
-          'createdByUid',
-          'createdByEmail',
-          'createdAt',
-          'updatedAt',
-          'claimedAt',
-          'claimedByUid',
-          'claimedByEmail',
-          'claimedResidentId'
-        ])
-        && request.resource.data.code == resource.data.code
-        && request.resource.data.primaryUnitCode == resource.data.primaryUnitCode
-        && request.resource.data.additionalUnitCodes == resource.data.additionalUnitCodes
-        && request.resource.data.usageLimit == resource.data.usageLimit
-        && request.resource.data.createdByUid == resource.data.createdByUid
-        && request.resource.data.createdByEmail == resource.data.createdByEmail
-        && request.resource.data.createdAt == resource.data.createdAt
-        && request.resource.data.status == 'claimed'
-        && request.resource.data.claimedByUid == myUid()
-        && request.resource.data.claimedByEmail == myEmail()
-        && request.resource.data.claimedResidentId is string
-        && residentOwnedByCurrentUserAfter(request.resource.data.claimedResidentId);
+        && get(/databases/$(database)/documents/residents/$(residentId)).data.authUid is string
+        && get(/databases/$(database)/documents/residents/$(residentId)).data.authUid == myUid();
     }
 
     match /users/{uid} {
@@ -263,7 +112,7 @@ service cloud.firestore {
 
     match /point_wallets/{memberId} {
       allow get: if isAdminLike() || memberOwnedByCurrentUser(memberId);
-      allow list: if isAdminLike() || (signedIn() && memberOwnedByCurrentUser(memberId));
+      allow list: if isAdminLike() || (signedIn() && resource.id is string && memberOwnedByCurrentUser(resource.id));
       allow create, update: if isAdminLike();
       allow delete: if false;
     }
@@ -310,31 +159,21 @@ service cloud.firestore {
     match /residents/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUserDoc();
       allow list: if isAdminLike();
-      allow create: if isAdminLike() || validSelfResidentCreate(residentId);
-      allow update, delete: if isAdminLike();
+      allow create, update, delete: if isAdminLike();
     }
 
     match /resident_wallets/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
       allow list: if isAdminLike();
-      allow create: if isAdminLike() || validSelfResidentWalletCreate(residentId);
-      allow update: if isAdminLike();
+      allow create, update: if isAdminLike();
       allow delete: if isAdminLike();
     }
 
     match /resident_cards/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
       allow list: if isAdminLike();
-      allow create: if isAdminLike() || validSelfResidentCardCreate(residentId);
-      allow update: if isAdminLike();
+      allow create, update: if isAdminLike();
       allow delete: if isAdminLike();
-    }
-
-    match /resident_invite_codes/{code} {
-      allow get: if true;
-      allow list: if isAdminLike();
-      allow create, delete: if isAdminLike();
-      allow update: if isAdminLike() || validSelfInviteClaim(code);
     }
 
     match /resident_point_transactions/{transactionId} {

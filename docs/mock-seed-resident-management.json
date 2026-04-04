@@ -1,30 +1,4 @@
 {
-  "users": [
-    {
-      "id": "demo_uid_noi_001",
-      "uid": "demo_uid_noi_001",
-      "displayName": "Noi Resident",
-      "email": "resident.noi@example.com",
-      "role": "resident",
-      "residentId": "resident_noi_001",
-      "memberId": "resident_noi_001",
-      "memberCode": "RES-0001",
-      "publicCardCode": "LAYA-RES-0001",
-      "isActive": true
-    },
-    {
-      "id": "demo_uid_john_002",
-      "uid": "demo_uid_john_002",
-      "displayName": "John Smith",
-      "email": "john.smith.resident@example.com",
-      "role": "resident",
-      "residentId": "resident_john_002",
-      "memberId": "resident_john_002",
-      "memberCode": "RES-0002",
-      "publicCardCode": "LAYA-RES-0002",
-      "isActive": true
-    }
-  ],
   "residents": [
     {
       "id": "resident_noi_001",
@@ -35,10 +9,6 @@
       "lastName": "Resident",
       "displayName": "Noi Resident",
       "email": "noi@example.com",
-      "loginEmail": "resident.noi@example.com",
-      "loginEmailLower": "resident.noi@example.com",
-      "linkedUserUid": "demo_uid_noi_001",
-      "authUid": "demo_uid_noi_001",
       "phone": "+66 81 234 5678",
       "status": "active",
       "tier": "elite_black",
@@ -56,10 +26,6 @@
       "lastName": "Smith",
       "displayName": "John Smith",
       "email": "john.smith@example.com",
-      "loginEmail": "john.smith.resident@example.com",
-      "loginEmailLower": "john.smith.resident@example.com",
-      "linkedUserUid": "demo_uid_john_002",
-      "authUid": "demo_uid_john_002",
       "phone": "+66 89 222 4567",
       "status": "active",
       "tier": "elite_black",
@@ -71,7 +37,6 @@
   ],
   "resident_wallets": [
     {
-      "id": "resident_noi_001",
       "residentId": "resident_noi_001",
       "currentPoints": 12850,
       "pendingPoints": 0,
@@ -79,7 +44,6 @@
       "lifetimeRedeemed": 2350
     },
     {
-      "id": "resident_john_002",
       "residentId": "resident_john_002",
       "currentPoints": 32600,
       "pendingPoints": 400,
@@ -89,7 +53,6 @@
   ],
   "resident_cards": [
     {
-      "id": "resident_noi_001",
       "residentId": "resident_noi_001",
       "memberCode": "RES-0001",
       "cardNumber": "CARD-0001",
@@ -97,7 +60,6 @@
       "status": "active"
     },
     {
-      "id": "resident_john_002",
       "residentId": "resident_john_002",
       "memberCode": "RES-0002",
       "cardNumber": "CARD-0002",
@@ -115,16 +77,6 @@
       "source": "fb_spend",
       "referenceNo": "POS-AR-0001",
       "note": "Dinner at Aroonsawat"
-    },
-    {
-      "residentId": "resident_john_002",
-      "memberCode": "RES-0002",
-      "type": "earn",
-      "pointsDelta": 5000,
-      "balanceAfter": 32600,
-      "source": "room_charge",
-      "referenceNo": "POS-TT-0102",
-      "note": "Weekend family dining"
     }
   ]
 }

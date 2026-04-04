@@ -6,9 +6,7 @@
 
 .resident-sidebar,
 .resident-main-stack,
-.resident-detail-grid,
-.resident-card-preview-panel,
-.resident-wallet-panel {
+.resident-detail-grid {
   min-width: 0;
 }
 
@@ -68,43 +66,19 @@
 
 .resident-detail-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
 }
 
 .resident-preview-card {
   display: grid;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 18px;
+  align-items: start;
   background: linear-gradient(135deg, rgba(255,255,255,.03), rgba(241,211,139,.06));
   border: 1px solid rgba(255,255,255,.08);
   border-radius: 24px;
   padding: 18px;
-}
-
-.resident-preview-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 200px;
-  gap: 18px;
-  align-items: start;
-}
-
-.resident-preview-copy {
-  min-width: 0;
-  display: grid;
-  gap: 12px;
-  align-content: start;
-}
-
-.resident-preview-copy h4 {
-  margin: 0;
-  font-size: clamp(1.7rem, 2.8vw, 2.2rem);
-  line-height: 1.05;
-}
-
-.resident-preview-card .member-luxury-code {
-  font-size: 1.05rem;
-  overflow-wrap: anywhere;
 }
 
 .resident-preview-qr {
@@ -112,9 +86,6 @@
   flex-direction: column;
   gap: 10px;
   align-items: center;
-  justify-self: end;
-  width: 200px;
-  max-width: 100%;
 }
 
 #residentQrCanvas {
@@ -122,42 +93,6 @@
   height: 180px;
   border-radius: 18px;
   background: #101216;
-}
-
-.resident-preview-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.resident-preview-meta .member-detail-item {
-  min-width: 0;
-  padding: 14px 14px 16px;
-  display: grid;
-  gap: 6px;
-  align-content: start;
-}
-
-.resident-preview-meta .member-detail-item.wide {
-  grid-column: 1 / -1;
-}
-
-.resident-preview-meta .member-detail-item span,
-.resident-preview-meta .member-detail-item strong {
-  display: block;
-  min-width: 0;
-}
-
-.resident-preview-meta .member-detail-item span {
-  line-height: 1.3;
-  white-space: normal;
-}
-
-.resident-preview-meta .member-detail-item strong {
-  font-size: .98rem;
-  line-height: 1.45;
-  word-break: break-word;
-  overflow-wrap: anywhere;
 }
 
 .compact-table th,
@@ -182,429 +117,14 @@
   justify-content: flex-start;
 }
 
-@media (max-width: 1360px) {
-  .resident-detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 1100px) {
-  .resident-management-layout {
+  .resident-management-layout,
+  .resident-detail-grid,
+  .resident-preview-card {
     grid-template-columns: 1fr;
   }
 
   .resident-list-stack {
     max-height: none;
-  }
-}
-
-@media (max-width: 760px) {
-  .resident-preview-head,
-  .resident-preview-meta {
-    grid-template-columns: 1fr;
-  }
-
-  .resident-preview-qr {
-    justify-self: start;
-    width: 100%;
-  }
-
-  .resident-card-preview-panel .panel-title-row {
-    align-items: flex-start;
-  }
-
-  .resident-card-preview-panel .panel-title-row .row {
-    width: 100%;
-  }
-
-  .resident-card-preview-panel .panel-title-row .ghost-btn,
-  .resident-card-preview-panel .panel-title-row .primary-btn {
-    flex: 1 1 160px;
-  }
-}
-
-
-/* Luxury polish v3 */
-body[data-page="resident-management"] {
-  background:
-    radial-gradient(circle at top left, rgba(212, 176, 92, 0.12), transparent 26%),
-    radial-gradient(circle at top right, rgba(255,255,255,0.04), transparent 22%),
-    linear-gradient(180deg, #090d14 0%, #0b1018 100%);
-}
-
-body[data-page="resident-management"] .topbar {
-  margin-bottom: 4px;
-}
-
-body[data-page="resident-management"] .page-actions {
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-body[data-page="resident-management"] .badge-inline {
-  min-height: 42px;
-  padding: 10px 14px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
-}
-
-body[data-page="resident-management"] .panel,
-body[data-page="resident-management"] .resident-list-card,
-body[data-page="resident-management"] .resident-preview-card,
-body[data-page="resident-management"] .member-detail-item,
-body[data-page="resident-management"] .member-point-card {
-  box-shadow: 0 18px 42px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.04);
-}
-
-body[data-page="resident-management"] .page-hero {
-  padding: 26px;
-  border-radius: 28px;
-  background:
-    radial-gradient(circle at top right, rgba(241,211,139,.12), transparent 26%),
-    linear-gradient(145deg, rgba(25,31,43,.98), rgba(16,22,32,.95));
-}
-
-body[data-page="resident-management"] .page-hero h2 {
-  margin-bottom: 10px;
-  font-size: clamp(2rem, 4vw, 2.7rem);
-}
-
-body[data-page="resident-management"] .page-intro {
-  max-width: 760px;
-  color: rgba(255,255,255,.76);
-  line-height: 1.65;
-}
-
-body[data-page="resident-management"] .metric-card {
-  min-height: 112px;
-  padding: 18px 18px 16px;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
-}
-
-body[data-page="resident-management"] .metric-card span {
-  font-size: .8rem;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-}
-
-body[data-page="resident-management"] .metric-card strong {
-  font-size: clamp(1.8rem, 2.8vw, 2.2rem);
-}
-
-.resident-management-layout {
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
-}
-
-.resident-sidebar {
-  position: sticky;
-  top: 18px;
-  padding: 22px;
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(20,26,36,.98), rgba(12,17,26,.94));
-}
-
-.resident-main-stack > .panel,
-.resident-card-preview-panel,
-.resident-wallet-panel {
-  padding: 22px;
-  border-radius: 28px;
-  background:
-    radial-gradient(circle at top right, rgba(241,211,139,.08), transparent 24%),
-    linear-gradient(145deg, rgba(19,25,35,.98), rgba(11,16,24,.95));
-}
-
-body[data-page="resident-management"] .panel-title-row {
-  gap: 14px;
-  align-items: flex-start;
-}
-
-body[data-page="resident-management"] .panel-title-row h3 {
-  margin: 2px 0 0;
-}
-
-body[data-page="resident-management"] .primary-btn,
-body[data-page="resident-management"] .ghost-btn,
-body[data-page="resident-management"] .danger-btn {
-  min-height: 46px;
-  padding-inline: 18px;
-  border-radius: 16px;
-}
-
-body[data-page="resident-management"] .primary-btn {
-  box-shadow: 0 12px 22px rgba(177, 136, 55, .18);
-}
-
-body[data-page="resident-management"] .primary-btn:hover,
-body[data-page="resident-management"] .ghost-btn:hover,
-body[data-page="resident-management"] .danger-btn:hover {
-  box-shadow: 0 16px 28px rgba(0,0,0,.18);
-}
-
-body[data-page="resident-management"] .input,
-body[data-page="resident-management"] textarea.input,
-body[data-page="resident-management"] select.input {
-  min-height: 48px;
-  border-radius: 16px;
-  border-color: rgba(255,255,255,.09);
-  background: rgba(255,255,255,.035);
-}
-
-body[data-page="resident-management"] textarea.input {
-  min-height: 110px;
-}
-
-body[data-page="resident-management"] .textarea-sm {
-  min-height: 104px;
-}
-
-body[data-page="resident-management"] .field-label {
-  margin-bottom: 8px;
-  color: #f2dec0;
-  font-size: .8rem;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-body[data-page="resident-management"] .admin-editor-grid {
-  gap: 18px;
-}
-
-body[data-page="resident-management"] .admin-editor-grid > div {
-  min-width: 0;
-}
-
-body[data-page="resident-management"] .upload-note {
-  margin-top: 8px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.06);
-  color: rgba(255,255,255,.65);
-  line-height: 1.55;
-}
-
-.resident-list-stack {
-  gap: 14px;
-  padding-right: 6px;
-}
-
-.resident-list-card {
-  border-radius: 20px;
-  padding: 16px 16px 15px;
-}
-
-.resident-list-main strong {
-  font-size: 1rem;
-}
-
-.resident-list-sub {
-  margin-top: 6px;
-  line-height: 1.45;
-}
-
-.resident-list-meta {
-  margin-top: 12px;
-}
-
-.resident-detail-grid {
-  grid-template-columns: minmax(420px, 1.2fr) minmax(340px, .8fr);
-  gap: 24px;
-}
-
-.resident-preview-card {
-  gap: 18px;
-  padding: 22px;
-  border-radius: 26px;
-}
-
-.resident-preview-head {
-  grid-template-columns: minmax(0, 1fr) 212px;
-  gap: 20px;
-  align-items: center;
-}
-
-.resident-preview-copy {
-  gap: 14px;
-}
-
-.resident-preview-copy h4 {
-  font-size: clamp(2rem, 3vw, 2.45rem);
-  letter-spacing: -.02em;
-}
-
-.resident-preview-card .member-luxury-code,
-#residentQrText {
-  font-weight: 700;
-  letter-spacing: .06em;
-}
-
-.resident-preview-qr {
-  width: 212px;
-  padding: 14px;
-  border-radius: 22px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.06);
-}
-
-#residentQrCanvas {
-  width: 184px;
-  height: 184px;
-  border-radius: 20px;
-}
-
-.resident-preview-meta {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.resident-preview-meta .member-detail-item {
-  min-height: 92px;
-  border-radius: 18px;
-  padding: 14px 16px 16px;
-  background: rgba(255,255,255,.035);
-}
-
-.resident-preview-meta .member-detail-item span {
-  font-size: .74rem;
-  letter-spacing: .1em;
-}
-
-.resident-preview-meta .member-detail-item strong {
-  font-size: 1rem;
-  line-height: 1.5;
-  word-break: normal;
-  overflow-wrap: anywhere;
-  white-space: normal;
-  writing-mode: horizontal-tb !important;
-}
-
-.resident-wallet-panel .member-point-summary {
-  margin-top: 14px;
-  gap: 14px;
-}
-
-.resident-wallet-panel .member-point-card {
-  min-height: 116px;
-  padding: 18px;
-  border-radius: 20px;
-  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.03));
-}
-
-.resident-wallet-panel .member-point-card strong {
-  font-size: clamp(1.8rem, 2.8vw, 2.25rem);
-}
-
-#residentWalletUpdated {
-  margin-top: 12px;
-}
-
-.resident-wallet-panel .grid-4.admin-editor-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-#pointActionNote {
-  min-height: 120px;
-}
-
-#residentPointHistory .table-wrap {
-  overflow-x: auto;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,.08);
-}
-
-#residentPointHistory .table {
-  min-width: 680px;
-}
-
-#residentPointHistory th,
-#residentPointHistory td {
-  padding: 14px 16px;
-  vertical-align: top;
-}
-
-#residentPointHistory tbody tr:hover {
-  background: rgba(255,255,255,.02);
-}
-
-body[data-page="resident-management"] .bottom-nav {
-  backdrop-filter: blur(14px);
-}
-
-@media (max-width: 1360px) {
-  .resident-sidebar {
-    position: static;
-  }
-
-  .resident-detail-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 1100px) {
-  .resident-management-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .resident-sidebar {
-    padding: 20px;
-  }
-
-  .resident-list-stack {
-    max-height: none;
-  }
-}
-
-@media (max-width: 760px) {
-  body[data-page="resident-management"] .page-hero,
-  .resident-sidebar,
-  .resident-main-stack > .panel,
-  .resident-card-preview-panel,
-  .resident-wallet-panel {
-    padding: 18px;
-    border-radius: 24px;
-  }
-
-  body[data-page="resident-management"] .page-actions {
-    justify-content: flex-start;
-  }
-
-  .resident-preview-head,
-  .resident-preview-meta,
-  .resident-wallet-panel .grid-4.admin-editor-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .resident-preview-qr {
-    justify-self: stretch;
-    width: 100%;
-  }
-
-  .resident-card-preview-panel .panel-title-row,
-  .resident-wallet-panel .panel-title-row,
-  .resident-sidebar .panel-title-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .resident-card-preview-panel .panel-title-row .row,
-  .resident-sidebar .panel-title-row .primary-btn {
-    width: 100%;
-  }
-
-  .resident-card-preview-panel .panel-title-row .ghost-btn,
-  .resident-card-preview-panel .panel-title-row .primary-btn,
-  .resident-sidebar .panel-title-row .primary-btn,
-  #saveResidentManagementBtn,
-  #applyPointActionBtn,
-  #deleteResidentManagementBtn {
-    width: 100%;
   }
 }

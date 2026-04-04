@@ -1,4 +1,4 @@
-import { $$ } from '../core/dom.js';
+import { $$ } from '../core/dom.js?v=20260404fix5';
 
 function setSide(card, side) {
   if (!card) return;
@@ -12,6 +12,7 @@ function setSide(card, side) {
   const isBack = side === 'back';
 
   scene?.classList.toggle('is-flipped', isBack);
+  card.classList.toggle('is-flipped', isBack);
   frontBtn?.classList.toggle('active', !isBack);
   backBtn?.classList.toggle('active', isBack);
   frontFace?.setAttribute('aria-hidden', isBack ? 'true' : 'false');
@@ -35,6 +36,9 @@ function bindTilt(scene) {
   const resetTilt = () => {
     scene.style.setProperty('--tilt-x', '0deg');
     scene.style.setProperty('--tilt-y', '0deg');
+    scene.style.setProperty('--pointer-x', '50%');
+    scene.style.setProperty('--pointer-y', '50%');
+    scene.classList.remove('is-pressed');
   };
 
   scene.addEventListener('mousemove', (event) => {
@@ -42,79 +46,99 @@ function bindTilt(scene) {
     const rect = scene.getBoundingClientRect();
     const px = (event.clientX - rect.left) / rect.width;
     const py = (event.clientY - rect.top) / rect.height;
-    const tiltY = (px - 0.5) * 8;
-    const tiltX = (0.5 - py) * 6;
+    const tiltY = (px - 0.5) * 12;
+    const tiltX = (0.5 - py) * 10;
     scene.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
     scene.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
+    scene.style.setProperty('--pointer-x', `${(px * 100).toFixed(2)}%`);
+    scene.style.setProperty('--pointer-y', `${(py * 100).toFixed(2)}%`);
   });
 
   scene.addEventListener('mouseleave', resetTilt);
   scene.addEventListener('blur', resetTilt);
+  scene.addEventListener('pointerdown', () => {
+    if (coarse()) {
+      scene.classList.add('is-pressed');
+    }
+  });
+  scene.addEventListener('pointercancel', resetTilt);
+  scene.addEventListener('pointerleave', () => {
+    if (coarse()) scene.classList.remove('is-pressed');
+  });
+  scene.addEventListener('pointerup', () => {
+    if (coarse()) scene.classList.remove('is-pressed');
+  });
 }
 
-function bindSwipe(scene, card) {
+function bindSceneFlip(scene, card) {
   if (!scene || !card) return;
 
   let startX = 0;
   let startY = 0;
-  let dragging = false;
-  let recentSwipeAt = 0;
+  let pointerId = null;
+  let moved = false;
+  let lastPointerToggleAt = 0;
 
-  const swipeThreshold = 28;
-  const verticalTolerance = 46;
-  const clickSuppressMs = 420;
+  const swipeThreshold = 34;
+  const tapTolerance = 10;
+  const verticalTolerance = 64;
 
-  const handleSwipeResult = (deltaX, deltaY) => {
-    if (Math.abs(deltaX) < swipeThreshold) return false;
-    if (Math.abs(deltaY) > verticalTolerance && Math.abs(deltaY) > Math.abs(deltaX)) return false;
-
-    recentSwipeAt = Date.now();
-    setSide(card, deltaX < 0 ? 'back' : 'front');
-    return true;
-  };
-
-  scene.addEventListener('touchstart', (event) => {
-    if (!event.touches || !event.touches.length) return;
-    const touch = event.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
-    dragging = true;
-  }, { passive: true });
-
-  scene.addEventListener('touchend', (event) => {
-    if (!dragging) return;
-    const touch = event.changedTouches && event.changedTouches[0];
-    if (!touch) return;
-    const deltaX = touch.clientX - startX;
-    const deltaY = touch.clientY - startY;
-    handleSwipeResult(deltaX, deltaY);
-    dragging = false;
-  }, { passive: true });
-
-  scene.addEventListener('touchcancel', () => {
-    dragging = false;
-  }, { passive: true });
-
-  // Fallback for browsers/devices where touchend swipe is unreliable
   scene.addEventListener('pointerdown', (event) => {
-    if (event.pointerType !== 'touch') return;
+    if (event.button !== 0 && event.pointerType === 'mouse') return;
+    pointerId = event.pointerId;
     startX = event.clientX;
     startY = event.clientY;
-    dragging = true;
+    moved = false;
+    if (scene.setPointerCapture) {
+      try { scene.setPointerCapture(pointerId); } catch (_) {}
+    }
   });
 
-  scene.addEventListener('pointerup', (event) => {
-    if (!dragging || event.pointerType !== 'touch') return;
-    const deltaX = event.clientX - startX;
-    const deltaY = event.clientY - startY;
-    handleSwipeResult(deltaX, deltaY);
-    dragging = false;
+  scene.addEventListener('pointermove', (event) => {
+    if (pointerId == null || event.pointerId !== pointerId) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    if (Math.abs(dx) > tapTolerance || Math.abs(dy) > tapTolerance) moved = true;
   });
 
-  scene.addEventListener('click', () => {
-    if (Date.now() - recentSwipeAt < clickSuppressMs) return;
-    toggleSide(card);
+  const finishPointer = (event) => {
+    if (pointerId == null || event.pointerId !== pointerId) return;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+
+    if (scene.releasePointerCapture) {
+      try { scene.releasePointerCapture(pointerId); } catch (_) {}
+    }
+    pointerId = null;
+
+    if (Math.abs(dx) >= swipeThreshold && Math.abs(dx) > Math.abs(dy) && Math.abs(dy) < verticalTolerance) {
+      setSide(card, dx < 0 ? 'back' : 'front');
+      lastPointerToggleAt = Date.now();
+      return;
+    }
+
+    if (!moved || (Math.abs(dx) < tapTolerance && Math.abs(dy) < tapTolerance)) {
+      toggleSide(card);
+      lastPointerToggleAt = Date.now();
+    }
+  };
+
+  scene.addEventListener('pointerup', finishPointer);
+  scene.addEventListener('pointercancel', (event) => {
+    if (pointerId == null || event.pointerId !== pointerId) return;
+    if (scene.releasePointerCapture) {
+      try { scene.releasePointerCapture(pointerId); } catch (_) {}
+    }
+    pointerId = null;
   });
+
+  // Fallback for browsers that still emit click after pointer events.
+  scene.addEventListener('click', (event) => {
+    if (Date.now() - lastPointerToggleAt < 350) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
 }
 
 function downloadCurrentSide(card) {
@@ -177,7 +201,7 @@ export function bindFlipCards() {
       }
     });
 
-    bindSwipe(scene, card);
+    bindSceneFlip(scene, card);
     bindTilt(scene);
     setSide(card, card.dataset.defaultSide || 'front');
   });

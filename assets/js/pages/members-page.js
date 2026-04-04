@@ -1,9 +1,9 @@
 
-import { state } from '../core/state.js';
-import { $ } from '../core/dom.js';
-import { loadAllResidents, searchResidents } from '../services/member-service.js';
-import { renderResidentSearchResults } from '../ui/renderers.js';
-import { showToast } from '../ui/toast.js';
+import { state } from '../core/state.js?v=20260404fix5';
+import { $ } from '../core/dom.js?v=20260404fix5';
+import { loadAllResidents, searchResidents } from '../services/member-service.js?v=20260404fix5';
+import { renderResidentSearchResults } from '../ui/renderers.js?v=20260404fix5';
+import { showToast } from '../ui/toast.js?v=20260404fix5';
 
 export async function loadMembersPage() {
   try {

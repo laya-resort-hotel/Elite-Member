@@ -1,132 +1,88 @@
-# LAYA Resident – Resident Login + Resident Management Schema
+# LAYA Resident – Firestore-ready Resident Management Starter
 
-เวอร์ชันนี้เพิ่มการเชื่อม **Resident login ของจริง** เข้ากับข้อมูลใน collection ใหม่ชุด Resident Management เพื่อให้ลูกค้าเห็นคะแนนและ QR ของตัวเองตรงจาก Firestore ได้ทันที
+คอลเลกชันหลักที่หน้า `resident-management.html` ใช้งาน:
 
----
-
-## 1) `users/{uid}`
-ใช้เป็นจุดผูกบัญชี Firebase Auth กับ Resident profile
-
-```json
-{
-  "uid": "firebase_auth_uid",
-  "displayName": "John Smith",
-  "email": "john.smith.resident@example.com",
-  "role": "resident",
-  "residentId": "resident_john_002",
-  "memberId": "resident_john_002",
-  "memberCode": "RES-0002",
-  "publicCardCode": "LAYA-RES-0002",
-  "isActive": true,
-  "createdAt": "serverTimestamp",
-  "updatedAt": "serverTimestamp",
-  "lastLoginAt": "serverTimestamp"
-}
-```
-
-> จุดสำคัญ: ถ้าจะให้ Resident login แล้วอ่านข้อมูลตัวเองได้แน่นอน ควรมี `residentId` ใน `users/{uid}`
-
----
-
-## 2) `residents/{residentId}`
+## 1) `residents/{residentId}`
 เก็บ master profile ของ Resident
 
 ```json
 {
-  "id": "resident_john_002",
-  "memberCode": "RES-0002",
-  "qrCodeValue": "LAYA-RES-0002",
-  "cardNumber": "CARD-0002",
-  "firstName": "John",
-  "lastName": "Smith",
-  "displayName": "John Smith",
-  "email": "john.smith@example.com",
-  "loginEmail": "john.smith.resident@example.com",
-  "loginEmailLower": "john.smith.resident@example.com",
-  "linkedUserUid": "firebase_auth_uid",
-  "authUid": "firebase_auth_uid",
-  "phone": "+66892224567",
+  "memberCode": "RES-0001",
+  "qrCodeValue": "LAYA-RES-0001",
+  "cardNumber": "CARD-0001",
+  "firstName": "Noi",
+  "lastName": "Resident",
+  "displayName": "Noi Resident",
+  "email": "noi@example.com",
+  "phone": "+66812345678",
   "status": "active",
   "tier": "elite_black",
   "ownerType": "resident_owner",
-  "primaryUnitCode": "B202",
-  "unitCodes": ["B202", "B203"],
-  "notes": "Owns two adjacent units.",
+  "primaryUnitCode": "A101",
+  "unitCodes": ["A101", "A102"],
+  "notes": "Internal notes",
   "createdAt": "serverTimestamp",
   "updatedAt": "serverTimestamp"
 }
 ```
 
-### ฟิลด์ที่เพิ่มเข้ามาสำหรับ Resident login
-- `loginEmail` = อีเมลที่ใช้ login ใน Firebase Auth
-- `loginEmailLower` = เวอร์ชัน lower-case สำหรับ lookup
-- `linkedUserUid` / `authUid` = UID ของ Firebase Auth user
-
----
-
-## 3) `resident_wallets/{residentId}`
-เก็บคะแนนรวมปัจจุบันของ Resident
+## 2) `resident_wallets/{residentId}`
+เก็บคะแนนรวมปัจจุบันของสมาชิก 1 คนต่อ 1 wallet
 
 ```json
 {
-  "residentId": "resident_john_002",
-  "currentPoints": 32600,
-  "pendingPoints": 400,
-  "lifetimeEarned": 40100,
-  "lifetimeRedeemed": 7500,
+  "residentId": "resident_noi_001",
+  "currentPoints": 12850,
+  "pendingPoints": 0,
+  "lifetimeEarned": 15200,
+  "lifetimeRedeemed": 2350,
   "updatedAt": "serverTimestamp"
 }
 ```
 
----
-
-## 4) `resident_cards/{residentId}`
-เก็บ permanent QR / card config
-
-```json
-{
-  "residentId": "resident_john_002",
-  "memberCode": "RES-0002",
-  "cardNumber": "CARD-0002",
-  "qrCodeValue": "LAYA-RES-0002",
-  "status": "active",
-  "issuedAt": "serverTimestamp",
-  "updatedAt": "serverTimestamp"
-}
-```
-
----
-
-## 5) `resident_point_transactions/{transactionId}`
+## 3) `resident_point_transactions/{transactionId}`
 เก็บ point history แบบ append-only
 
 ```json
 {
-  "residentId": "resident_john_002",
-  "memberCode": "RES-0002",
+  "residentId": "resident_noi_001",
+  "memberCode": "RES-0001",
   "type": "earn",
-  "pointsDelta": 5000,
-  "balanceAfter": 32600,
-  "source": "room_charge",
-  "referenceNo": "POS-TT-0102",
-  "note": "Weekend family dining",
+  "pointsDelta": 2500,
+  "balanceAfter": 12850,
+  "source": "fb_spend",
+  "referenceNo": "POS-AR-0001",
+  "note": "Dinner at Aroonsawat",
   "createdByUid": "admin_uid",
   "createdByName": "admin@example.com",
   "createdAt": "serverTimestamp"
 }
 ```
 
----
-
-## 6) `resident_activity_logs/{logId}`
-เก็บ admin action สำคัญ เช่น เพิ่ม/หักคะแนน
+## 4) `resident_cards/{residentId}`
+เก็บ permanent card / QR config ต่อสมาชิก
 
 ```json
 {
-  "residentId": "resident_john_002",
+  "residentId": "resident_noi_001",
+  "memberCode": "RES-0001",
+  "cardNumber": "CARD-0001",
+  "qrCodeValue": "LAYA-RES-0001",
+  "status": "active",
+  "issuedAt": "serverTimestamp",
+  "updatedAt": "serverTimestamp"
+}
+```
+
+## 5) `resident_activity_logs/{logId}`
+เก็บ admin action ที่มีผลกับระบบคะแนนหรือข้อมูลสำคัญ
+
+```json
+{
+  "residentId": "resident_noi_001",
   "action": "points_added",
   "pointsDelta": 500,
-  "memberCode": "RES-0002",
+  "memberCode": "RES-0001",
   "referenceNo": "POS-0001",
   "note": "Manual adjustment",
   "createdByUid": "admin_uid",
@@ -137,38 +93,14 @@
 
 ---
 
-## Flow ที่แนะนำสำหรับของจริง
+## Suggested rules intent
+- `resident` อ่านได้เฉพาะ doc ของตัวเอง
+- `admin / manager / staff` อ่านและเขียนได้ทั้งหมดใน starter นี้
+- `resident` ห้ามเขียน wallet และ point transaction เอง
+- QR ควรเก็บแค่ `qrCodeValue` / `memberCode` ไม่ควร encode ข้อมูลส่วนตัวลงใน QR โดยตรง
 
-### A. สร้าง Firebase Auth user ก่อน
-- สร้าง email/password ให้ Resident ใน Firebase Authentication
-- ได้ `uid` ของ user คนนั้น
-
-### B. ไปที่หน้า `resident-management.html`
-กรอกอย่างน้อย
-- Display Name
-- Primary Unit
-- Resident Login Email
-- Linked User UID
-
-เมื่อกด Save ระบบจะ:
-1. บันทึก `residents/{residentId}`
-2. สร้าง/อัปเดต `resident_wallets/{residentId}`
-3. สร้าง/อัปเดต `resident_cards/{residentId}`
-4. sync `users/{uid}` ให้เป็น role `resident` พร้อม `residentId`
-
-### C. ตอนลูกค้า login
-ระบบจะอ่าน `users/{uid}` -> ได้ `residentId` -> ไปดึง
-- `residents/{residentId}`
-- `resident_wallets/{residentId}`
-- `resident_cards/{residentId}`
-- `resident_point_transactions` ของ resident คนนั้น
-
-แล้วแสดงในหน้า Home / Member ทันที
-
----
-
-## หมายเหตุด้าน Security
-- Resident ควรอ่านได้เฉพาะ `residentId` ของตัวเอง
-- Resident ห้ามเขียน `resident_wallets` และ `resident_point_transactions` เอง
-- Admin / Manager / Staff เท่านั้นที่แก้คะแนนและข้อมูล profile หลักได้
-- ใน QR ควรใส่แค่ `qrCodeValue` หรือ `memberCode` ไม่ควร encode ข้อมูลส่วนตัวทั้งหมดลงไปโดยตรง
+## Suggested page flow
+- Create/Edit Resident -> เขียน `residents`
+- Save ครั้งแรก -> สร้าง `resident_wallets` และ `resident_cards`
+- Add / Redeem points -> เขียน `resident_point_transactions` + update `resident_wallets`
+- ทุก action สำคัญ -> เพิ่ม `resident_activity_logs`

@@ -8,8 +8,6 @@ export const state = {
   currentRole: null,
   currentResident: null,
   currentMode: 'auth',
-  memberCode: '',
-  residentId: '',
 };
 
 export function setMode(mode) {

@@ -1,5 +1,5 @@
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js';
-import { state } from '../core/state.js';
+import { state } from '../core/state.js?v=20260404fix5';
 
 const ALLOWED_CONTENT_TYPES = ['news', 'promotions', 'benefits'];
 

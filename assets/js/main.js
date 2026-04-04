@@ -1,32 +1,17 @@
-import { state, setMode } from './core/state.js';
-import { highlightCurrentNav } from './core/app-shell.js';
-import { initFirebaseServices } from './services/firebase-service.js';
-import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js';
-import { loadResidentForUser, loadUserProfile } from './services/member-service.js';
-import { showToast } from './ui/toast.js';
-import { renderResidentCard, updateStatusLabels } from './ui/renderers.js';
-import { bindFlipCards } from './ui/card-flip.js';
-import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/session.js';
+
+import { state, setMode } from './core/state.js?v=20260404fix5';
+import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix5';
+import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix5';
+import { subscribeAuth, touchLastLogin, logoutCurrentUser } from './services/auth-service.js?v=20260404fix5';
+import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix5';
+import { showToast } from './ui/toast.js?v=20260404fix5';
+import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix5';
+import { bindFlipCards } from './ui/card-flip.js?v=20260406flip3';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
-const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management']);
-const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
+const PROTECTED_PAGES = new Set(['admin', 'members', 'resident-management', 'resident', 'home', 'member', 'settings', 'redemption']);
 
-function getSignedOutTarget() {
-  if (state.currentRole === 'resident' || page === 'resident-login' || RESIDENT_PAGES.has(page)) {
-    return 'resident-login.html';
-  }
-  return 'index.html';
-}
-
-function syncAuthActionButtons(user) {
-  const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) logoutBtn.classList.toggle('hidden', !user);
-
-  const residentLoginBtn = document.getElementById('residentLoginBtn');
-  if (residentLoginBtn) residentLoginBtn.classList.toggle('hidden', !!user);
-}
 
 function bindGlobalLogout() {
   const logoutBtn = document.getElementById('logoutBtn');
@@ -37,16 +22,13 @@ function bindGlobalLogout() {
     try {
       logoutBtn.disabled = true;
       await logoutCurrentUser();
-      clearResidentJustLoggedIn();
-      clearResidentSessionMode();
       state.currentUser = null;
       state.currentRole = null;
       state.currentResident = null;
       state.memberCode = '';
-      state.residentId = '';
       setMode('auth');
       updateStatusLabels({ authState: 'Not signed in', modeState: 'auth' });
-      go(getSignedOutTarget());
+      go('index.html');
     } catch (error) {
       console.error('Logout failed:', error);
       showToast(error?.message || 'Logout failed', 'error');
@@ -70,14 +52,8 @@ function emptyResident() {
     residence: '-',
     memberCode: '-',
     publicCardCode: '-',
-    qrCodeValue: '-',
-    cardNumber: '-',
     points: 0,
     totalSpend: 0,
-    pendingPoints: 0,
-    lifetimeEarned: 0,
-    lifetimeRedeemed: 0,
-    email: '',
   };
 }
 
@@ -85,30 +61,25 @@ async function initCurrentPage(isLive = false) {
   try {
     switch (page) {
       case 'index': {
-        const { bindAuthPage } = await import('./pages/auth-page.js');
+        const { bindAuthPage } = await import('./pages/auth-page.js?v=20260404fix5');
         bindAuthPage();
         break;
       }
       case 'signup': {
-        const { bindSignupPage } = await import('./pages/signup-page.js');
+        const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix5');
         bindSignupPage();
-        break;
-      }
-      case 'resident-login': {
-        const { bindResidentLoginPage } = await import('./pages/resident-login-page.js');
-        bindResidentLoginPage();
         break;
       }
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js');
+        const mod = await import('./pages/resident-page.js?v=20260404fix5');
         mod.bindResidentPage();
         await mod.loadResidentDashboard();
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js');
+        const mod = await import('./pages/redemption-page.js?v=20260404fix5');
         await mod.loadRedemptionPage();
         break;
       }
@@ -124,7 +95,7 @@ async function initCurrentPage(isLive = false) {
       case 'news':
       case 'promotions':
       case 'benefits': {
-        const mod = await import('./pages/content-page.js');
+        const mod = await import('./pages/content-page.js?v=20260404fix5');
         mod.applyContentPageState(contentType);
         mod.bindContentPage(contentType);
         await mod.loadContentPage(contentType);
@@ -139,25 +110,25 @@ async function initCurrentPage(isLive = false) {
       case 'news-detail':
       case 'promotions-detail':
       case 'benefits-detail': {
-        const mod = await import('./pages/detail-page.js');
+        const mod = await import('./pages/detail-page.js?v=20260404fix5');
         mod.bindDetailPage(contentType);
         await mod.loadDetailPage(contentType);
         break;
       }
       case 'admin': {
-        const mod = await import('./pages/admin-page.js');
+        const mod = await import('./pages/admin-page.js?v=20260404fix5');
         mod.bindAdminPage();
         await mod.loadAdminDashboard();
         break;
       }
       case 'members': {
-        const mod = await import('./pages/members-page.js');
+        const mod = await import('./pages/members-page.js?v=20260404fix5');
         mod.bindMembersPage();
         await mod.loadMembersPage();
         break;
       }
       case 'resident-management': {
-        const mod = await import('./pages/resident-management-page.js');
+        const mod = await import('./pages/resident-management-page.js?v=20260404starter1');
         mod.bindResidentManagementPage();
         await mod.loadResidentManagementPage();
         break;
@@ -168,17 +139,17 @@ async function initCurrentPage(isLive = false) {
   } catch (error) {
     console.error('Page init failed:', error);
     updateStatusLabels({ modeState: 'Page Error' });
-    showToast(error?.message || error?.toString?.() || 'Page init failed', 'error');
+    showToast(error?.message || 'Page init failed', 'error');
   }
 }
 
-async function renderPageForRole(role, user, profile = {}) {
+async function renderPageForRole(role, user) {
   if (['admin', 'manager', 'staff'].includes(role)) {
     state.currentRole = role;
     state.currentResident = null;
     setMode('admin-live');
     updateStatusLabels({ modeState: 'admin-live' });
-    if (page === 'index' || page === 'resident-login' || RESIDENT_PAGES.has(page)) {
+    if (page === 'index') {
       go('admin.html');
       return;
     }
@@ -187,19 +158,14 @@ async function renderPageForRole(role, user, profile = {}) {
   }
 
   state.currentRole = role || 'resident';
-  state.currentResident = await loadResidentForUser(user.uid, user.email, profile);
+  state.currentResident = await loadResidentForUser(user.uid, user.email, state.memberCode);
   setMode('resident-live');
   updateStatusLabels({ modeState: 'resident-live' });
-
-  if (!state.currentResident && RESIDENT_PAGES.has(page)) {
-    showToast('บัญชีนี้ยังไม่ได้ link กับ Resident profile ในระบบ', 'error');
-  }
-
   if (page === 'index') {
     go('home.html');
     return;
   }
-  if (ADMIN_PAGES.has(page)) {
+  if (page === 'admin' || page === 'members' || page === 'resident-management') {
     showToast('บัญชีนี้ไม่มีสิทธิ์เข้า Admin Dashboard', 'error');
     go('home.html');
     return;
@@ -208,30 +174,23 @@ async function renderPageForRole(role, user, profile = {}) {
 }
 
 async function handleSignedOut() {
-  clearResidentJustLoggedIn();
   state.currentUser = null;
   state.currentRole = null;
   state.currentResident = null;
   state.memberCode = '';
-  state.residentId = '';
-  syncAuthActionButtons(null);
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) logoutBtn.classList.add('hidden');
   updateStatusLabels({ authState: 'Not signed in', modeState: 'auth' });
   setMode('auth');
 
-  if (page === 'index' || page === 'resident-login') {
+  if (page === 'index') {
     await initCurrentPage(true);
     return;
   }
 
-  if (ADMIN_PAGES.has(page)) {
-    showToast('กรุณา login ก่อนใช้งานหลังบ้าน', 'error');
+  if (PROTECTED_PAGES.has(page)) {
+    showToast('กรุณา login ก่อนใช้งาน', 'error');
     go('index.html');
-    return;
-  }
-
-  if (RESIDENT_PAGES.has(page)) {
-    showToast('กรุณา log in ผ่านหน้า Resident ก่อนใช้งาน', 'error');
-    go('resident-login.html');
     return;
   }
 
@@ -251,7 +210,8 @@ async function initApp() {
     subscribeAuth(async (user) => {
       try {
         state.currentUser = user || null;
-        syncAuthActionButtons(user);
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.classList.toggle('hidden', !user);
 
         if (!user) {
           await handleSignedOut();
@@ -262,18 +222,17 @@ async function initApp() {
         await touchLastLogin(user.uid);
         const profile = await loadUserProfile(user.uid, user.email || '');
         state.memberCode = profile.publicCardCode || profile.memberCode || profile.memberId || '';
-        state.residentId = profile.residentId || '';
-        await renderPageForRole(profile.role, user, profile);
+        await renderPageForRole(profile.role, user);
       } catch (callbackError) {
         console.error('Auth callback error:', callbackError);
         updateStatusLabels({ modeState: 'Auth Error' });
-        showToast(callbackError?.message || callbackError?.toString?.() || 'Auth callback failed', 'error');
+        showToast(callbackError?.message || 'Auth callback failed', 'error');
       }
     });
   } catch (error) {
     console.error('Firebase init failed:', error);
     updateStatusLabels({ firebaseState: 'Error', authState: '-', modeState: 'Firebase Error' });
-    showToast(error?.message || error?.toString?.() || 'Firebase init failed', 'error');
+    showToast(error?.message || 'Firebase init failed', 'error');
   }
 }
 
