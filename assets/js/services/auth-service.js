@@ -1,12 +1,78 @@
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
+import { doc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
+
+const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 
 export function subscribeAuth(callback) {
   return onAuthStateChanged(state.auth, callback);
 }
 
-export async function loginWithEmail(email, password) {
+export function employeeIdToEmail(employeeId) {
+  const normalized = String(employeeId || '').trim().toLowerCase();
+  if (!normalized) throw new Error('Employee ID is required');
+  if (normalized.includes('@')) return normalized;
+  return `${normalized}@${EMPLOYEE_DOMAIN}`;
+}
+
+export function normalizeLoginIdentifier(identifier) {
+  const value = String(identifier || '').trim();
+  if (!value) throw new Error('Login identifier is required');
+  if (value.includes('@')) return value.toLowerCase();
+  return employeeIdToEmail(value);
+}
+
+export async function loginWithEmail(identifier, password) {
+  const email = normalizeLoginIdentifier(identifier);
   return signInWithEmailAndPassword(state.auth, email, password);
+}
+
+export async function signUpWithEmployeeId({ employeeId, fullName, password }) {
+  if (!state.firebaseReady || !state.auth || !state.db) {
+    throw new Error('Firebase is not ready');
+  }
+
+  const cleanedEmployeeId = String(employeeId || '').trim();
+  if (!cleanedEmployeeId) throw new Error('Employee ID is required');
+  if (!fullName || !String(fullName).trim()) throw new Error('Full name is required');
+  if (!password || String(password).length < 6) throw new Error('Password must be at least 6 characters');
+
+  const email = employeeIdToEmail(cleanedEmployeeId);
+  const cred = await createUserWithEmailAndPassword(state.auth, email, password);
+
+  try {
+    await updateProfile(cred.user, { displayName: String(fullName || '').trim() });
+  } catch (error) {
+    console.warn('profile update failed', error);
+  }
+
+  const userRef = doc(state.db, 'users', cred.user.uid);
+  await setDoc(userRef, {
+    displayName: String(fullName || '').trim(),
+    email,
+    role: 'staff',
+    employeeId: cleanedEmployeeId,
+    memberId: null,
+    publicCardCode: '',
+    isActive: true,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    lastLoginAt: serverTimestamp(),
+  }, { merge: true });
+
+  return cred;
+}
+
+export async function touchLastLogin(uid) {
+  if (!uid || !state.db) return;
+  try {
+    await updateDoc(doc(state.db, 'users', uid), {
+      lastLoginAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.warn('touchLastLogin failed', error);
+  }
 }
 
 export async function logoutCurrentUser() {

@@ -1,4 +1,3 @@
-
 import { $ } from '../core/dom.js';
 import { state, setMode } from '../core/state.js';
 import { loginWithEmail, logoutCurrentUser } from '../services/auth-service.js';
@@ -10,9 +9,6 @@ function go(url) {
 }
 
 export function bindAuthPage() {
-  if ($('demoResidentBtn')) $('demoResidentBtn').classList.add('hidden');
-  if ($('demoAdminBtn')) $('demoAdminBtn').classList.add('hidden');
-
   if ($('loginBtn') && !$('loginBtn').dataset.bound) {
     $('loginBtn').dataset.bound = '1';
     $('loginBtn').addEventListener('click', async () => {
@@ -20,19 +16,26 @@ export function bindAuthPage() {
         showToast('Firebase not ready', 'error');
         return;
       }
-      const email = $('loginEmail')?.value.trim();
+      const identifier = $('loginEmail')?.value.trim();
       const password = $('loginPassword')?.value;
-      if (!email || !password) {
-        showToast('กรอก email และ password ก่อน', 'error');
+      if (!identifier || !password) {
+        showToast('กรอกรหัสพนักงานหรือ email และ password ก่อน', 'error');
         return;
       }
       try {
-        await loginWithEmail(email, password);
+        await loginWithEmail(identifier, password);
         showToast('Login success');
       } catch (error) {
         console.error(error);
         showToast(error.message || 'Login failed', 'error');
       }
+    });
+  }
+
+  if ($('goSignupBtn') && !$('goSignupBtn').dataset.bound) {
+    $('goSignupBtn').dataset.bound = '1';
+    $('goSignupBtn').addEventListener('click', () => {
+      go('./signup.html');
     });
   }
 

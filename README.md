@@ -104,3 +104,10 @@ Notes:
 ## Front path split
 - Resident / customer path: `home.html`, `redemption.html`, `member.html`, `settings.html`
 - Admin / hotel path: `admin.html`, `members.html`, CMS pages
+
+
+## Employee sign-up
+
+- เปิด `signup.html` เพื่อสมัครสมาชิกด้วยรหัสพนักงาน
+- ระบบจะสร้าง Firebase Authentication user และ Firestore `users/{uid}` อัตโนมัติ
+- role เริ่มต้น = `staff`

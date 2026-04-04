@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Sign Up</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <script type="module" src="./assets/js/main.js"></script>
+</head>
+<body data-page="signup">
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Elite Black Card</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
+    <main class="main-content">
+      <section class="hero-card glass" style="grid-template-columns:1fr;">
+        <div class="hero-copy">
+          <span class="eyebrow gold">Employee Sign Up</span>
+          <h2>สมัครสมาชิกด้วยรหัสพนักงาน</h2>
+          <p>หน้านี้ใช้สำหรับสร้างบัญชีเข้าใช้งานระบบด้วยรหัสพนักงาน โดยระบบจะสร้างบัญชีใน Firebase Authentication และสร้างโปรไฟล์ใน Firestore ให้อัตโนมัติ</p>
+        </div>
+      </section>
+
+      <section class="auth-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="panel glass">
+          <h3>สร้างบัญชีใหม่</h3>
+          <p class="muted">ใช้รหัสพนักงานเป็นชื่อเข้าใช้งานหลัก โดยระบบจะแปลงเป็นบัญชี Firebase ให้อัตโนมัติ</p>
+          <label class="field-label" for="signupEmployeeId">รหัสพนักงาน</label>
+          <input id="signupEmployeeId" class="input" type="text" placeholder="เช่น 25381" />
+
+          <label class="field-label" for="signupFullName">ชื่อ-นามสกุล</label>
+          <input id="signupFullName" class="input" type="text" placeholder="เช่น Wuttichai" />
+
+          <label class="field-label" for="signupPassword">รหัสผ่าน</label>
+          <input id="signupPassword" class="input" type="password" placeholder="อย่างน้อย 6 ตัวอักษร" />
+
+          <label class="field-label" for="signupConfirmPassword">ยืนยันรหัสผ่าน</label>
+          <input id="signupConfirmPassword" class="input" type="password" placeholder="กรอกรหัสผ่านอีกครั้ง" />
+
+          <div class="row gap wrap mt-md">
+            <button id="signupBtn" class="primary-btn">สมัครสมาชิก</button>
+            <button id="backToLoginBtn" class="ghost-btn">กลับหน้า Login</button>
+          </div>
+        </div>
+
+        <div class="panel glass">
+          <h3>สิ่งที่จะถูกสร้างให้อัตโนมัติ</h3>
+          <ul class="muted" style="line-height:1.8; padding-left: 18px;">
+            <li>Firebase Authentication account</li>
+            <li>Firestore document ใน <code>users/{uid}</code></li>
+            <li>กำหนด role เริ่มต้นเป็น <strong>staff</strong></li>
+            <li>เก็บ <strong>employeeId</strong> เพื่อใช้ค้นหาและตรวจสอบสิทธิ์</li>
+          </ul>
+          <div class="divider"></div>
+          <div class="info-note">หลังสมัครเสร็จ ระบบจะพาไปหน้า Admin โดยอัตโนมัติ ถ้า Firestore rules อนุญาตให้สร้างเอกสาร users ได้</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="./index.html">Login</a>
+    <a class="nav-btn" data-page-link="signup" href="./signup.html">Sign Up</a>
+    <a class="nav-btn" href="./admin.html">Admin Path</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

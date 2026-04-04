@@ -2,7 +2,7 @@
 import { state, setMode } from './core/state.js';
 import { highlightCurrentNav } from './core/app-shell.js';
 import { initFirebaseServices } from './services/firebase-service.js';
-import { subscribeAuth } from './services/auth-service.js';
+import { subscribeAuth, touchLastLogin } from './services/auth-service.js';
 import { loadResidentForUser, loadUserProfile } from './services/member-service.js';
 import { showToast } from './ui/toast.js';
 import { renderResidentCard, updateStatusLabels } from './ui/renderers.js';
@@ -37,6 +37,11 @@ async function initCurrentPage(isLive = false) {
       case 'index': {
         const { bindAuthPage } = await import('./pages/auth-page.js');
         bindAuthPage();
+        break;
+      }
+      case 'signup': {
+        const { bindSignupPage } = await import('./pages/signup-page.js');
+        bindSignupPage();
         break;
       }
       case 'resident':
@@ -176,6 +181,7 @@ async function initApp() {
         }
 
         updateStatusLabels({ authState: user.email || user.uid || 'Signed in' });
+        await touchLastLogin(user.uid);
         const profile = await loadUserProfile(user.uid, user.email || '');
         state.memberCode = profile.publicCardCode || profile.memberCode || profile.memberId || '';
         await renderPageForRole(profile.role, user);

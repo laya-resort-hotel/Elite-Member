@@ -70,14 +70,15 @@
 
       <section class="auth-grid">
         <div class="panel glass">
-          <h3>เข้าสู่ระบบจริงด้วย Firebase</h3>
-          <p class="muted">ใช้ Email / Password ที่สร้างไว้ใน Firebase Authentication แล้วระบบจะพาไปหน้า Resident หรือ Admin ให้อัตโนมัติ</p>
-          <label class="field-label" for="loginEmail">Email</label>
-          <input id="loginEmail" class="input" type="email" placeholder="resident@laya.com" />
+          <h3>เข้าสู่ระบบด้วย Firebase</h3>
+          <p class="muted">ใช้รหัสพนักงานหรือ Email ที่สมัครไว้ใน Firebase Authentication แล้วระบบจะพาไปหน้า Resident หรือ Admin ให้อัตโนมัติ</p>
+          <label class="field-label" for="loginEmail">รหัสพนักงาน หรือ Email</label>
+          <input id="loginEmail" class="input" type="text" placeholder="เช่น 25381 หรือ resident@laya.com" />
           <label class="field-label" for="loginPassword">Password</label>
           <input id="loginPassword" class="input" type="password" placeholder="••••••••" />
           <div class="row gap wrap mt-md">
             <button id="loginBtn" class="primary-btn">Login</button>
+            <button id="goSignupBtn" class="ghost-btn">สมัครสมาชิกด้วยรหัสพนักงาน</button>
           </div>
         </div>
 
@@ -97,7 +98,7 @@
 
   <nav class="bottom-nav">
     <a class="nav-btn" data-page-link="index" href="./index.html">Login</a>
-    <a class="nav-btn" href="./home.html">Resident Path</a>
+    <a class="nav-btn" href="./signup.html">Sign Up</a>
     <a class="nav-btn" href="./admin.html">Admin Path</a>
   </nav>
   <div id="toast" class="toast hidden"></div>
