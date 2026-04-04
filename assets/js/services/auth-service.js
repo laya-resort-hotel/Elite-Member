@@ -154,7 +154,7 @@ export async function signUpResidentWithInvite(payload = {}) {
   if (invite.status !== 'active') throw new Error('Invite code is not active');
   if (invite.claimedByUid) throw new Error('Invite code has already been used');
   if (invite.primaryUnitCode && invite.primaryUnitCode !== primaryUnitCode) {
-    throw new Error(`Invite code is assigned to room ${invite.primaryUnitCode}`);
+    throw new Error('Invite code does not match the primary room entered');
   }
 
   await setPersistence(state.auth, browserLocalPersistence);

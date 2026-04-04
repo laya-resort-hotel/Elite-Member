@@ -145,6 +145,7 @@ async function attemptSignup() {
     if (error?.code === 'auth/email-already-in-use') message = 'อีเมลนี้ถูกสมัครแล้ว';
     if (error?.code === 'auth/invalid-email') message = 'รูปแบบอีเมลไม่ถูกต้อง';
     if (error?.code === 'permission-denied') message = 'Firestore Rules ยังไม่เปิดให้สมัคร Resident ผ่าน invite code';
+    if (error?.message === 'Invite code does not match the primary room entered') message = 'รหัสแนะนำไม่ตรงกับห้องหลักที่กรอก';
     showToast(message, 'error');
   } finally {
     if (submitBtn) submitBtn.disabled = false;
