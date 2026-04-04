@@ -7,7 +7,9 @@ import {
   deleteCMSItem,
   loadCollectionSafe,
   loadDocumentById,
+  publishCMSItem,
   saveStructuredCMS,
+  unpublishCMSItem,
   updateStructuredCMS,
 } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
@@ -66,6 +68,40 @@ function blankContentEditorState() {
     coverImagePath: '',
     coverImageName: '',
     galleryImages: [],
+    status: 'draft',
+    publishedLabel: '',
+    unpublishedLabel: '',
+  };
+}
+
+function getContentStatusLabel(status = 'draft') {
+  if (status === 'published') return 'Published';
+  if (status === 'unpublished') return 'Unpublished';
+  return 'Draft';
+}
+
+function getContentStatusBadgeClass(status = 'draft') {
+  if (status === 'published') return 'gold';
+  if (status === 'unpublished') return 'subtle';
+  return '';
+}
+
+function mapContentItemToEditor(item = {}) {
+  return {
+    docId: item.id || item.docId || '',
+    isExisting: Boolean(item.id || item.docId),
+    title: item.title || '',
+    summary: item.summary || item.body || '',
+    fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : ''),
+    terms: Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || ''),
+    ctaLabel: item.ctaLabel || '',
+    coverImageUrl: item.coverImageUrl || '',
+    coverImagePath: item.coverImagePath || '',
+    coverImageName: item.coverImageName || '',
+    galleryImages: normalizeGalleryImages(item.galleryImages || []),
+    status: item.status || 'draft',
+    publishedLabel: item.publishedLabel || '',
+    unpublishedLabel: item.unpublishedLabel || '',
   };
 }
 
@@ -218,6 +254,46 @@ function updateEditorHeader() {
   if ($('adminTabTitle')) $('adminTabTitle').textContent = `${label} items`;
   if ($('editorModeLabel')) $('editorModeLabel').textContent = editor.isExisting ? `Editing ${label}` : `Create new ${label}`;
   if ($('editorDocIdLabel')) $('editorDocIdLabel').textContent = editor.docId || 'Not created';
+  updateContentStatusUi();
+}
+
+function updateContentStatusUi() {
+  const type = getActiveType();
+  if (isMembersTab(type)) return;
+  const editor = getContentEditorState(type);
+  const saveBtn = $('saveContentBtn');
+  const publishBtn = $('publishContentBtn');
+  const unpublishBtn = $('unpublishContentBtn');
+  const deleteBtn = $('deleteContentBtn');
+  const cancelBtn = $('cancelContentEditBtn');
+  const statusNote = $('contentStatusNote');
+  const statusLabel = getContentStatusLabel(editor.status || 'draft');
+  const isPublished = editor.status === 'published';
+  const hasDoc = Boolean(editor.docId);
+
+  if (saveBtn) saveBtn.textContent = isPublished ? 'Save Changes' : 'Save Draft';
+  if (publishBtn) {
+    publishBtn.disabled = isPublished;
+    publishBtn.textContent = isPublished ? 'Published' : 'Publish Item';
+  }
+  if (unpublishBtn) {
+    unpublishBtn.classList.toggle('hidden', !hasDoc || !isPublished);
+    unpublishBtn.disabled = !hasDoc || !isPublished;
+  }
+  if (deleteBtn) {
+    deleteBtn.classList.toggle('hidden', !hasDoc);
+    deleteBtn.disabled = !hasDoc;
+  }
+  if (cancelBtn) cancelBtn.classList.toggle('hidden', !hasDoc);
+  if (statusNote) {
+    const detailBits = [
+      editor.status === 'published' && editor.publishedLabel && editor.publishedLabel !== '-' ? `เผยแพร่ ${editor.publishedLabel}` : '',
+      editor.status === 'unpublished' && editor.unpublishedLabel && editor.unpublishedLabel !== '-' ? `ยกเลิกเผยแพร่ ${editor.unpublishedLabel}` : '',
+      editor.status === 'draft' ? 'ยังไม่แสดงบนหน้าสาธารณะ' : '',
+    ].filter(Boolean);
+    statusNote.classList.toggle('hidden', !hasDoc);
+    statusNote.textContent = hasDoc ? `Status: ${statusLabel}${detailBits.length ? ` • ${detailBits.join(' • ')}` : ''}` : '';
+  }
 }
 
 function updateReadonlyNote() {
@@ -285,6 +361,7 @@ function hydrateContentEditorFromState(type = getActiveType()) {
   updateCoverPreview();
   updateCoverMeta();
   renderGalleryPreview();
+  updateContentStatusUi();
 }
 
 function hydrateMemberEditorFromState() {
@@ -405,6 +482,8 @@ function renderContentList() {
 
   container.innerHTML = items.map((item) => {
     const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
+    const statusLabel = getContentStatusLabel(item.status || 'draft');
+    const statusClass = getContentStatusBadgeClass(item.status || 'draft');
     return `
       <article class="content-admin-card ${getContentEditorState(type).docId === item.id ? 'active' : ''}">
         ${image ? `<img class="content-admin-card-image" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || '')}" loading="lazy">` : '<div class="content-admin-card-image fallback">No image</div>'}
@@ -413,9 +492,17 @@ function renderContentList() {
             <strong>${escapeHtml(item.title || '(Untitled)')}</strong>
             <small>${escapeHtml(item.updatedLabel || item.createdLabel || '')}</small>
           </div>
+          <div class="gallery-badge-row mt-sm">
+            <span class="mini-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
+            ${Array.isArray(item.galleryImages) && item.galleryImages.length ? `<span class="mini-badge">${item.galleryImages.length} photos</span>` : ''}
+          </div>
           <p>${escapeHtml(item.summary || item.body || '')}</p>
           <div class="content-admin-card-actions">
             <button class="ghost-btn" type="button" data-content-action="edit" data-item-id="${escapeHtml(item.id)}">Edit</button>
+            ${item.status === 'published'
+              ? `<button class="ghost-btn" type="button" data-content-action="unpublish" data-item-id="${escapeHtml(item.id)}">Unpublish</button>`
+              : `<button class="secondary-btn" type="button" data-content-action="publish" data-item-id="${escapeHtml(item.id)}">Publish</button>`}
+            <button class="danger-btn" type="button" data-content-action="delete" data-item-id="${escapeHtml(item.id)}">Delete</button>
             <a class="ghost-btn" href="./${type}-detail.html?id=${encodeURIComponent(item.id)}">Open detail</a>
           </div>
         </div>
@@ -734,21 +821,7 @@ async function loadEditorItem(type, itemId) {
     return;
   }
 
-  setContentEditorState(type, {
-    docId: item.id,
-    isExisting: true,
-    title: item.title || '',
-    summary: item.summary || item.body || '',
-    fullDetails: item.fullDetails || (Array.isArray(item.details) ? item.details.join('
-') : ''),
-    terms: Array.isArray(item.terms) ? item.terms.join('
-') : (item.terms || ''),
-    ctaLabel: item.ctaLabel || '',
-    coverImageUrl: item.coverImageUrl || '',
-    coverImagePath: item.coverImagePath || '',
-    coverImageName: item.coverImageName || '',
-    galleryImages: normalizeGalleryImages(item.galleryImages || []),
-  });
+  setContentEditorState(type, mapContentItemToEditor(item));
 
   hydrateContentEditorFromState(type);
   renderContentList();
@@ -823,6 +896,9 @@ async function ensureEditingDocId(type = getActiveType()) {
   };
 
   editor.docId = await createContentShell(type, draftPayload);
+  editor.status = 'draft';
+  editor.publishedLabel = '';
+  editor.unpublishedLabel = '';
   setContentEditorState(type, editor);
   updateEditorHeader();
   return editor.docId;
@@ -1087,6 +1163,42 @@ function clearCoverSelection() {
   hydrateContentEditorFromState(type);
 }
 
+async function persistCurrentContentEditor(type = getActiveType()) {
+  syncContentEditorFromDom(type);
+  const editor = getContentEditorState(type);
+
+  if (!editor.title || !editor.summary || !editor.fullDetails) {
+    showToast('กรอก title, summary และ full details ก่อนบันทึก', 'error');
+    return null;
+  }
+
+  const docId = await ensureEditingDocId(type);
+  const payload = {
+    title: editor.title,
+    summary: editor.summary,
+    fullDetails: editor.fullDetails,
+    terms: editor.terms,
+    ctaLabel: editor.ctaLabel,
+    coverImageUrl: editor.coverImageUrl,
+    coverImagePath: editor.coverImagePath,
+    coverImageName: editor.coverImageName,
+    galleryImages: editor.galleryImages,
+  };
+
+  if (editor.isExisting) {
+    await updateStructuredCMS(type, docId, payload);
+  } else {
+    await saveStructuredCMS(type, payload, { docId });
+  }
+
+  const saved = await loadDocumentById(type, docId);
+  const nextEditor = saved ? mapContentItemToEditor(saved) : { ...editor, docId, isExisting: true, status: editor.status || 'draft' };
+  setContentEditorState(type, nextEditor);
+  hydrateContentEditorFromState(type);
+  await loadAdminContent(type, { force: true });
+  return saved || nextEditor;
+}
+
 async function saveCurrentEditor() {
   if (!canManageContent()) {
     showToast('ต้อง login เป็น admin / manager / staff ก่อน', 'error');
@@ -1099,42 +1211,47 @@ async function saveCurrentEditor() {
   }
 
   const type = getActiveType();
-  syncContentEditorFromDom(type);
-  const editor = getContentEditorState(type);
-
-  if (!editor.title) {
-    showToast('กรอก title ก่อนบันทึก', 'error');
-    return;
-  }
 
   try {
-    const docId = await ensureEditingDocId(type);
-    const payload = {
-      title: editor.title,
-      summary: editor.summary,
-      fullDetails: editor.fullDetails,
-      terms: editor.terms,
-      ctaLabel: editor.ctaLabel,
-      coverImageUrl: editor.coverImageUrl,
-      coverImagePath: editor.coverImagePath,
-      coverImageName: editor.coverImageName,
-      galleryImages: editor.galleryImages,
-    };
-
-    if (editor.isExisting) {
-      await updateStructuredCMS(type, docId, payload);
-    } else {
-      await saveStructuredCMS(type, payload, { docId });
-    }
-
-    setContentEditorState(type, { ...editor, docId, isExisting: true });
-    hydrateContentEditorFromState(type);
-    await loadAdminContent(type, { force: true });
+    const saved = await persistCurrentContentEditor(type);
+    if (!saved) return;
     showToast(`${labelMap[type]} saved`);
   } catch (error) {
     console.error(error);
     showToast(error.message || 'บันทึกไม่สำเร็จ', 'error');
   }
+}
+
+async function publishCurrentEditor() {
+  const type = getActiveType();
+  const saved = await persistCurrentContentEditor(type);
+  if (!saved?.id && !saved?.docId) return;
+  const docId = saved.id || saved.docId;
+  await publishCMSItem(type, docId);
+  const reloaded = await loadDocumentById(type, docId);
+  if (reloaded) {
+    setContentEditorState(type, mapContentItemToEditor(reloaded));
+    hydrateContentEditorFromState(type);
+  }
+  await loadAdminContent(type, { force: true });
+  showToast(`${labelMap[type]} published`);
+}
+
+async function unpublishCurrentEditor() {
+  const type = getActiveType();
+  const editor = getContentEditorState(type);
+  if (!editor.docId) {
+    showToast('ยังไม่มีรายการให้ยกเลิกเผยแพร่', 'error');
+    return;
+  }
+  await unpublishCMSItem(type, editor.docId);
+  const reloaded = await loadDocumentById(type, editor.docId);
+  if (reloaded) {
+    setContentEditorState(type, mapContentItemToEditor(reloaded));
+    hydrateContentEditorFromState(type);
+  }
+  await loadAdminContent(type, { force: true });
+  showToast(`${labelMap[type]} unpublished`);
 }
 
 async function saveCurrentMember() {
@@ -1215,9 +1332,9 @@ async function deleteCurrentEditor() {
 
   try {
     if (canManageContent()) {
-      if (editor.isExisting) {
+      if (editor.docId) {
         await deleteCMSItem(type, editor.docId);
-      } else {
+      } else if (editor.coverImagePath || editor.galleryImages.length) {
         await deleteStoragePaths([
           editor.coverImagePath,
           ...editor.galleryImages.map((img) => img.path),
@@ -1259,12 +1376,46 @@ async function deleteCurrentMember() {
   }
 }
 
-function handleListClick(event) {
-  const button = event.target.closest('[data-content-action="edit"]');
+async function handleListClick(event) {
+  const button = event.target.closest('[data-content-action]');
   if (!button) return;
   const itemId = button.dataset.itemId;
+  const action = button.dataset.contentAction;
   if (!itemId) return;
-  loadEditorItem(getActiveType(), itemId);
+  if (action === 'edit') {
+    await loadEditorItem(getActiveType(), itemId);
+    return;
+  }
+  if (action === 'publish') {
+    await publishCMSItem(getActiveType(), itemId);
+    await loadAdminContent(getActiveType(), { force: true });
+    if (getContentEditorState(getActiveType()).docId === itemId) {
+      await loadEditorItem(getActiveType(), itemId);
+    }
+    showToast(`${labelMap[getActiveType()]} published`);
+    return;
+  }
+  if (action === 'unpublish') {
+    await unpublishCMSItem(getActiveType(), itemId);
+    await loadAdminContent(getActiveType(), { force: true });
+    if (getContentEditorState(getActiveType()).docId === itemId) {
+      await loadEditorItem(getActiveType(), itemId);
+    }
+    showToast(`${labelMap[getActiveType()]} unpublished`);
+    return;
+  }
+  if (action === 'delete') {
+    const currentEditor = getContentEditorState(getActiveType());
+    if (currentEditor.docId === itemId) {
+      await deleteCurrentEditor();
+      return;
+    }
+    const ok = window.confirm(`Delete this ${labelMap[getActiveType()]} item?`);
+    if (!ok) return;
+    await deleteCMSItem(getActiveType(), itemId);
+    await loadAdminContent(getActiveType(), { force: true });
+    showToast(`${labelMap[getActiveType()]} deleted`);
+  }
 }
 
 function handleMembersListClick(event) {
@@ -1385,7 +1536,33 @@ function bindAdminContentTabs() {
   $('uploadCoverBtn')?.addEventListener('click', handleUploadCover);
   $('uploadGalleryBtn')?.addEventListener('click', handleUploadGallery);
   $('saveContentBtn')?.addEventListener('click', saveCurrentEditor);
-  $('cancelContentEditBtn')?.addEventListener('click', () => resetContentEditor(getActiveType()));
+  $('publishContentBtn')?.addEventListener('click', async () => {
+    try {
+      await publishCurrentEditor();
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || 'Publish failed', 'error');
+    }
+  });
+  $('unpublishContentBtn')?.addEventListener('click', async () => {
+    try {
+      await unpublishCurrentEditor();
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || 'Unpublish failed', 'error');
+    }
+  });
+  $('cancelContentEditBtn')?.addEventListener('click', async () => {
+    const editor = getContentEditorState(getActiveType());
+    if (editor.docId && !editor.isExisting) {
+      try {
+        await deleteCMSItem(getActiveType(), editor.docId);
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+    resetContentEditor(getActiveType());
+  });
   $('deleteContentBtn')?.addEventListener('click', deleteCurrentEditor);
   $('clearCoverBtn')?.addEventListener('click', clearCoverSelection);
 

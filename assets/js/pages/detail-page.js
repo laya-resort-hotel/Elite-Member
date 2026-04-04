@@ -1,7 +1,7 @@
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml } from '../core/format.js';
 import { state } from '../core/state.js';
-import { deleteCMSItem, loadCollectionSafe, loadDocumentById } from '../services/content-service.js';
+import { deleteCMSItem, loadCollectionSafe, loadDocumentById, publishCMSItem, unpublishCMSItem } from '../services/content-service.js';
 import { showToast } from '../ui/toast.js';
 
 const labelMap = {
@@ -30,6 +30,18 @@ function getParams() {
   return {
     id: params.get('id') || ''
   };
+}
+
+function getStatusLabel(status = 'draft') {
+  if (status === 'published') return 'Published';
+  if (status === 'unpublished') return 'Unpublished';
+  return 'Draft';
+}
+
+function getStatusBadgeClass(status = 'draft') {
+  if (status === 'published') return 'gold';
+  if (status === 'unpublished') return 'subtle';
+  return '';
 }
 
 function normalizeContent(item = {}) {
@@ -101,19 +113,31 @@ function renderRelated(type, items = []) {
 function renderAdminTools(type, item) {
   const card = $('detailAdminTools');
   const editBtn = $('detailEditBtn');
+  const publishBtn = $('detailPublishBtn');
+  const unpublishBtn = $('detailUnpublishBtn');
   const deleteBtn = $('detailDeleteBtn');
   const note = $('detailAdminNote');
   if (!card) return;
   const manageable = canManageContent() && Boolean(item?.id && item?.createdLabel);
+  const isPublished = item?.status === 'published';
   card.classList.toggle('hidden', !canManageContent());
   if (note) {
     note.textContent = manageable
-      ? 'รายการนี้เป็นข้อมูลจริงจาก Firebase สามารถกดแก้ไขหรือลบได้'
+      ? `สถานะปัจจุบัน: ${getStatusLabel(item?.status || 'draft')}`
       : 'ยังไม่มีสิทธิ์แก้ไขรายการนี้';
   }
   if (editBtn) {
     editBtn.classList.toggle('hidden', !canManageContent());
     editBtn.href = manageable ? `./${type}.html?edit=${encodeURIComponent(item.id)}` : `./${type}.html`;
+  }
+  if (publishBtn) {
+    publishBtn.classList.toggle('hidden', !canManageContent());
+    publishBtn.disabled = !manageable || isPublished;
+    publishBtn.textContent = isPublished ? 'Published' : 'Publish this item';
+  }
+  if (unpublishBtn) {
+    unpublishBtn.classList.toggle('hidden', !canManageContent() || !isPublished);
+    unpublishBtn.disabled = !manageable || !isPublished;
   }
   if (deleteBtn) {
     deleteBtn.classList.toggle('hidden', !canManageContent());
@@ -208,9 +232,19 @@ function renderDetail(type, item) {
   if ($('detailEyebrow')) $('detailEyebrow').textContent = labelMap[type];
   if ($('detailHeading')) $('detailHeading').textContent = safe.title || pageTitleMap[type];
   if ($('detailSummary')) $('detailSummary').textContent = safe.summary || safe.body || '';
+  if ($('detailStatusLabel')) {
+    $('detailStatusLabel').textContent = getStatusLabel(safe.status || 'draft');
+    $('detailStatusLabel').className = `mini-badge ${getStatusBadgeClass(safe.status || 'draft')}`.trim();
+  }
   if ($('detailMeta')) {
     const galleryCount = safe.galleryImages?.length ? ` • ${safe.galleryImages.length} photos` : '';
-    $('detailMeta').textContent = safe.createdLabel && safe.createdLabel !== '-' ? `Published ${safe.createdLabel}${galleryCount}` : `Demo ${labelMap[type]} detail${galleryCount}`;
+    if (safe.status === 'published' && safe.publishedLabel && safe.publishedLabel !== '-') {
+      $('detailMeta').textContent = `Published ${safe.publishedLabel}${galleryCount}`;
+    } else if (safe.updatedLabel && safe.updatedLabel !== '-') {
+      $('detailMeta').textContent = `Last updated ${safe.updatedLabel}${galleryCount}`;
+    } else {
+      $('detailMeta').textContent = `Draft ${labelMap[type]} detail${galleryCount}`;
+    }
   }
   renderGallery(safe);
   if ($('detailBody')) {
@@ -252,7 +286,7 @@ async function resolveItem(type) {
   const { id } = getParams();
   if (!id || !state.firebaseReady) return null;
   try {
-    return await loadDocumentById(type, id);
+    return await loadDocumentById(type, id, { publishedOnly: !canManageContent() });
   } catch (error) {
     console.warn(error);
     showToast('อ่านข้อมูล detail จาก Firestore ไม่ได้', 'error');
@@ -263,7 +297,7 @@ async function resolveItem(type) {
 async function loadRelatedItems(type, current) {
   if (current?.id && state.firebaseReady) {
     try {
-      const rows = await loadCollectionSafe(type, { limit: 6 });
+      const rows = await loadCollectionSafe(type, { limit: 12, publishedOnly: !canManageContent() });
       return getRelated(rows, current.id);
     } catch (error) {
       console.warn(error);
@@ -280,6 +314,13 @@ function switchMainImage(url, index) {
   $$('[data-image-index]').forEach((el) => {
     el.classList.toggle('active', String(el.dataset.imageIndex) === String(index));
   });
+}
+
+async function refreshCurrentDetail() {
+  if (!currentType || !currentItem?.id) return null;
+  const reloaded = await loadDocumentById(currentType, currentItem.id, { publishedOnly: !canManageContent() });
+  currentItem = reloaded;
+  return reloaded;
 }
 
 export async function loadDetailPage(type) {
@@ -335,6 +376,46 @@ export function bindDetailPage(type) {
     if (event.key === 'ArrowRight') stepLightbox(1);
     if (event.key === 'ArrowLeft') stepLightbox(-1);
   });
+  if ($('detailPublishBtn')) {
+    $('detailPublishBtn').addEventListener('click', async () => {
+      if (!canManageContent() || !currentItem?.id) {
+        showToast('รายการนี้ยังเผยแพร่ไม่ได้', 'error');
+        return;
+      }
+      try {
+        await publishCMSItem(currentType, currentItem.id);
+        const updated = await refreshCurrentDetail();
+        if (updated) {
+          renderDetail(currentType, updated);
+          renderRelated(currentType, await loadRelatedItems(currentType, updated));
+        }
+        showToast(`${labelMap[currentType]} published`);
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Publish failed', 'error');
+      }
+    });
+  }
+  if ($('detailUnpublishBtn')) {
+    $('detailUnpublishBtn').addEventListener('click', async () => {
+      if (!canManageContent() || !currentItem?.id) {
+        showToast('รายการนี้ยังยกเลิกเผยแพร่ไม่ได้', 'error');
+        return;
+      }
+      try {
+        await unpublishCMSItem(currentType, currentItem.id);
+        const updated = await refreshCurrentDetail();
+        if (updated) {
+          renderDetail(currentType, updated);
+          renderRelated(currentType, await loadRelatedItems(currentType, updated));
+        }
+        showToast(`${labelMap[currentType]} unpublished`);
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Unpublish failed', 'error');
+      }
+    });
+  }
   if ($('detailDeleteBtn')) {
     $('detailDeleteBtn').addEventListener('click', async () => {
       if (!canManageContent() || !currentItem?.id || !currentItem?.createdLabel) {

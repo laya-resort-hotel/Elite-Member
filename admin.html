@@ -9,10 +9,10 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css?v=20260404autodoc1" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260404publish1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260404autodoc1"></script>
+  <script type="module" src="./assets/js/main.js?v=20260404publish1"></script>
 </head>
 <body data-page="admin">
   <div id="app" class="app-shell">
@@ -179,10 +179,13 @@
               </div>
             </div>
 
+            <div id="contentStatusNote" class="info-note hidden mt-sm"></div>
             <div class="row gap wrap mt-lg">
-              <button id="saveContentBtn" class="primary-btn" type="button">Save Content</button>
-              <button id="cancelContentEditBtn" class="ghost-btn" type="button">Cancel edit</button>
-              <button id="deleteContentBtn" class="danger-btn" type="button">Delete Item</button>
+              <button id="saveContentBtn" class="primary-btn" type="button">Save Draft</button>
+              <button id="publishContentBtn" class="secondary-btn" type="button">Publish Item</button>
+              <button id="unpublishContentBtn" class="ghost-btn hidden" type="button">Unpublish Item</button>
+              <button id="cancelContentEditBtn" class="ghost-btn hidden" type="button">Cancel edit</button>
+              <button id="deleteContentBtn" class="danger-btn hidden" type="button">Delete Item</button>
             </div>
 
           </section>

@@ -17,6 +17,8 @@ import { state } from '../core/state.js';
 import { formatDate } from '../core/format.js';
 import { deleteStoragePaths } from './storage-service.js';
 
+const CONTENT_STATUSES = ['draft', 'published', 'unpublished'];
+
 function stringValue(value = '') {
   return String(value || '').trim();
 }
@@ -119,6 +121,68 @@ function normalizeContentPayload(payload = {}) {
   };
 }
 
+function resolveContentStatus(data = {}) {
+  const rawStatus = stringValue(data.status).toLowerCase();
+  if (CONTENT_STATUSES.includes(rawStatus)) return rawStatus;
+  if (data.isPublished === true) return 'published';
+  if (data.isPublished === false && (data.unpublishedAt || data.publishedAt)) return 'unpublished';
+  return 'draft';
+}
+
+function toStatusLabel(status = 'draft') {
+  switch (status) {
+    case 'published':
+      return 'Published';
+    case 'unpublished':
+      return 'Unpublished';
+    default:
+      return 'Draft';
+  }
+}
+
+function enrichContentDocument(collectionName, snapOrData, id = '') {
+  const data = typeof snapOrData?.data === 'function' ? snapOrData.data() : (snapOrData || {});
+  const docId = id || snapOrData?.id || '';
+  const status = resolveContentStatus(data);
+  const publishedAt = data.publishedAt || null;
+  const unpublishedAt = data.unpublishedAt || null;
+
+  return {
+    id: docId,
+    ...data,
+    status,
+    statusLabel: toStatusLabel(status),
+    isPublished: status === 'published',
+    isActive: collectionName === 'benefits' ? status === 'published' : Boolean(data.isActive),
+    createdLabel: formatDate(data.createdAt),
+    updatedLabel: formatDate(data.updatedAt),
+    publishedLabel: formatDate(publishedAt),
+    unpublishedLabel: formatDate(unpublishedAt),
+  };
+}
+
+function matchesLoadOptions(item, options = {}) {
+  if (options.publishedOnly && item.status !== 'published') return false;
+  if (Array.isArray(options.statuses) && options.statuses.length && !options.statuses.includes(item.status)) return false;
+  if (options.excludeDrafts && item.status === 'draft') return false;
+  return true;
+}
+
+function getStatusPersistenceFields(collectionName, status, existingData = null) {
+  const nextStatus = CONTENT_STATUSES.includes(status) ? status : 'draft';
+  return {
+    status: nextStatus,
+    isPublished: nextStatus === 'published',
+    publishedAt: nextStatus === 'published'
+      ? (existingData?.publishedAt || serverTimestamp())
+      : (existingData?.publishedAt || null),
+    unpublishedAt: nextStatus === 'unpublished'
+      ? (existingData?.unpublishedAt || serverTimestamp())
+      : (existingData?.unpublishedAt || null),
+    ...(collectionName === 'benefits' ? { isActive: nextStatus === 'published' } : {}),
+  };
+}
+
 export async function createContentShell(collectionName, payload = {}) {
   const ref = doc(collection(state.db, collectionName));
   const author = state.currentUser?.email || 'manual-admin';
@@ -137,16 +201,12 @@ export async function createContentShell(collectionName, payload = {}) {
     coverImageName: normalized.coverImageName || '',
     galleryImages: Array.isArray(normalized.galleryImages) ? normalized.galleryImages : [],
     imageCount: Array.isArray(normalized.galleryImages) ? normalized.galleryImages.length : 0,
-    isPublished: false,
+    ...getStatusPersistenceFields(collectionName, 'draft'),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     createdBy: author,
     updatedBy: author,
   };
-
-  if (collectionName === 'benefits') {
-    shellData.isActive = false;
-  }
 
   await setDoc(ref, shellData, { merge: true });
   return ref.id;
@@ -161,16 +221,18 @@ export async function loadCollectionSafe(name, options = {}) {
   const qRef = clauses.length ? query(colRef, ...clauses) : colRef;
   const snap = await getDocs(qRef);
   return snap.docs
-    .map((d) => ({ id: d.id, ...d.data(), createdLabel: formatDate(d.data().createdAt) }))
-    .filter((row) => row.title || row.summary || row.coverImageUrl || row.imageCount);
+    .map((d) => enrichContentDocument(name, d))
+    .filter((row) => row.title || row.summary || row.coverImageUrl || row.imageCount)
+    .filter((row) => matchesLoadOptions(row, options));
 }
 
-export async function loadDocumentById(collectionName, id) {
+export async function loadDocumentById(collectionName, id, options = {}) {
   const ref = doc(state.db, collectionName, id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
-  const data = snap.data();
-  return { id: snap.id, ...data, createdLabel: formatDate(data.createdAt), updatedLabel: formatDate(data.updatedAt) };
+  const row = enrichContentDocument(collectionName, snap);
+  if (!matchesLoadOptions(row, options)) return null;
+  return row;
 }
 
 export async function saveStructuredCMS(collectionName, payload, options = {}) {
@@ -181,28 +243,16 @@ export async function saveStructuredCMS(collectionName, payload, options = {}) {
     const ref = doc(state.db, collectionName, options.docId);
     const existingSnap = await getDoc(ref);
     const existingData = existingSnap.exists() ? existingSnap.data() : null;
+    const existingStatus = resolveContentStatus(existingData || {});
 
     const nextData = {
       ...normalized,
+      ...getStatusPersistenceFields(collectionName, existingStatus, existingData),
       updatedAt: serverTimestamp(),
       updatedBy: author,
       createdAt: existingData?.createdAt || serverTimestamp(),
       createdBy: existingData?.createdBy || author,
     };
-
-    if (typeof existingData?.isPublished === 'boolean') {
-      nextData.isPublished = existingData.isPublished;
-    } else {
-      nextData.isPublished = false;
-    }
-
-    if (collectionName === 'benefits') {
-      if (typeof existingData?.isActive === 'boolean') {
-        nextData.isActive = existingData.isActive;
-      } else {
-        nextData.isActive = false;
-      }
-    }
 
     await setDoc(ref, nextData, { merge: true });
     return ref;
@@ -210,6 +260,7 @@ export async function saveStructuredCMS(collectionName, payload, options = {}) {
 
   return addDoc(collection(state.db, collectionName), {
     ...normalized,
+    ...getStatusPersistenceFields(collectionName, 'draft'),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     createdBy: author,
@@ -236,6 +287,31 @@ export async function updateStructuredCMS(collectionName, id, payload) {
   }
   await updateDoc(ref, {
     ...normalized,
+    ...getStatusPersistenceFields(collectionName, resolveContentStatus(currentData || {}), currentData),
+    updatedAt: serverTimestamp(),
+    updatedBy: state.currentUser?.email || 'manual-admin',
+  });
+}
+
+export async function publishCMSItem(collectionName, id) {
+  const ref = doc(state.db, collectionName, id);
+  const current = await getDoc(ref);
+  if (!current.exists()) throw new Error('Document not found');
+  const currentData = current.data() || {};
+  await updateDoc(ref, {
+    ...getStatusPersistenceFields(collectionName, 'published', currentData),
+    updatedAt: serverTimestamp(),
+    updatedBy: state.currentUser?.email || 'manual-admin',
+  });
+}
+
+export async function unpublishCMSItem(collectionName, id) {
+  const ref = doc(state.db, collectionName, id);
+  const current = await getDoc(ref);
+  if (!current.exists()) throw new Error('Document not found');
+  const currentData = current.data() || {};
+  await updateDoc(ref, {
+    ...getStatusPersistenceFields(collectionName, 'unpublished', currentData),
     updatedAt: serverTimestamp(),
     updatedBy: state.currentUser?.email || 'manual-admin',
   });

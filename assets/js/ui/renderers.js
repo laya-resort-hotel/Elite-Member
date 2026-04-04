@@ -28,12 +28,18 @@ export function renderCards(listEl, items = [], emptyText = 'No data') {
   `).join('');
 }
 
+function buildContentDetailHref(type, item, fallbackHref) {
+  const id = String(item?.id || '').trim();
+  return id ? `./${type}-detail.html?id=${encodeURIComponent(id)}` : fallbackHref;
+}
+
 export function renderVaultHome(newsItem, promotionItems = []) {
   const hero = $('homeNewsHero');
   if (hero) {
     const image = newsItem?.coverImageUrl || newsItem?.galleryImages?.[0]?.url || '';
+    const newsHref = buildContentDetailHref('news', newsItem, './news.html');
     hero.innerHTML = `
-      <a class="vault-news-hero-link" href="./news.html">
+      <a class="vault-news-hero-link" href="${newsHref}">
         <div class="vault-news-image-wrap vault-news-frame">
           ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(newsItem?.title || 'News')}" />` : '<div class="vault-news-image vault-news-fallback">News</div>'}
         </div>
@@ -46,8 +52,9 @@ export function renderVaultHome(newsItem, promotionItems = []) {
     const items = promotionItems.slice(0, 3);
     promoGrid.innerHTML = items.map((item) => {
       const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
+      const promoHref = buildContentDetailHref('promotions', item, './promotions.html');
       return `
-        <a class="vault-promo-card image-only" href="./promotions.html" aria-label="${escapeHtml(item.title || 'Promotion')}">
+        <a class="vault-promo-card image-only" href="${promoHref}" aria-label="${escapeHtml(item.title || 'Promotion')}">
           <div class="vault-promo-thumb-wrap">
             ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || 'Promotion')}" />` : '<div class="vault-promo-thumb vault-news-fallback">Promo</div>'}
           </div>
