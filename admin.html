@@ -191,8 +191,8 @@
             <label class="field-label" for="contentTerms">Terms</label>
             <textarea id="contentTerms" class="input textarea textarea-sm" placeholder="One term per line"></textarea>
 
-            <div class="admin-editor-grid mt-md">
-              <div class="cms-cover-preview-wrap">
+            <div class="admin-editor-grid admin-media-grid mt-md">
+              <div class="cms-cover-preview-wrap admin-upload-panel">
                 <div class="panel-title-row compact-row">
                   <h5>Cover image</h5>
                   <button id="clearCoverBtn" class="ghost-btn" type="button">Clear cover</button>
@@ -202,7 +202,7 @@
                   <div id="contentCoverPreviewEmpty" class="cms-cover-placeholder">No cover selected</div>
                 </div>
                 <input id="contentCoverFile" class="input" type="file" accept="image/*" />
-                <div class="row gap wrap">
+                <div class="row gap wrap admin-upload-actions">
                   <button id="uploadCoverBtn" class="primary-btn" type="button">Upload Cover</button>
                 </div>
                 <input id="contentCoverImageUrl" class="input" type="text" placeholder="Cover image URL (auto-filled after upload)" />
@@ -210,13 +210,13 @@
                 <div id="contentUploadStatus" class="upload-note hidden"></div>
               </div>
 
-              <div>
+              <div class="admin-upload-panel">
                 <div class="panel-title-row compact-row">
                   <h5>Gallery images</h5>
                   <span id="contentGalleryCount" class="muted">0 images</span>
                 </div>
                 <input id="contentGalleryFiles" class="input" type="file" accept="image/*" multiple />
-                <div class="row gap wrap mt-sm">
+                <div class="row gap wrap mt-sm admin-upload-actions">
                   <button id="uploadGalleryBtn" class="primary-btn" type="button">Upload Gallery Images</button>
                 </div>
                 <div id="contentGalleryUploadStatus" class="upload-note hidden"></div>
