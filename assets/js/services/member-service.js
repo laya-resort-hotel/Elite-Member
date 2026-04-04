@@ -8,7 +8,7 @@ import {
   query,
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260404fix2';
+import { state } from '../core/state.js?v=20260404fix4';
 
 const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 

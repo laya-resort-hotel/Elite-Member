@@ -1,4 +1,4 @@
-import { $ } from '../core/dom.js?v=20260404fix2';
+import { $ } from '../core/dom.js?v=20260404fix4';
 
 let toastTimer = null;
 

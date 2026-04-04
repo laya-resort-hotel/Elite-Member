@@ -1,6 +1,6 @@
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { doc, setDoc, serverTimestamp, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260404fix2';
+import { state } from '../core/state.js?v=20260404fix4';
 
 const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 
@@ -48,6 +48,7 @@ export async function signUpWithEmployeeId({ employeeId, fullName, password }) {
 
   const userRef = doc(state.db, 'users', cred.user.uid);
   await setDoc(userRef, {
+    uid: cred.user.uid,
     displayName: String(fullName || '').trim(),
     email,
     role: 'staff',

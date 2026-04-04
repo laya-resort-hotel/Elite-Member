@@ -1,12 +1,12 @@
 
-import { state, setMode } from './core/state.js?v=20260404fix2';
-import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix2';
-import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix2';
-import { subscribeAuth, touchLastLogin } from './services/auth-service.js?v=20260404fix2';
-import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix2';
-import { showToast } from './ui/toast.js?v=20260404fix2';
-import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix2';
-import { bindFlipCards } from './ui/card-flip.js?v=20260404fix2';
+import { state, setMode } from './core/state.js?v=20260404fix4';
+import { highlightCurrentNav } from './core/app-shell.js?v=20260404fix4';
+import { initFirebaseServices } from './services/firebase-service.js?v=20260404fix4';
+import { subscribeAuth, touchLastLogin } from './services/auth-service.js?v=20260404fix4';
+import { loadResidentForUser, loadUserProfile } from './services/member-service.js?v=20260404fix4';
+import { showToast } from './ui/toast.js?v=20260404fix4';
+import { renderResidentCard, updateStatusLabels } from './ui/renderers.js?v=20260404fix4';
+import { bindFlipCards } from './ui/card-flip.js?v=20260404fix4';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
@@ -35,25 +35,25 @@ async function initCurrentPage(isLive = false) {
   try {
     switch (page) {
       case 'index': {
-        const { bindAuthPage } = await import('./pages/auth-page.js?v=20260404fix2');
+        const { bindAuthPage } = await import('./pages/auth-page.js?v=20260404fix4');
         bindAuthPage();
         break;
       }
       case 'signup': {
-        const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix2');
+        const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix4');
         bindSignupPage();
         break;
       }
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js?v=20260404fix2');
+        const mod = await import('./pages/resident-page.js?v=20260404fix4');
         mod.bindResidentPage();
         await mod.loadResidentDashboard();
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260404fix2');
+        const mod = await import('./pages/redemption-page.js?v=20260404fix4');
         await mod.loadRedemptionPage();
         break;
       }
@@ -69,7 +69,7 @@ async function initCurrentPage(isLive = false) {
       case 'news':
       case 'promotions':
       case 'benefits': {
-        const mod = await import('./pages/content-page.js?v=20260404fix2');
+        const mod = await import('./pages/content-page.js?v=20260404fix4');
         mod.applyContentPageState(contentType);
         mod.bindContentPage(contentType);
         await mod.loadContentPage(contentType);
@@ -84,19 +84,19 @@ async function initCurrentPage(isLive = false) {
       case 'news-detail':
       case 'promotions-detail':
       case 'benefits-detail': {
-        const mod = await import('./pages/detail-page.js?v=20260404fix2');
+        const mod = await import('./pages/detail-page.js?v=20260404fix4');
         mod.bindDetailPage(contentType);
         await mod.loadDetailPage(contentType);
         break;
       }
       case 'admin': {
-        const mod = await import('./pages/admin-page.js?v=20260404fix2');
+        const mod = await import('./pages/admin-page.js?v=20260404fix4');
         mod.bindAdminPage();
         await mod.loadAdminDashboard();
         break;
       }
       case 'members': {
-        const mod = await import('./pages/members-page.js?v=20260404fix2');
+        const mod = await import('./pages/members-page.js?v=20260404fix4');
         mod.bindMembersPage();
         await mod.loadMembersPage();
         break;

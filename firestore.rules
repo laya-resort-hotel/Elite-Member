@@ -20,12 +20,63 @@ service cloud.firestore {
     }
 
     function isEmployeeEmailFallback() {
-      return signedIn() && request.auth.token.email is string
-        && request.auth.token.email.matches('.*@employee\.layaresident\.local$');
+      return signedIn()
+        && request.auth.token.email is string
+        && request.auth.token.email.matches('.*@employee[.]layaresident[.]local$');
     }
 
     function isAdminLike() {
       return userRole() in ['admin', 'manager', 'staff'] || isEmployeeEmailFallback();
+    }
+
+    function validSelfUserCreate(uid) {
+      return signedIn()
+        && myUid() == uid
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'email',
+          'displayName',
+          'role',
+          'employeeId',
+          'memberId',
+          'memberCode',
+          'publicCardCode',
+          'isActive',
+          'createdAt',
+          'updatedAt',
+          'lastLoginAt'
+        ])
+        && request.resource.data.role in ['resident', 'staff']
+        && (
+          !request.resource.data.keys().hasAny(['uid'])
+          || request.resource.data.uid == myUid()
+        );
+    }
+
+    function validSelfUserUpdate(uid) {
+      return signedIn()
+        && myUid() == uid
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'email',
+          'displayName',
+          'role',
+          'employeeId',
+          'memberId',
+          'memberCode',
+          'publicCardCode',
+          'isActive',
+          'createdAt',
+          'updatedAt',
+          'lastLoginAt'
+        ])
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.employeeId == resource.data.employeeId
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    function memberOwnedByCurrentUserDoc() {
+      return signedIn() && resource.data.authUid == myUid();
     }
 
     function memberOwnedByCurrentUser(memberId) {
@@ -37,20 +88,20 @@ service cloud.firestore {
     match /users/{uid} {
       allow get: if signedIn() && (myUid() == uid || isAdminLike());
       allow list: if isAdminLike();
-      allow create: if signedIn() && myUid() == uid;
-      allow update: if signedIn() && (myUid() == uid || isAdminLike());
+      allow create: if validSelfUserCreate(uid) || isAdminLike();
+      allow update: if validSelfUserUpdate(uid) || isAdminLike();
       allow delete: if isAdminLike();
     }
 
     match /members/{memberId} {
-      allow get: if isAdminLike() || memberOwnedByCurrentUser(memberId);
-      allow list: if isAdminLike();
+      allow get: if isAdminLike() || memberOwnedByCurrentUserDoc();
+      allow list: if isAdminLike() || memberOwnedByCurrentUserDoc();
       allow create, update, delete: if isAdminLike();
     }
 
     match /point_wallets/{memberId} {
       allow get: if isAdminLike() || memberOwnedByCurrentUser(memberId);
-      allow list: if isAdminLike();
+      allow list: if isAdminLike() || (signedIn() && resource.id is string && memberOwnedByCurrentUser(resource.id));
       allow create, update: if isAdminLike();
       allow delete: if false;
     }
@@ -69,7 +120,7 @@ service cloud.firestore {
 
     match /redemptions/{docId} {
       allow get, list: if isAdminLike() || (signedIn() && resource.data.requestedByUid == myUid());
-      allow create: if signedIn();
+      allow create: if signedIn() && request.resource.data.requestedByUid == myUid();
       allow update: if isAdminLike() || (signedIn() && resource.data.requestedByUid == myUid());
       allow delete: if isAdminLike();
     }

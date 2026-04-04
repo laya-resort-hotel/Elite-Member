@@ -2,8 +2,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.4/fireba
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { getStorage } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js';
-import { firebaseConfig } from '../config/firebase-config.js?v=20260404fix2';
-import { state } from '../core/state.js?v=20260404fix2';
+import { firebaseConfig } from '../config/firebase-config.js?v=20260404fix4';
+import { state } from '../core/state.js?v=20260404fix4';
 
 export function initFirebaseServices() {
   state.app = initializeApp(firebaseConfig);

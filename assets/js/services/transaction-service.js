@@ -12,7 +12,7 @@ import {
   where,
   orderBy,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
-import { state } from '../core/state.js?v=20260404fix2';
+import { state } from '../core/state.js?v=20260404fix4';
 
 function normalizeSpendTransaction(d) {
   const row = d.data ? d.data() : d;
