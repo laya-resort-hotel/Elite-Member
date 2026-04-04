@@ -111,3 +111,20 @@ Notes:
 - เปิด `signup.html` เพื่อสมัครสมาชิกด้วยรหัสพนักงาน
 - ระบบจะสร้าง Firebase Authentication user และ Firestore `users/{uid}` อัตโนมัติ
 - role เริ่มต้น = `staff`
+
+
+## Resident Management Starter (NEW)
+
+ไฟล์ใหม่ในแพ็กนี้:
+- `resident-management.html` = หน้า Admin สำหรับ Resident List / Create/Edit Resident / Wallet / Point History / Permanent QR
+- `assets/js/services/resident-management-service.js` = service layer แบบ Firestore-ready พร้อม fallback เป็น local demo store
+- `assets/js/data/resident-management-demo.js` = mock data สำหรับเริ่มเทส flow
+- `docs/firestore-schema-resident-management.md` = schema starter
+- `docs/mock-seed-resident-management.json` = mock seed ตัวอย่าง
+
+### Collections ที่ใช้
+- `residents`
+- `resident_wallets`
+- `resident_cards`
+- `resident_point_transactions`
+- `resident_activity_logs`

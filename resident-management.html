@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <title>LAYA Resident – Resident Management</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="LAYA Resident management starter" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <link rel="stylesheet" href="./assets/css/resident-management.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js?v=20260404starter1"></script>
+</head>
+<body data-page="resident-management">
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LAYA RESIDENT</div>
+        <h1><a class="brand-link" href="./index.html">Resident Management Starter</a></h1>
+      </div>
+      <div class="page-actions">
+        <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
+        <span class="badge-inline"><span>User</span><strong id="authState">Checking...</strong></span>
+        <span class="badge-inline"><span>Mode</span><strong id="modeState">Loading</strong></span>
+        <button id="logoutBtn" class="ghost-btn hidden">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="panel page-hero">
+        <div class="eyebrow gold">Resident CRM / Wallet / Permanent QR</div>
+        <h2>Resident Management</h2>
+        <p class="page-intro" id="residentManagementNote">กำลังโหลดข้อมูล Resident Management...</p>
+        <div class="grid-4 compact-grid">
+          <div class="metric-card"><span>Total Residents</span><strong id="rmTotalResidents">0</strong></div>
+          <div class="metric-card"><span>Active Residents</span><strong id="rmActiveResidents">0</strong></div>
+          <div class="metric-card"><span>Total Points</span><strong id="rmTotalPoints">0</strong></div>
+          <div class="metric-card"><span>Active Cards</span><strong id="rmActiveCards">0</strong></div>
+        </div>
+        <div class="row gap wrap mt-md">
+          <span class="badge-inline"><span>Resident Data</span><strong id="residentManagementMode">Loading</strong></span>
+          <button id="reloadResidentManagementBtn" class="ghost-btn" type="button">Refresh</button>
+          <button id="seedResidentDemoBtn" class="ghost-btn" type="button">Load Demo Seed</button>
+          <a class="ghost-btn" href="./admin.html">Back to Admin</a>
+        </div>
+      </section>
+
+      <section class="resident-management-layout mt-lg">
+        <aside class="panel resident-sidebar">
+          <div class="panel-title-row">
+            <div>
+              <div class="eyebrow gold">Resident List</div>
+              <h3>Search / Filter</h3>
+            </div>
+            <button id="newResidentManagementBtn" class="primary-btn" type="button">New Resident</button>
+          </div>
+          <input id="residentSearchInput" class="input" type="text" placeholder="Search name / member code / room / QR" />
+          <div class="grid-2 mt-sm">
+            <div>
+              <label class="field-label" for="residentStatusFilter">Status</label>
+              <select id="residentStatusFilter" class="input">
+                <option value="all">all</option>
+                <option value="active">active</option>
+                <option value="inactive">inactive</option>
+                <option value="suspended">suspended</option>
+              </select>
+            </div>
+            <div class="resident-schema-quick">
+              <div class="field-label">Starter docs</div>
+              <div class="row gap wrap">
+                <a class="ghost-btn small-btn" href="./docs/firestore-schema-resident-management.md" target="_blank" rel="noopener">Schema</a>
+                <a class="ghost-btn small-btn" href="./docs/mock-seed-resident-management.json" target="_blank" rel="noopener">Mock Seed</a>
+              </div>
+            </div>
+          </div>
+          <div id="residentManagementList" class="resident-list-stack mt-md"></div>
+        </aside>
+
+        <section class="resident-main-stack">
+          <div class="panel">
+            <div class="panel-title-row">
+              <div>
+                <div class="eyebrow gold">Create / Edit Resident</div>
+                <h3>Resident Master Profile</h3>
+              </div>
+              <button id="saveResidentManagementBtn" class="primary-btn" type="button">Save Resident</button>
+            </div>
+
+            <input id="residentIdInput" type="hidden" />
+            <div class="grid-3 admin-editor-grid">
+              <div>
+                <label class="field-label" for="residentMemberCodeInput">Member Code</label>
+                <input id="residentMemberCodeInput" class="input" type="text" placeholder="Auto-generated" />
+              </div>
+              <div>
+                <label class="field-label" for="residentCardNumberInput">Card Number</label>
+                <input id="residentCardNumberInput" class="input" type="text" placeholder="Auto-generated" />
+              </div>
+              <div>
+                <label class="field-label" for="residentQrValueInput">Permanent QR Value</label>
+                <input id="residentQrValueInput" class="input" type="text" placeholder="LAYA-RES-0001" />
+              </div>
+            </div>
+
+            <div class="grid-3 admin-editor-grid mt-md">
+              <div>
+                <label class="field-label" for="residentDisplayNameInput">Display Name</label>
+                <input id="residentDisplayNameInput" class="input" type="text" placeholder="John Smith" />
+              </div>
+              <div>
+                <label class="field-label" for="residentFirstNameInput">First Name</label>
+                <input id="residentFirstNameInput" class="input" type="text" placeholder="John" />
+              </div>
+              <div>
+                <label class="field-label" for="residentLastNameInput">Last Name</label>
+                <input id="residentLastNameInput" class="input" type="text" placeholder="Smith" />
+              </div>
+            </div>
+
+            <div class="grid-3 admin-editor-grid mt-md">
+              <div>
+                <label class="field-label" for="residentEmailInput">Email</label>
+                <input id="residentEmailInput" class="input" type="email" placeholder="resident@example.com" />
+              </div>
+              <div>
+                <label class="field-label" for="residentPhoneInput">Phone</label>
+                <input id="residentPhoneInput" class="input" type="text" placeholder="+66xxxxxxxxx" />
+              </div>
+              <div>
+                <label class="field-label" for="residentPrimaryUnitInput">Primary Unit</label>
+                <input id="residentPrimaryUnitInput" class="input" type="text" placeholder="A101" />
+              </div>
+            </div>
+
+            <div class="grid-3 admin-editor-grid mt-md">
+              <div>
+                <label class="field-label" for="residentStatusInput">Status</label>
+                <select id="residentStatusInput" class="input">
+                  <option value="active">active</option>
+                  <option value="inactive">inactive</option>
+                  <option value="suspended">suspended</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="residentTierInput">Tier</label>
+                <select id="residentTierInput" class="input">
+                  <option value="elite_black">elite_black</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="residentOwnerTypeInput">Owner Type</label>
+                <select id="residentOwnerTypeInput" class="input">
+                  <option value="resident_owner">resident_owner</option>
+                  <option value="co_owner">co_owner</option>
+                  <option value="company_owner">company_owner</option>
+                </select>
+              </div>
+            </div>
+
+            <label class="field-label" for="residentUnitsInput">Owned Units</label>
+            <textarea id="residentUnitsInput" class="input textarea textarea-sm" placeholder="A101&#10;A102&#10;B203"></textarea>
+            <div class="upload-note">1 บรรทัดต่อ 1 ห้อง เหมาะสำหรับเก็บหลายยูนิตต่อ Resident 1 คน</div>
+
+            <label class="field-label" for="residentNotesInput">Internal Notes</label>
+            <textarea id="residentNotesInput" class="input textarea textarea-sm" placeholder="Internal notes for ops / management"></textarea>
+
+            <div class="row gap wrap mt-md">
+              <button id="deleteResidentManagementBtn" class="danger-btn" type="button">Delete Resident</button>
+            </div>
+          </div>
+
+          <div class="resident-detail-grid mt-lg">
+            <section class="panel resident-card-preview-panel">
+              <div class="panel-title-row">
+                <div>
+                  <div class="eyebrow gold">Permanent Card Data</div>
+                  <h3>QR / Card Preview</h3>
+                </div>
+                <div class="row gap wrap">
+                  <button id="copyResidentQrBtn" class="ghost-btn" type="button">Copy QR Value</button>
+                  <button id="downloadResidentQrBtn" class="primary-btn" type="button">Download QR</button>
+                </div>
+              </div>
+              <div class="resident-preview-card">
+                <div class="resident-preview-copy">
+                  <div class="eyebrow gold">Elite Black Card</div>
+                  <h4 id="residentCardPreviewName">Resident Member</h4>
+                  <div class="member-luxury-code" id="residentCardPreviewCode">-</div>
+                  <div class="member-luxury-tags">
+                    <span class="mini-badge gold" id="residentCardPreviewTier">elite_black</span>
+                    <span class="mini-badge subtle" id="residentCardPreviewStatus">active</span>
+                    <span class="mini-badge" id="residentCardPreviewOwner">resident_owner</span>
+                  </div>
+                  <div class="member-detail-grid mt-md">
+                    <div class="member-detail-item"><span>Primary Unit</span><strong id="residentCardPreviewUnit">-</strong></div>
+                    <div class="member-detail-item"><span>All Units</span><strong id="residentUnitsSummary">-</strong></div>
+                  </div>
+                </div>
+                <div class="resident-preview-qr">
+                  <canvas id="residentQrCanvas" width="180" height="180"></canvas>
+                  <div class="member-qr-code" id="residentQrText">-</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel resident-wallet-panel">
+              <div class="panel-title-row">
+                <div>
+                  <div class="eyebrow gold">Wallet / Point History</div>
+                  <h3>Resident Wallet</h3>
+                </div>
+              </div>
+              <div class="member-point-summary">
+                <div class="member-point-card"><span>Current</span><strong id="residentWalletCurrent">0</strong></div>
+                <div class="member-point-card"><span>Pending</span><strong id="residentWalletPending">0</strong></div>
+                <div class="member-point-card"><span>Lifetime Earned</span><strong id="residentWalletEarned">0</strong></div>
+                <div class="member-point-card"><span>Lifetime Redeemed</span><strong id="residentWalletRedeemed">0</strong></div>
+              </div>
+              <div class="upload-note" id="residentWalletUpdated">No wallet data yet</div>
+
+              <div class="grid-4 admin-editor-grid mt-lg">
+                <div>
+                  <label class="field-label" for="pointActionType">Action</label>
+                  <select id="pointActionType" class="input">
+                    <option value="earn">earn</option>
+                    <option value="redeem">redeem</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label" for="pointActionAmount">Points</label>
+                  <input id="pointActionAmount" class="input" type="number" min="1" placeholder="500" />
+                </div>
+                <div>
+                  <label class="field-label" for="pointActionSource">Source</label>
+                  <input id="pointActionSource" class="input" type="text" value="manual_adjustment" />
+                </div>
+                <div>
+                  <label class="field-label" for="pointActionReference">Reference</label>
+                  <input id="pointActionReference" class="input" type="text" placeholder="POS-0001 / BENEFIT-001" />
+                </div>
+              </div>
+              <label class="field-label" for="pointActionNote">Note</label>
+              <textarea id="pointActionNote" class="input textarea textarea-sm" placeholder="Why are you adding or deducting points?"></textarea>
+              <div class="row gap wrap mt-md">
+                <button id="applyPointActionBtn" class="primary-btn" type="button">Save Point Action</button>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel mt-lg">
+            <div class="panel-title-row">
+              <div>
+                <div class="eyebrow gold">Resident Point Transactions</div>
+                <h3>Point History</h3>
+              </div>
+            </div>
+            <div id="residentPointHistory"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <a class="nav-btn" href="./admin.html">Admin</a>
+    <a class="nav-btn" href="./resident-management.html">Resident CRM</a>
+    <a class="nav-btn" href="./members.html">Members</a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

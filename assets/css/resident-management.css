@@ -1,0 +1,130 @@
+.resident-management-layout {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 20px;
+}
+
+.resident-sidebar,
+.resident-main-stack,
+.resident-detail-grid {
+  min-width: 0;
+}
+
+.resident-main-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.resident-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 76vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.resident-list-card {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  border-radius: 18px;
+  padding: 14px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.resident-list-card:hover,
+.resident-list-card.active {
+  border-color: rgba(241,211,139,.45);
+  box-shadow: 0 0 0 1px rgba(241,211,139,.25) inset;
+  background: linear-gradient(180deg, rgba(241,211,139,.10), rgba(255,255,255,.03));
+}
+
+.resident-list-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resident-list-main span,
+.resident-list-sub {
+  color: rgba(255,255,255,.7);
+  font-size: 13px;
+}
+
+.resident-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.resident-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+}
+
+.resident-preview-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 18px;
+  align-items: start;
+  background: linear-gradient(135deg, rgba(255,255,255,.03), rgba(241,211,139,.06));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px;
+  padding: 18px;
+}
+
+.resident-preview-qr {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+#residentQrCanvas {
+  width: 180px;
+  height: 180px;
+  border-radius: 18px;
+  background: #101216;
+}
+
+.compact-table th,
+.compact-table td {
+  font-size: 13px;
+}
+
+.text-danger {
+  color: #ff8b8b;
+}
+
+.text-gold {
+  color: #f1d38b;
+}
+
+.small-btn {
+  padding: 8px 12px;
+  min-height: auto;
+}
+
+.resident-schema-quick .row {
+  justify-content: flex-start;
+}
+
+@media (max-width: 1100px) {
+  .resident-management-layout,
+  .resident-detail-grid,
+  .resident-preview-card {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-list-stack {
+    max-height: none;
+  }
+}

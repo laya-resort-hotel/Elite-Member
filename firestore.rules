@@ -85,6 +85,17 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/members/$(memberId)).data.authUid == myUid();
     }
 
+    function residentOwnedByCurrentUserDoc() {
+      return signedIn() && resource.data.authUid is string && resource.data.authUid == myUid();
+    }
+
+    function residentOwnedByCurrentUser(residentId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/residents/$(residentId))
+        && get(/databases/$(database)/documents/residents/$(residentId)).data.authUid is string
+        && get(/databases/$(database)/documents/residents/$(residentId)).data.authUid == myUid();
+    }
+
     match /users/{uid} {
       allow get: if signedIn() && (myUid() == uid || isAdminLike());
       allow list: if isAdminLike();
@@ -146,7 +157,35 @@ service cloud.firestore {
     }
 
     match /residents/{residentId} {
-      allow read, write: if isAdminLike();
+      allow get: if isAdminLike() || residentOwnedByCurrentUserDoc();
+      allow list: if isAdminLike();
+      allow create, update, delete: if isAdminLike();
+    }
+
+    match /resident_wallets/{residentId} {
+      allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
+      allow list: if isAdminLike();
+      allow create, update: if isAdminLike();
+      allow delete: if isAdminLike();
+    }
+
+    match /resident_cards/{residentId} {
+      allow get: if isAdminLike() || residentOwnedByCurrentUser(residentId);
+      allow list: if isAdminLike();
+      allow create, update: if isAdminLike();
+      allow delete: if isAdminLike();
+    }
+
+    match /resident_point_transactions/{transactionId} {
+      allow get, list: if isAdminLike() || (signedIn() && resource.data.residentId is string && residentOwnedByCurrentUser(resource.data.residentId));
+      allow create: if isAdminLike();
+      allow update, delete: if false;
+    }
+
+    match /resident_activity_logs/{logId} {
+      allow get, list: if isAdminLike();
+      allow create: if isAdminLike();
+      allow update, delete: if false;
     }
 
     match /transactions/{transactionId} {

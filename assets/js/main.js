@@ -10,7 +10,7 @@ import { bindFlipCards } from './ui/card-flip.js?v=20260404fix5';
 
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
-const PROTECTED_PAGES = new Set(['admin', 'members', 'resident', 'home', 'member', 'settings', 'redemption']);
+const PROTECTED_PAGES = new Set(['admin', 'members', 'resident-management', 'resident', 'home', 'member', 'settings', 'redemption']);
 
 
 function bindGlobalLogout() {
@@ -127,6 +127,12 @@ async function initCurrentPage(isLive = false) {
         await mod.loadMembersPage();
         break;
       }
+      case 'resident-management': {
+        const mod = await import('./pages/resident-management-page.js?v=20260404starter1');
+        mod.bindResidentManagementPage();
+        await mod.loadResidentManagementPage();
+        break;
+      }
       default:
         break;
     }
@@ -159,7 +165,7 @@ async function renderPageForRole(role, user) {
     go('home.html');
     return;
   }
-  if (page === 'admin' || page === 'members') {
+  if (page === 'admin' || page === 'members' || page === 'resident-management') {
     showToast('บัญชีนี้ไม่มีสิทธิ์เข้า Admin Dashboard', 'error');
     go('home.html');
     return;
