@@ -85,30 +85,30 @@ async function initCurrentPage(isLive = false) {
   try {
     switch (page) {
       case 'index': {
-        const { bindAuthPage } = await import('./pages/auth-page.js?v=20260404fix5');
+        const { bindAuthPage } = await import('./pages/auth-page.js');
         bindAuthPage();
         break;
       }
       case 'signup': {
-        const { bindSignupPage } = await import('./pages/signup-page.js?v=20260404fix5');
+        const { bindSignupPage } = await import('./pages/signup-page.js');
         bindSignupPage();
         break;
       }
       case 'resident-login': {
-        const { bindResidentLoginPage } = await import('./pages/resident-login-page.js?v=20260405residentlux2');
+        const { bindResidentLoginPage } = await import('./pages/resident-login-page.js');
         bindResidentLoginPage();
         break;
       }
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js?v=20260404fix5');
+        const mod = await import('./pages/resident-page.js');
         mod.bindResidentPage();
         await mod.loadResidentDashboard();
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260404fix5');
+        const mod = await import('./pages/redemption-page.js');
         await mod.loadRedemptionPage();
         break;
       }
@@ -124,7 +124,7 @@ async function initCurrentPage(isLive = false) {
       case 'news':
       case 'promotions':
       case 'benefits': {
-        const mod = await import('./pages/content-page.js?v=20260404fix5');
+        const mod = await import('./pages/content-page.js');
         mod.applyContentPageState(contentType);
         mod.bindContentPage(contentType);
         await mod.loadContentPage(contentType);
@@ -139,25 +139,25 @@ async function initCurrentPage(isLive = false) {
       case 'news-detail':
       case 'promotions-detail':
       case 'benefits-detail': {
-        const mod = await import('./pages/detail-page.js?v=20260404fix5');
+        const mod = await import('./pages/detail-page.js');
         mod.bindDetailPage(contentType);
         await mod.loadDetailPage(contentType);
         break;
       }
       case 'admin': {
-        const mod = await import('./pages/admin-page.js?v=20260404fix5');
+        const mod = await import('./pages/admin-page.js');
         mod.bindAdminPage();
         await mod.loadAdminDashboard();
         break;
       }
       case 'members': {
-        const mod = await import('./pages/members-page.js?v=20260404fix5');
+        const mod = await import('./pages/members-page.js');
         mod.bindMembersPage();
         await mod.loadMembersPage();
         break;
       }
       case 'resident-management': {
-        const mod = await import('./pages/resident-management-page.js?v=20260404starter1');
+        const mod = await import('./pages/resident-management-page.js');
         mod.bindResidentManagementPage();
         await mod.loadResidentManagementPage();
         break;
@@ -168,7 +168,7 @@ async function initCurrentPage(isLive = false) {
   } catch (error) {
     console.error('Page init failed:', error);
     updateStatusLabels({ modeState: 'Page Error' });
-    showToast(error?.message || 'Page init failed', 'error');
+    showToast(error?.message || error?.toString?.() || 'Page init failed', 'error');
   }
 }
 
@@ -267,13 +267,13 @@ async function initApp() {
       } catch (callbackError) {
         console.error('Auth callback error:', callbackError);
         updateStatusLabels({ modeState: 'Auth Error' });
-        showToast(callbackError?.message || 'Auth callback failed', 'error');
+        showToast(callbackError?.message || callbackError?.toString?.() || 'Auth callback failed', 'error');
       }
     });
   } catch (error) {
     console.error('Firebase init failed:', error);
     updateStatusLabels({ firebaseState: 'Error', authState: '-', modeState: 'Firebase Error' });
-    showToast(error?.message || 'Firebase init failed', 'error');
+    showToast(error?.message || error?.toString?.() || 'Firebase init failed', 'error');
   }
 }
 
