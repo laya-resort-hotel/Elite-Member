@@ -200,15 +200,29 @@ async function findLegacyMemberByAuth(uid, email, memberKey) {
   return null;
 }
 
-async function tryFindResidentByQuery(uid, email, memberCode) {
+async function tryFindResidentByQuery(uid, email, memberKey, residentId = '') {
   const residentsRef = collection(state.db, 'residents');
   const candidates = [];
+  const normalizedMemberKey = String(memberKey || '').trim();
   const emailLower = String(email || '').trim().toLowerCase();
+
+  if (residentId) {
+    try {
+      const directSnap = await getDoc(doc(state.db, 'residents', residentId));
+      if (directSnap.exists()) return directSnap;
+    } catch (error) {
+      console.warn('resident direct lookup failed', error);
+    }
+  }
 
   if (uid) candidates.push(query(residentsRef, where('authUid', '==', uid), limit(1)));
   if (emailLower) candidates.push(query(residentsRef, where('loginEmailLower', '==', emailLower), limit(1)));
   if (email) candidates.push(query(residentsRef, where('loginEmail', '==', email), limit(1)));
-  if (memberCode) candidates.push(query(residentsRef, where('memberCode', '==', memberCode), limit(1)));
+  if (normalizedMemberKey) {
+    candidates.push(query(residentsRef, where('memberCode', '==', normalizedMemberKey), limit(1)));
+    candidates.push(query(residentsRef, where('publicCardCode', '==', normalizedMemberKey), limit(1)));
+    candidates.push(query(residentsRef, where('qrCodeValue', '==', normalizedMemberKey), limit(1)));
+  }
 
   for (const q of candidates) {
     try {
@@ -261,18 +275,21 @@ export async function loadUserProfile(uid, email) {
 
 export async function loadResidentForUser(uid, email, profileOrMemberCode = {}) {
   const profile = typeof profileOrMemberCode === 'string'
-    ? { memberCode: profileOrMemberCode, publicCardCode: profileOrMemberCode, residentId: '' }
+    ? { memberCode: profileOrMemberCode, publicCardCode: profileOrMemberCode, memberId: '', residentId: '' }
     : (profileOrMemberCode || {});
 
+  const residentIdCandidate = profile.residentId || profile.memberId || '';
+  const memberKey = profile.memberCode || profile.publicCardCode || profile.memberId || '';
+
   try {
-    if (profile.residentId) {
-      const residentSnap = await getDoc(doc(state.db, 'residents', profile.residentId));
+    if (residentIdCandidate) {
+      const residentSnap = await getDoc(doc(state.db, 'residents', residentIdCandidate));
       if (residentSnap.exists()) {
         return await hydrateResidentFromNewCollections(residentSnap.data(), residentSnap.id);
       }
     }
 
-    const residentDoc = await tryFindResidentByQuery(uid, email, profile.memberCode || profile.publicCardCode || '');
+    const residentDoc = await tryFindResidentByQuery(uid, email, memberKey, residentIdCandidate);
     if (residentDoc) {
       return await hydrateResidentFromNewCollections(residentDoc.data(), residentDoc.id);
     }
@@ -281,7 +298,7 @@ export async function loadResidentForUser(uid, email, profileOrMemberCode = {}) 
   }
 
   try {
-    const memberDoc = await findLegacyMemberByAuth(uid, email, profile.memberCode || profile.publicCardCode || '');
+    const memberDoc = await findLegacyMemberByAuth(uid, email, memberKey);
     if (!memberDoc) return null;
     return await hydrateLegacyMemberRecord(memberDoc.data(), memberDoc.id);
   } catch (error) {

@@ -1,13 +1,13 @@
 
-import { state } from '../core/state.js?v=20260404residentredemptionfix3';
-import { $ } from '../core/dom.js?v=20260404residentredemptionfix3';
-import { escapeHtml, formatNumber } from '../core/format.js?v=20260404residentredemptionfix3';
-import { renderResidentCard } from '../ui/renderers.js?v=20260404residentredemptionfix3';
-import { showToast } from '../ui/toast.js?v=20260404residentredemptionfix3';
-import { loadCollectionSafe } from '../services/content-service.js?v=20260404residentredemptionfix3';
-import { redeemReward } from '../services/redemption-service.js?v=20260404residentredemptionfix3';
-import { demoRewards } from '../data/rewards.js?v=20260404residentmemberfix1';
-import { loadResidentForUser } from '../services/member-service.js?v=20260404residentmemberfix1';
+import { state } from '../core/state.js?v=20260405residentredemptionlink1';
+import { $ } from '../core/dom.js?v=20260405residentredemptionlink1';
+import { escapeHtml, formatNumber } from '../core/format.js?v=20260405residentredemptionlink1';
+import { renderResidentCard } from '../ui/renderers.js?v=20260405residentredemptionlink1';
+import { showToast } from '../ui/toast.js?v=20260405residentredemptionlink1';
+import { loadCollectionSafe } from '../services/content-service.js?v=20260405residentredemptionlink1';
+import { redeemReward } from '../services/redemption-service.js?v=20260405residentredemptionlink1';
+import { demoRewards } from '../data/rewards.js?v=20260405residentredemptionlink1';
+import { loadResidentForUser, loadUserProfile } from '../services/member-service.js?v=20260405residentredemptionlink1';
 
 function emptyResident() {
   return {
@@ -23,21 +23,37 @@ function emptyResident() {
 }
 
 async function resolveResidentForRedemptionPage() {
-  if (state.currentResident) return state.currentResident;
+  if (state.currentResident?.residentId || state.currentResident?.memberId || state.currentResident?.id) {
+    return state.currentResident;
+  }
 
   const uid = state.currentUser?.uid || '';
   const email = state.currentUser?.email || '';
+  let profile = state.currentProfile || {};
+
+  if (uid && (!profile || Object.keys(profile).length === 0)) {
+    try {
+      profile = await loadUserProfile(uid, email);
+      state.currentProfile = profile || {};
+      state.memberCode = profile?.publicCardCode || profile?.memberCode || profile?.memberId || state.memberCode || '';
+      state.residentId = profile?.residentId || profile?.memberId || state.residentId || '';
+    } catch (error) {
+      console.warn('redemption user profile retry failed', error);
+    }
+  }
+
   if (uid) {
     try {
       const resident = await loadResidentForUser(uid, email, {
-        residentId: state.residentId || '',
-        memberCode: state.memberCode || '',
-        publicCardCode: state.memberCode || '',
+        residentId: profile?.residentId || profile?.memberId || state.residentId || '',
+        memberId: profile?.memberId || state.residentId || '',
+        memberCode: profile?.memberCode || profile?.publicCardCode || profile?.memberId || state.memberCode || '',
+        publicCardCode: profile?.publicCardCode || profile?.memberCode || state.memberCode || '',
       });
       if (resident) {
         state.currentResident = resident;
-        state.residentId = resident.residentId || state.residentId || '';
-        state.memberCode = resident.memberCode || resident.publicCardCode || state.memberCode || '';
+        state.residentId = resident.residentId || resident.memberId || state.residentId || '';
+        state.memberCode = resident.memberCode || resident.publicCardCode || resident.memberId || state.memberCode || '';
         return resident;
       }
     } catch (error) {
@@ -46,12 +62,14 @@ async function resolveResidentForRedemptionPage() {
   }
 
   const emailPrefix = String(email || '').trim().split('@')[0] || '';
-  const guessedName = state.currentUser?.displayName?.trim() || emailPrefix || 'Resident Member';
+  const guessedName = state.currentUser?.displayName?.trim() || profile?.displayName || emailPrefix || 'Resident Member';
   return {
     ...emptyResident(),
     fullName: guessedName,
     displayName: guessedName,
-    email,
+    email: email || profile?.email || '',
+    memberCode: profile?.memberCode || profile?.publicCardCode || profile?.memberId || '-',
+    publicCardCode: profile?.publicCardCode || profile?.memberCode || profile?.memberId || '-',
     status: state.currentUser ? 'ACTIVE' : 'INACTIVE',
   };
 }

@@ -162,7 +162,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260404residentmemberfix1');
+        const mod = await import('./pages/redemption-page.js?v=20260405residentredemptionlink1');
         await mod.loadRedemptionPage();
         break;
       }
@@ -255,6 +255,7 @@ async function renderPageForRole(role, user, profile = {}) {
   }
 
   state.currentRole = role || 'resident';
+  state.currentProfile = profile || null;
   state.currentResident = await loadResidentForUser(user.uid, user.email, profile);
   setMode('resident-live');
   updateStatusLabels({ modeState: 'resident-live' });
@@ -280,6 +281,7 @@ async function handleSignedOut() {
   state.currentUser = null;
   state.currentRole = null;
   state.currentResident = null;
+  state.currentProfile = null;
   state.memberCode = '';
   state.residentId = '';
   syncAuthActionButtons(null);

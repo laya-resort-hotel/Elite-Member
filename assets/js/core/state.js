@@ -7,6 +7,7 @@ export const state = {
   currentUser: null,
   currentRole: null,
   currentResident: null,
+  currentProfile: null,
   currentMode: 'auth',
   memberCode: '',
   residentId: '',
