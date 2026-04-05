@@ -2961,3 +2961,15 @@ body.lightbox-open {
     font-size: 1.85rem;
   }
 }
+
+
+.about-inline-link {
+  color: #e7cf90;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(231, 207, 144, 0.35);
+}
+
+.about-inline-link:hover {
+  color: #f6df9f;
+  border-bottom-color: rgba(246, 223, 159, 0.7);
+}
