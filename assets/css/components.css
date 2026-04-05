@@ -2846,3 +2846,118 @@ body.lightbox-open {
     height: 104px;
   }
 }
+
+
+.about-panel,
+.about-copy-card,
+.about-contact-card {
+  background: linear-gradient(180deg, rgba(18, 22, 28, 0.96), rgba(10, 12, 16, 0.98));
+  border: 1px solid rgba(196, 161, 96, 0.18);
+  border-radius: 28px;
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.34);
+}
+
+.about-panel {
+  padding: 28px 24px;
+}
+
+.about-copy-card,
+.about-contact-card {
+  margin-top: 18px;
+  padding: 24px;
+}
+
+.about-kicker {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(196, 161, 96, 0.12);
+  border: 1px solid rgba(196, 161, 96, 0.2);
+  color: #d9bf84;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.about-title {
+  margin: 0 0 12px;
+  color: #f7f4ee;
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  line-height: 1.08;
+}
+
+.about-lead,
+.about-copy-card p {
+  margin: 0;
+  color: rgba(245, 242, 232, 0.82);
+  font-size: 15px;
+  line-height: 1.78;
+}
+
+.about-copy-card p + .about-section-heading,
+.about-copy-card .about-section-heading + p {
+  margin-top: 14px;
+}
+
+.about-section-heading {
+  margin: 0;
+  color: #f3e8cb;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-quote {
+  margin-top: 22px;
+  padding: 18px 18px 18px 20px;
+  border-left: 3px solid rgba(196, 161, 96, 0.55);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 18px;
+  color: #f5f2e8;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.about-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.about-contact-label {
+  margin-bottom: 6px;
+  color: #d9bf84;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.about-contact-value {
+  color: #f5f2e8;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+@media (max-width: 680px) {
+  .about-panel,
+  .about-copy-card,
+  .about-contact-card {
+    border-radius: 22px;
+  }
+
+  .about-panel,
+  .about-copy-card,
+  .about-contact-card {
+    padding: 20px 18px;
+  }
+
+  .about-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .about-title {
+    font-size: 1.85rem;
+  }
+}

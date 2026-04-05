@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="th">
+<html lang="en">
 <head>
-  <title>LAYA Resident – Settings</title>
+  <title>LAYA Resident – About Us</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0d0f12" />
-  <meta name="description" content="LAYA Resident settings" />
+  <meta name="description" content="About Laya Resort Phuket" />
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
@@ -15,7 +15,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script type="module" src="./assets/js/main.js?v=20260405about1"></script>
 </head>
-<body data-page="settings" class="has-resident-loader">
+<body data-page="about" class="has-resident-loader">
   <div id="residentRouteLoader" class="resident-route-loader" aria-hidden="false">
     <div class="resident-route-loader__inner">
       <div class="resident-route-loader__logo-wrap">
@@ -24,10 +24,11 @@
       <div class="resident-route-loader__caption">Loading Resident Experience</div>
     </div>
   </div>
+
   <div id="app" class="app-shell customer-shell vault-shell">
     <header class="vault-header vault-header-with-appbar">
       <div class="vault-appbar-top">
-        <a class="vault-appbar-icon vault-appbar-back" href="./home.html" aria-label="Back to home">
+        <a class="vault-appbar-icon vault-appbar-back" href="./settings.html" aria-label="Back to settings">
           <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5 7.5 12l7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <div class="vault-appbar-copy">
@@ -46,42 +47,58 @@
         <div class="vault-avatar" id="memberAvatarLetter">N</div>
         <div class="vault-profile-copy">
           <div class="vault-profile-name" id="memberName">Resident Member</div>
-          <div class="vault-profile-meta">Account & support</div>
+          <div class="vault-profile-meta">About Laya Resort Phuket</div>
         </div>
         <div class="vault-points-pill small-pill">
-          <strong id="memberPoints">42,580</strong>
+          <strong id="memberPoints">0</strong>
           <span>P</span>
         </div>
       </div>
     </header>
 
     <main class="main-content vault-main-content">
-      <section class="vault-section-title">OTHER</section>
-      <section class="vault-settings-list">
-        <a class="vault-settings-item" href="./about.html">
-          <span class="vault-settings-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.2v6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.2" r="1" fill="currentColor"/></svg>
-          </span>
-          <span>About us</span>
-        </a>
-        <a class="vault-settings-item" href="./news.html">
-          <span class="vault-settings-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5c0-1.38 1.12-2.5 2.5-2.5h7A2.5 2.5 0 0 1 16 7.5V13a2.5 2.5 0 0 1-2.5 2.5H10l-3.7 2.7c-.54.4-1.3.01-1.3-.66V7.5Z" stroke="currentColor" stroke-width="1.8"/><circle cx="18.4" cy="8" r="3.1" stroke="currentColor" stroke-width="1.8"/><path d="M18.4 6.9v2.2M17.3 8h2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <span>FAQ</span>
-        </a>
-        <a class="vault-settings-item" href="mailto:info@layaresortphuket.com">
-          <span class="vault-settings-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v9c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-9Z" stroke="currentColor" stroke-width="1.8"/><path d="m5.5 8.2 6.5 5 6.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-          <span>Contact us</span>
-        </a>
-        <button class="vault-settings-item button-like" type="button" id="changeLanguageBtn">
-          <span class="vault-settings-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h6v6H4zM14 12h6v6h-6z" stroke="currentColor" stroke-width="1.8"/><path d="M7 16h4m-2-2v4M16.5 6.5 20 10m0-3.5L16.5 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <span>Change Language</span>
-        </button>
+      <section class="vault-section-title">ABOUT US</section>
+
+      <section class="panel about-panel">
+        <div class="about-hero-copy">
+          <div class="about-kicker">A refined escape in Cherngtalay, Phuket</div>
+          <h1 class="about-title">Where every stay feels personal.</h1>
+          <p class="about-lead">At Laya Resort Phuket, every stay is designed to feel deeply personal. Set beside the tranquil beauty of Layan Beach in Cherngtalay, our resort is a private sanctuary where refined comfort, natural serenity, and genuine Thai hospitality come together in perfect harmony.</p>
+        </div>
+      </section>
+
+      <section class="panel about-copy-card">
+        <h2 class="about-section-heading">Elegant stays with effortless comfort</h2>
+        <p>Our elegantly appointed rooms and suites are thoughtfully created to offer a sense of space, calm, and effortless luxury. With generous interiors, private balconies, and carefully curated amenities, each stay invites guests to slow down, unwind, and reconnect with the rhythm of the island.</p>
+
+        <h2 class="about-section-heading">A collection of experiences</h2>
+        <p>Beyond the room, Laya Resort Phuket offers a collection of enriching experiences crafted for every kind of traveler. Guests may relax by our three outdoor swimming pools, restore balance in the yoga room, energize in the Fitness Center, or indulge in soothing wellness rituals at Malai Spa. Culinary moments are equally memorable, with our signature outlets—The Taste, Mangrove Bar &amp; Restaurant, and Aroonsawat Café—offering a graceful blend of international favorites and local inspiration.</p>
+
+        <h2 class="about-section-heading">Peaceful, connected, unforgettable</h2>
+        <p>Ideally located just 15 minutes from Phuket International Airport, the resort provides a peaceful escape while remaining close to the island’s vibrant attractions and coastal charm. Whether for a romantic retreat, a family holiday, or a quiet journey of rest and renewal, Laya Resort Phuket welcomes each guest with warmth, elegance, and attentive care.</p>
+
+        <div class="about-quote">From poolside relaxation to sunset cocktails and restorative spa rituals, every moment at Laya Resort Phuket is crafted to leave a lasting impression.</div>
+      </section>
+
+      <section class="panel about-contact-card">
+        <div class="about-contact-grid">
+          <div>
+            <div class="about-contact-label">Location</div>
+            <div class="about-contact-value">Layan Beach, Cherngtalay, Phuket</div>
+          </div>
+          <div>
+            <div class="about-contact-label">Travel time</div>
+            <div class="about-contact-value">Approx. 15 minutes from Phuket International Airport</div>
+          </div>
+          <div>
+            <div class="about-contact-label">Dining</div>
+            <div class="about-contact-value">The Taste · Mangrove Bar &amp; Restaurant · Aroonsawat Café</div>
+          </div>
+          <div>
+            <div class="about-contact-label">Wellness</div>
+            <div class="about-contact-value">Malai Spa · Fitness Center · Yoga Room · Three outdoor pools</div>
+          </div>
+        </div>
       </section>
     </main>
   </div>

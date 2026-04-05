@@ -11,8 +11,8 @@ import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/sess
 const page = document.body?.dataset?.page || 'index';
 const contentType = document.body?.dataset?.contentType || '';
 const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-codes', 'resident-points']);
-const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption']);
-const RESIDENT_LOADER_PAGES = new Set(['resident-login', 'signup', 'resident', 'home', 'member', 'settings', 'redemption', 'news', 'promotions', 'benefits', 'news-detail', 'promotions-detail', 'benefits-detail']);
+const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption', 'about']);
+const RESIDENT_LOADER_PAGES = new Set(['resident-login', 'signup', 'resident', 'home', 'member', 'settings', 'redemption', 'about', 'news', 'promotions', 'benefits', 'news-detail', 'promotions-detail', 'benefits-detail']);
 const pageBindings = new Set();
 
 function pageUsesResidentLoader() {
@@ -166,7 +166,8 @@ async function initCurrentPage(isLive = false) {
         await mod.loadRedemptionPage();
         break;
       }
-      case 'settings': {
+      case 'settings':
+      case 'about': {
         renderResidentCard(state.currentResident || emptyResident());
         const btn = document.getElementById('changeLanguageBtn');
         if (btn && !btn.dataset.bound) {
