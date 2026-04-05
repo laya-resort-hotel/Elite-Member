@@ -1,6 +1,6 @@
 import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
-import { createContentShell, deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, saveStructuredCMS, unpublishCMSItem, updateStructuredCMS } from '../services/content-service.js';
+import { createContentShell, deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, saveStructuredCMS, unpublishCMSItem, updateStructuredCMS } from '../services/content-service.js?v=20260405cms4b';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';

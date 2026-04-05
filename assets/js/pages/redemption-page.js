@@ -3,7 +3,7 @@ import { $ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber } from '../core/format.js';
 import { renderResidentCard } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
-import { getLocalizedContent, loadCollectionSafe } from '../services/content-service.js';
+import { getLocalizedContent, loadCollectionSafe } from '../services/content-service.js?v=20260405cms4b';
 import {
   loadResidentRedemptions,
   redeemReward,

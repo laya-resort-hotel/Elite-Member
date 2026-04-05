@@ -1,6 +1,6 @@
 import { state, setMode } from '../core/state.js';
 import { $ } from '../core/dom.js';
-import { loadCollectionSafe } from '../services/content-service.js';
+import { loadCollectionSafe } from '../services/content-service.js?v=20260405cms4b';
 import { loadResidentPointHistory } from '../services/member-service.js';
 import { renderCards, renderResidentCard, renderResidentPointHistoryMini, updateStatusLabels, renderVaultHome } from '../ui/renderers.js';
 import { t } from '../core/i18n.js';

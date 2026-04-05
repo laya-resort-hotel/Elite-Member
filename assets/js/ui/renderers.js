@@ -1,7 +1,7 @@
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js';
 import { t, getLanguage } from '../core/i18n.js';
-import { getLocalizedContent } from '../services/content-service.js';
+import { getLocalizedContent } from '../services/content-service.js?v=20260405cms4b';
 
 function setAllById(id, value) {
   document.querySelectorAll(`[id="${id}"]`).forEach((node) => {

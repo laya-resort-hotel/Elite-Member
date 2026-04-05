@@ -2,7 +2,7 @@ import { $, $$ } from '../core/dom.js';
 import { escapeHtml } from '../core/format.js';
 import { state } from '../core/state.js';
 import { t } from '../core/i18n.js';
-import { deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, unpublishCMSItem } from '../services/content-service.js';
+import { deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, unpublishCMSItem } from '../services/content-service.js?v=20260405cms4b';
 import { showToast } from '../ui/toast.js';
 
 const labelMap = {

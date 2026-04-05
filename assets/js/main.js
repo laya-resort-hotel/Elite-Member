@@ -158,13 +158,13 @@ async function initCurrentPage(isLive = false) {
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js?v=20260405cms4');
+        const mod = await import('./pages/resident-page.js?v=20260405cms4b');
         bindPageOnce(page, mod.bindResidentPage);
         await mod.loadResidentDashboard();
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260405cms4');
+        const mod = await import('./pages/redemption-page.js?v=20260405cms4b');
         await mod.loadRedemptionPage();
         break;
       }
@@ -189,7 +189,7 @@ case 'faq': {
       case 'news':
       case 'promotions':
       case 'benefits': {
-        const mod = await import('./pages/content-page.js?v=20260405cms4');
+        const mod = await import('./pages/content-page.js?v=20260405cms4b');
         mod.applyContentPageState(contentType);
         bindPageOnce(`content:${page}:${contentType}`, () => mod.bindContentPage(contentType));
         await mod.loadContentPage(contentType);
@@ -204,7 +204,7 @@ case 'faq': {
       case 'news-detail':
       case 'promotions-detail':
       case 'benefits-detail': {
-        const mod = await import('./pages/detail-page.js?v=20260405cms4');
+        const mod = await import('./pages/detail-page.js?v=20260405cms4b');
         bindPageOnce(`detail:${page}:${contentType}`, () => mod.bindDetailPage(contentType));
         await mod.loadDetailPage(contentType);
         break;

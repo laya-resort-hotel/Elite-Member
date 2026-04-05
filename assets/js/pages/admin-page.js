@@ -13,7 +13,7 @@ import {
   saveStructuredCMS,
   unpublishCMSItem,
   updateStructuredCMS,
-} from '../services/content-service.js';
+} from '../services/content-service.js?v=20260405cms4b';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import {
   createResidentInviteCode,

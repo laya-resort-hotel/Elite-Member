@@ -12,7 +12,7 @@ import {
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { state } from '../core/state.js';
 import { t, getLanguage } from '../core/i18n.js';
-import { getLocalizedContent } from './content-service.js';
+import { getLocalizedContent } from './content-service.js?v=20260405cms4b';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DEFAULT_EXPIRY_DAYS = 30;

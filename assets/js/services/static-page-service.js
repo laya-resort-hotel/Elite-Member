@@ -5,7 +5,7 @@ import {
   setDoc,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
-import { CONTENT_LANGS } from './content-service.js';
+import { CONTENT_LANGS } from './content-service.js?v=20260405cms4b';
 
 export const STATIC_PAGE_KEYS = ['about', 'contact', 'faq'];
 export const STATIC_PAGE_LABELS = {
