@@ -1274,32 +1274,33 @@ body.lightbox-open {
   line-height: 1;
 }
 .vault-reward-list {
-  gap: 10px;
-  padding: 10px 0 18px;
+  gap: 8px;
+  padding: 8px 0 14px;
 }
 .vault-reward-card {
-  grid-template-columns: 112px minmax(0,1fr) 124px;
-  gap: 16px;
-  padding: 14px 14px 14px 12px;
+  grid-template-columns: 76px minmax(0,1fr) 104px;
+  gap: 12px;
+  padding: 10px 12px;
   background: #efefef;
+  min-height: 92px;
 }
-.vault-reward-thumb { width: 112px; height: 112px; }
+.vault-reward-thumb { width: 76px; height: 76px; }
 .vault-reward-info h3 {
-  font-size: 16px;
-  line-height: 1.35;
-  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.3;
+  margin: 0 0 8px;
 }
 .vault-points-text {
-  font-size: 17px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
 }
 .vault-redeem-btn {
-  min-width: 118px;
-  padding: 15px 12px;
+  min-width: 96px;
+  padding: 12px 12px;
   background: #b9bcc4;
   color: #fff;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
 }
 .vault-settings-list {
   padding: 16px 0 14px;
@@ -1326,12 +1327,13 @@ body.lightbox-open {
   .vault-news-image, .vault-news-fallback { height: 330px; }
   .vault-promo-card.image-only .vault-promo-thumb { height: 118px; }
   .vault-reward-card {
-    grid-template-columns: 96px minmax(0,1fr);
-    gap: 14px;
+    grid-template-columns: 68px minmax(0,1fr) 92px;
+    gap: 10px;
+    padding: 10px;
   }
-  .vault-reward-thumb { width: 96px; height: 96px; }
-  .vault-reward-action { grid-column: 1 / -1; justify-content: flex-end; }
-  .vault-redeem-btn { min-width: 132px; }
+  .vault-reward-thumb { width: 68px; height: 68px; }
+  .vault-reward-action { grid-column: auto; justify-content: flex-end; }
+  .vault-redeem-btn { min-width: 88px; padding: 11px 10px; font-size: 13px; }
 }
 
 
@@ -2389,10 +2391,10 @@ body.lightbox-open {
   align-items: center;
 }
 .vault-reward-hint {
-  margin-top: 8px;
+  margin-top: 4px;
   color: #5d6167;
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.28;
 }
 .vault-redeem-btn.ready {
   background: #babec5;
