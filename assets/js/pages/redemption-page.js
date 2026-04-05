@@ -246,9 +246,15 @@ function buildIssuedCard(row) {
   const actionWrap = row.status === 'issued'
     ? `<div class="vault-issued-card__action">${actionButton}</div>`
     : '';
+  const thumbInner = row.rewardImageUrl
+    ? `<img src="${escapeHtml(row.rewardImageUrl)}" alt="${escapeHtml(row.rewardTitle)}" />`
+    : '<div class="reward-thumb-placeholder">Reward</div>';
+  const usedStamp = row.status === 'used'
+    ? '<img class="vault-used-stamp" src="assets/images/reward-used-stamp.png" alt="Used" />'
+    : '';
   return `
     <div class="vault-issued-card ${row.status === 'used' ? 'is-used' : row.status === 'expired' ? 'is-expired' : ''}">
-      <div class="vault-issued-card__thumb">${row.rewardImageUrl ? `<img src="${escapeHtml(row.rewardImageUrl)}" alt="${escapeHtml(row.rewardTitle)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
+      <div class="vault-issued-card__thumb">${thumbInner}${usedStamp}</div>
       <div class="vault-issued-card__body">
         <div class="vault-issued-card__title-row">
           <h3>${escapeHtml(row.rewardTitle || 'Reward')}</h3>

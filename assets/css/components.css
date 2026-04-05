@@ -2659,8 +2659,20 @@ body.lightbox-open {
   object-fit: cover;
 }
 .vault-issued-card__thumb {
+  position: relative;
   background: #ddd;
   overflow: hidden;
+}
+.vault-used-stamp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 88%;
+  max-width: 120px;
+  transform: translate(-50%, -50%) rotate(-13deg);
+  pointer-events: none;
+  opacity: .96;
+  filter: drop-shadow(0 3px 10px rgba(120, 0, 0, .16));
 }
 .vault-issued-card__body {
   min-width: 0;
