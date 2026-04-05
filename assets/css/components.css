@@ -3140,3 +3140,27 @@ body.lightbox-open {
 .contact-grid-single {
   grid-template-columns: 1fr;
 }
+
+
+/* News gallery on home: swipe/scroll images without opening detail */
+.vault-news-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+  scrollbar-width: none;
+}
+.vault-news-scroll::-webkit-scrollbar {
+  display: none;
+}
+.vault-news-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  scroll-snap-align: start;
+}
+.vault-news-hero {
+  cursor: default;
+}

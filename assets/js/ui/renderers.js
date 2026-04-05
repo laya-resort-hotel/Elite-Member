@@ -50,15 +50,29 @@ export function renderVaultHome(newsItem, promotionItems = []) {
   const hero = $('homeNewsHero');
   if (hero) {
     const localizedNews = getLocalizedContent(newsItem || {}, getLanguage());
-    const image = localizedNews?.coverImageUrl || localizedNews?.galleryImages?.[0]?.url || '';
-    const newsHref = buildContentDetailHref('news', localizedNews, './news.html');
-    hero.innerHTML = `
-      <a class="vault-news-hero-link" href="${newsHref}">
-        <div class="vault-news-image-wrap vault-news-frame">
-          ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(localizedNews?.title || t('content.news'))}" />` : `<div class="vault-news-image vault-news-fallback">${escapeHtml(t('content.news'))}</div>`}
+    const imageCandidates = [
+      localizedNews?.coverImageUrl || '',
+      ...((localizedNews?.galleryImages || []).map((item) => item?.url || '').filter(Boolean)),
+    ].filter(Boolean);
+    const images = [...new Set(imageCandidates)];
+
+    hero.innerHTML = images.length
+      ? `
+        <div class="vault-news-scroll" aria-label="${escapeHtml(localizedNews?.title || t('content.news'))}">
+          ${images.map((image, index) => `
+            <div class="vault-news-slide">
+              <div class="vault-news-image-wrap vault-news-frame">
+                <img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(localizedNews?.title || t('content.news'))} ${index + 1}" />
+              </div>
+            </div>
+          `).join('')}
         </div>
-      </a>
-    `;
+      `
+      : `
+        <div class="vault-news-image-wrap vault-news-frame">
+          <div class="vault-news-image vault-news-fallback">${escapeHtml(t('content.news'))}</div>
+        </div>
+      `;
   }
 
   const promoGrid = $('homePromotionGrid');

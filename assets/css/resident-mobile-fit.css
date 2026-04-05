@@ -694,3 +694,23 @@ body[data-page="home"] .vault-news-image {
 body[data-page="home"] .vault-news-fallback {
   height: 220px !important;
 }
+
+
+body[data-page="home"] .vault-news-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 26px;
+  scrollbar-width: none;
+}
+body[data-page="home"] .vault-news-scroll::-webkit-scrollbar {
+  display: none;
+}
+body[data-page="home"] .vault-news-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  scroll-snap-align: start;
+}
