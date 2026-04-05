@@ -158,13 +158,13 @@ async function initCurrentPage(isLive = false) {
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js');
+        const mod = await import('./pages/resident-page.js?v=20260405cms4');
         bindPageOnce(page, mod.bindResidentPage);
         await mod.loadResidentDashboard();
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260405rewardcode2');
+        const mod = await import('./pages/redemption-page.js?v=20260405cms4');
         await mod.loadRedemptionPage();
         break;
       }
@@ -183,7 +183,7 @@ async function initCurrentPage(isLive = false) {
       case 'news':
       case 'promotions':
       case 'benefits': {
-        const mod = await import('./pages/content-page.js');
+        const mod = await import('./pages/content-page.js?v=20260405cms4');
         mod.applyContentPageState(contentType);
         bindPageOnce(`content:${page}:${contentType}`, () => mod.bindContentPage(contentType));
         await mod.loadContentPage(contentType);
@@ -198,19 +198,19 @@ async function initCurrentPage(isLive = false) {
       case 'news-detail':
       case 'promotions-detail':
       case 'benefits-detail': {
-        const mod = await import('./pages/detail-page.js');
+        const mod = await import('./pages/detail-page.js?v=20260405cms4');
         bindPageOnce(`detail:${page}:${contentType}`, () => mod.bindDetailPage(contentType));
         await mod.loadDetailPage(contentType);
         break;
       }
       case 'admin': {
-        const mod = await import('./pages/admin-page.js');
+        const mod = await import('./pages/admin-page.js?v=20260405cms4');
         bindPageOnce('admin', mod.bindAdminPage);
         await mod.loadAdminDashboard();
         break;
       }
       case 'invite-codes': {
-        const mod = await import('./pages/admin-page.js');
+        const mod = await import('./pages/admin-page.js?v=20260405cms4');
         bindPageOnce('invite-codes', mod.bindInviteCodeManagerPage);
         await mod.loadInviteCodeManagerPage();
         break;

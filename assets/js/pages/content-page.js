@@ -1,6 +1,6 @@
 import { state } from '../core/state.js';
 import { $, $$ } from '../core/dom.js';
-import { createContentShell, deleteCMSItem, loadCollectionSafe, loadDocumentById, publishCMSItem, saveStructuredCMS, unpublishCMSItem, updateStructuredCMS } from '../services/content-service.js';
+import { createContentShell, deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, saveStructuredCMS, unpublishCMSItem, updateStructuredCMS } from '../services/content-service.js';
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import { escapeHtml } from '../core/format.js';
 import { showToast } from '../ui/toast.js';
@@ -36,7 +36,7 @@ function clearEditRequestId() {
   window.history.replaceState({}, '', url.toString());
 }
 
-function detailHref(type, item) {
+function detailHref(type, localized) {
   return `./${type}-detail.html?id=${encodeURIComponent(item.id || '')}`;
 }
 
@@ -124,17 +124,17 @@ function getFormValues() {
 function setFormValues(item = {}) {
   currentCoverImagePath = item.coverImagePath || '';
   currentCoverImageName = item.coverImageName || '';
-  currentGalleryImages = normalizeGalleryImages(item.galleryImages || []);
-  if ($('contentTitle')) $('contentTitle').value = item.title || '';
-  if ($('contentSummary')) $('contentSummary').value = item.summary || item.body || '';
+  currentGalleryImages = normalizeGalleryImages(localized.galleryImages || []);
+  if ($('contentTitle')) $('contentTitle').value = localized.title || '';
+  if ($('contentSummary')) $('contentSummary').value = localized.summary || localized.body || '';
   if ($('contentFullDetails')) {
-    $('contentFullDetails').value = item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : item.body || '');
+    $('contentFullDetails').value = item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : localized.body || '');
   }
   if ($('contentTerms')) {
     $('contentTerms').value = Array.isArray(item.terms) ? item.terms.join('\n') : (item.terms || '');
   }
   if ($('contentCtaLabel')) $('contentCtaLabel').value = item.ctaLabel || '';
-  if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = item.coverImageUrl || '';
+  if ($('contentCoverImageUrl')) $('contentCoverImageUrl').value = localized.coverImageUrl || '';
   if ($('contentCoverFile')) $('contentCoverFile').value = '';
   if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
   updateCoverPreview();
@@ -672,19 +672,20 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
   }
   const manage = canManageContent();
   listEl.innerHTML = items.map((item) => {
-    const liveItem = Boolean(item.id && item.createdLabel);
-    const galleryCount = Array.isArray(item.galleryImages) ? item.galleryImages.length : 0;
-    const statusLabel = getStatusLabel(item.status || 'draft');
-    const statusClass = getStatusBadgeClass(item.status || 'draft');
+    const localized = getLocalizedContent(item);
+    const liveItem = Boolean(localized.id && localized.createdLabel);
+    const galleryCount = Array.isArray(localized.galleryImages) ? localized.galleryImages.length : 0;
+    const statusLabel = getStatusLabel(localized.status || 'draft');
+    const statusClass = getStatusBadgeClass(localized.status || 'draft');
     const adminButtons = manage ? `
-      <button class="ghost-btn" data-action="edit" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Edit' : 'Demo only'}</button>
-      ${item.status === 'published'
-        ? `<button class="ghost-btn" data-action="unpublish" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>Unpublish</button>`
-        : `<button class="secondary-btn" data-action="publish" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>Publish</button>`}
-      <button class="danger-btn" data-action="delete" data-id="${escapeHtml(item.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Delete' : 'Demo only'}</button>
+      <button class="ghost-btn" data-action="edit" data-id="${escapeHtml(localized.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Edit' : 'Demo only'}</button>
+      ${localized.status === 'published'
+        ? `<button class="ghost-btn" data-action="unpublish" data-id="${escapeHtml(localized.id || '')}" ${liveItem ? '' : 'disabled'}>Unpublish</button>`
+        : `<button class="secondary-btn" data-action="publish" data-id="${escapeHtml(localized.id || '')}" ${liveItem ? '' : 'disabled'}>Publish</button>`}
+      <button class="danger-btn" data-action="delete" data-id="${escapeHtml(localized.id || '')}" ${liveItem ? '' : 'disabled'}>${liveItem ? 'Delete' : 'Demo only'}</button>
     ` : '';
-    const cover = item.coverImageUrl
-      ? `<img class="entry-cover" src="${escapeHtml(item.coverImageUrl)}" alt="${escapeHtml(item.title || labelMap[type])}" loading="lazy">`
+    const cover = localized.coverImageUrl
+      ? `<img class="entry-cover" src="${escapeHtml(localized.coverImageUrl)}" alt="${escapeHtml(localized.title || labelMap[type])}" loading="lazy">`
       : `<div class="entry-cover entry-cover-fallback"><span>${escapeHtml(labelMap[type].slice(0, -1) || labelMap[type])}</span></div>`;
     return `
     <article class="card-item content-entry-card">
@@ -692,19 +693,19 @@ function renderContentCards(listEl, type, items = [], emptyText = 'No data') {
       <div class="content-entry-top">
         <div>
           <div class="eyebrow gold">${escapeHtml(labelMap[type].slice(0, -1) || labelMap[type])}</div>
-          <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
+          <h4>${escapeHtml(localized.title || localized.outlet || '-')}</h4>
         </div>
         <div class="content-entry-side">
           <span class="mini-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
           ${galleryCount ? `<span class="badge-inline photo-badge"><span>Photos</span><strong>${galleryCount}</strong></span>` : ''}
-          ${item.status === 'published' && item.publishedLabel && item.publishedLabel !== '-'
-            ? `<small>Published ${escapeHtml(item.publishedLabel)}</small>`
-            : (item.updatedLabel && item.updatedLabel !== '-' ? `<small>Updated ${escapeHtml(item.updatedLabel)}</small>` : '<small>Firebase content</small>')}
+          ${localized.status === 'published' && localized.publishedLabel && localized.publishedLabel !== '-'
+            ? `<small>Published ${escapeHtml(localized.publishedLabel)}</small>`
+            : (localized.updatedLabel && localized.updatedLabel !== '-' ? `<small>Updated ${escapeHtml(localized.updatedLabel)}</small>` : '<small>Firebase content</small>')}
         </div>
       </div>
-      <p>${escapeHtml(item.summary || item.body || item.description || '')}</p>
+      <p>${escapeHtml(localized.summary || localized.body || localized.description || '')}</p>
       <div class="row gap wrap mt-md">
-        <a class="secondary-btn" href="${detailHref(type, item)}">Open detail</a>
+        <a class="secondary-btn" href="${detailHref(type, localized)}">Open detail</a>
         ${adminButtons}
       </div>
     </article>

@@ -1,7 +1,8 @@
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml } from '../core/format.js';
 import { state } from '../core/state.js';
-import { deleteCMSItem, loadCollectionSafe, loadDocumentById, publishCMSItem, unpublishCMSItem } from '../services/content-service.js';
+import { t } from '../core/i18n.js';
+import { deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, unpublishCMSItem } from '../services/content-service.js';
 import { showToast } from '../ui/toast.js';
 
 const labelMap = {
@@ -87,7 +88,7 @@ function renderList(items = []) {
 }
 
 function getRelated(items, currentId) {
-  return items.filter((entry) => entry.id !== currentId).slice(0, 3);
+  return items.filter((entry) => entry.id !== currentId).map((entry) => getLocalizedContent(entry)).slice(0, 3);
 }
 
 function renderRelated(type, items = []) {
@@ -228,7 +229,7 @@ function stepLightbox(direction = 1) {
 }
 
 function renderDetail(type, item) {
-  const safe = normalizeContent(item);
+  const safe = normalizeContent(getLocalizedContent(item));
   if ($('detailEyebrow')) $('detailEyebrow').textContent = labelMap[type];
   if ($('detailHeading')) $('detailHeading').textContent = safe.title || pageTitleMap[type];
   if ($('detailSummary')) $('detailSummary').textContent = safe.summary || safe.body || '';

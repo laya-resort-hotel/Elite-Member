@@ -11,7 +11,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { state } from '../core/state.js';
-import { t } from '../core/i18n.js';
+import { t, getLanguage } from '../core/i18n.js';
+import { getLocalizedContent } from './content-service.js';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DEFAULT_EXPIRY_DAYS = 30;
@@ -46,10 +47,25 @@ function generateRedemptionCode(length = 8) {
 }
 
 function normalizeRedemptionSnapshot(id, data = {}) {
+  const localized = getLocalizedContent({
+    ...data,
+    title: data.rewardTitle || data.title || '',
+    summary: data.rewardSummary || data.summary || '',
+    fullDetails: data.rewardFullDetails || data.fullDetails || '',
+    terms: data.rewardTerms || data.terms || '',
+    ctaLabel: data.rewardCtaLabel || data.ctaLabel || '',
+    translations: data.rewardTranslationsSnapshot || data.translations || {},
+  }, getLanguage());
+
   return {
     id,
     ...data,
-    rewardTitle: String(data.rewardTitle || data.title || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder'),
+    rewardTitle: String(localized.title || data.rewardTitle || data.title || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder'),
+    rewardSummary: String(localized.summary || data.rewardSummary || '').trim(),
+    rewardFullDetails: String(localized.fullDetails || data.rewardFullDetails || '').trim(),
+    rewardTerms: Array.isArray(localized.terms) ? localized.terms : [],
+    rewardCtaLabel: String(localized.ctaLabel || data.rewardCtaLabel || '').trim(),
+    rewardTranslationsSnapshot: localized.translations || data.rewardTranslationsSnapshot || {},
     rewardImageUrl: String(data.rewardImageUrl || data.coverImageUrl || '').trim(),
     rewardCategory: String(data.rewardCategory || '').trim(),
     redemptionCode: String(data.redemptionCode || data.code || '').trim().toUpperCase(),
@@ -92,6 +108,7 @@ export async function redeemReward(rewardId) {
     if (!rewardSnap.exists()) throw new Error(t('redemption.rewardNotFound'));
     const reward = rewardSnap.data() || {};
 
+    const localizedReward = getLocalizedContent(reward, getLanguage());
     const pointsCost = Math.max(0, Number(reward.pointsCost || 0));
     if (!pointsCost) throw new Error(t('redemption.rewardNotConfigured'));
     if ((reward.status || 'draft') !== 'published') throw new Error(t('redemption.rewardNotPublished'));
@@ -117,7 +134,7 @@ export async function redeemReward(rewardId) {
     const nextBalance = currentPoints - pointsCost;
     const nextRedeemed = Math.max(0, Number(wallet.lifetimeRedeemed || 0)) + pointsCost;
     const nextStock = stockTotal > 0 ? currentStock - 1 : null;
-    const title = String(reward.title || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder');
+    const title = String(localizedReward.title || reward.title || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder');
     const category = String(reward.rewardCategory || reward.category || '').trim();
     const imageUrl = String(reward.coverImageUrl || reward.galleryImages?.[0]?.url || '').trim();
     const redemptionCode = generateRedemptionCode(8);
@@ -128,6 +145,11 @@ export async function redeemReward(rewardId) {
       memberId: residentId,
       rewardId,
       rewardTitle: title,
+      rewardSummary: localizedReward.summary || '',
+      rewardFullDetails: localizedReward.fullDetails || '',
+      rewardTerms: Array.isArray(localizedReward.terms) ? localizedReward.terms : [],
+      rewardCtaLabel: localizedReward.ctaLabel || '',
+      rewardTranslationsSnapshot: localizedReward.translations || {},
       rewardCategory: category,
       rewardImageUrl: imageUrl,
       pointsCost,

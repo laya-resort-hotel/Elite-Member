@@ -3,7 +3,7 @@ import { $ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber } from '../core/format.js';
 import { renderResidentCard } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
-import { loadCollectionSafe } from '../services/content-service.js';
+import { getLocalizedContent, loadCollectionSafe } from '../services/content-service.js';
 import {
   loadResidentRedemptions,
   redeemReward,
@@ -162,15 +162,16 @@ function renderRewardCatalog(rewards = [], points = 0) {
   }
 
   container.innerHTML = list.map((reward) => {
-    const pointsRequired = Number(reward.pointsCost || reward.pointsRequired || 0);
-    const stockTotal = Number(reward.stockTotal || 0);
-    const stockRemaining = reward.stockRemaining == null ? (stockTotal > 0 ? stockTotal : null) : Number(reward.stockRemaining || 0);
+    const localizedReward = getLocalizedContent(reward);
+    const pointsRequired = Number(localizedReward.pointsCost || localizedReward.pointsRequired || 0);
+    const stockTotal = Number(localizedReward.stockTotal || 0);
+    const stockRemaining = localizedReward.stockRemaining == null ? (stockTotal > 0 ? stockTotal : null) : Number(localizedReward.stockRemaining || 0);
     const isStockAvailable = stockTotal === 0 || stockRemaining > 0;
-    const isRewardActive = reward.rewardIsActive !== false;
+    const isRewardActive = localizedReward.rewardIsActive !== false;
     const canRedeem = points >= pointsRequired && pointsRequired > 0 && isStockAvailable && isRewardActive;
-    const imageUrl = reward.coverImageUrl || reward.imageUrl || reward.galleryImages?.[0]?.url || '';
-    const title = reward.title || t('redemption.rewardPlaceholder');
-    const category = reward.rewardCategory || reward.category || '';
+    const imageUrl = localizedReward.coverImageUrl || localizedReward.imageUrl || localizedReward.galleryImages?.[0]?.url || '';
+    const title = localizedReward.title || t('redemption.rewardPlaceholder');
+    const category = localizedReward.rewardCategory || localizedReward.category || '';
     const statusHint = !isRewardActive
       ? t('redemption.rewardPaused')
       : !isStockAvailable
@@ -190,7 +191,7 @@ function renderRewardCatalog(rewards = [], points = 0) {
           <div class="vault-reward-hint">${escapeHtml(category ? `${category} • ${stockLabel}` : stockLabel)}</div>
         </div>
         <div class="reward-action vault-reward-action">
-          <button type="button" class="vault-redeem-btn ${canRedeem ? 'ready' : 'disabled'}" data-reward-id="${escapeHtml(reward.id || '')}" ${canRedeem && reward.id ? '' : 'disabled'}>${escapeHtml(buttonLabel)}</button>
+          <button type="button" class="vault-redeem-btn ${canRedeem ? 'ready' : 'disabled'}" data-reward-id="${escapeHtml(localizedReward.id || '')}" ${canRedeem && localizedReward.id ? '' : 'disabled'}>${escapeHtml(buttonLabel)}</button>
         </div>
       </div>
     `;

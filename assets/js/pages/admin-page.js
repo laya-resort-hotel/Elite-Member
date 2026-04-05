@@ -3,8 +3,10 @@ import { $, $$ } from '../core/dom.js';
 import { loadAllResidents } from '../services/member-service.js';
 import { addSpendTransaction, loadTransactions } from '../services/transaction-service.js';
 import {
+  CONTENT_LANGS,
   createContentShell,
   deleteCMSItem,
+  getLocalizedContent,
   loadCollectionSafe,
   loadDocumentById,
   publishCMSItem,
@@ -81,7 +83,57 @@ const adminInviteState = {
   currentPage: 1,
 };
 
+const contentLocaleLabels = {
+  en: 'English',
+  th: 'Thai',
+  ru: 'Russian',
+  zh: 'Chinese',
+};
+
 let dragImageId = '';
+
+function blankContentLocaleEntry() {
+  return {
+    title: '',
+    summary: '',
+    fullDetails: '',
+    terms: '',
+    ctaLabel: '',
+  };
+}
+
+function blankContentTranslations() {
+  return CONTENT_LANGS.reduce((acc, lang) => {
+    acc[lang] = blankContentLocaleEntry();
+    return acc;
+  }, {});
+}
+
+function normalizeEditorTranslations(value = {}) {
+  const seed = blankContentTranslations();
+  CONTENT_LANGS.forEach((lang) => {
+    seed[lang] = {
+      ...blankContentLocaleEntry(),
+      ...(value?.[lang] || {}),
+      title: String(value?.[lang]?.title || '').trim(),
+      summary: String(value?.[lang]?.summary || '').trim(),
+      fullDetails: String(value?.[lang]?.fullDetails || '').trim(),
+      terms: String(value?.[lang]?.terms || '').trim(),
+      ctaLabel: String(value?.[lang]?.ctaLabel || '').trim(),
+    };
+  });
+  return seed;
+}
+
+function pickEditorPrimaryTranslation(translations = {}) {
+  for (const lang of ['en', 'th', 'ru', 'zh']) {
+    const entry = translations?.[lang] || {};
+    if ([entry.title, entry.summary, entry.fullDetails, entry.terms, entry.ctaLabel].some((value) => String(value || '').trim())) {
+      return entry;
+    }
+  }
+  return blankContentLocaleEntry();
+}
 
 function blankContentEditorState() {
   return {
@@ -92,6 +144,8 @@ function blankContentEditorState() {
     fullDetails: '',
     terms: '',
     ctaLabel: '',
+    translations: blankContentTranslations(),
+    activeLocale: 'en',
     pointsCost: 0,
     rewardCategory: '',
     stockTotal: 0,
@@ -218,6 +272,8 @@ function setContentEditorState(type, nextState) {
   adminContentState.editors[type] = {
     ...blankContentEditorState(),
     ...nextState,
+    translations: normalizeEditorTranslations(nextState?.translations || {}),
+    activeLocale: nextState?.activeLocale || adminContentState.editors[type]?.activeLocale || 'en',
     galleryImages: normalizeGalleryImages(nextState?.galleryImages || []),
   };
 }
@@ -303,7 +359,10 @@ function updateEditorHeader() {
 function updateRewardConfigUi(type = getActiveType()) {
   const isRewardType = type === 'rewards';
   $('rewardConfigBlock')?.classList.toggle('hidden', !isRewardType);
-  if ($('contentCtaLabel')) $('contentCtaLabel').placeholder = isRewardType ? 'Redeem now' : 'Learn more';
+  CONTENT_LANGS.forEach((lang) => {
+    const input = $(`contentCtaLabel_${lang}`);
+    if (input) input.placeholder = isRewardType ? 'Redeem now' : 'Learn more';
+  });
 }
 
 function updateContentStatusUi() {
@@ -365,13 +424,56 @@ function updateMemberReadonlyNote() {
   note.textContent = 'โหมดนี้ใช้ดูตัวอย่างสมาชิกได้ แต่การบันทึก/ลบจะใช้ได้เมื่อ login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จ';
 }
 
+function setActiveContentLocale(locale = 'en', options = {}) {
+  const type = getActiveType();
+  const editor = getContentEditorState(type);
+  editor.activeLocale = CONTENT_LANGS.includes(locale) ? locale : 'en';
+  setContentEditorState(type, editor);
+  document.querySelectorAll('.locale-tab-btn').forEach((button) => {
+    const active = button.dataset.localeTab === editor.activeLocale;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.locale-editor-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.localePanel === editor.activeLocale);
+  });
+  if (!options.silent) updateEditorHeader();
+}
+
+function readLocaleEditorInputs() {
+  const translations = blankContentTranslations();
+  CONTENT_LANGS.forEach((lang) => {
+    translations[lang] = {
+      title: $(`contentTitle_${lang}`)?.value.trim() || '',
+      summary: $(`contentSummary_${lang}`)?.value.trim() || '',
+      fullDetails: $(`contentFullDetails_${lang}`)?.value.trim() || '',
+      terms: $(`contentTerms_${lang}`)?.value.trim() || '',
+      ctaLabel: $(`contentCtaLabel_${lang}`)?.value.trim() || '',
+    };
+  });
+  return translations;
+}
+
+function hydrateLocaleEditorInputs(translations = {}) {
+  const safeTranslations = normalizeEditorTranslations(translations);
+  CONTENT_LANGS.forEach((lang) => {
+    if ($(`contentTitle_${lang}`)) $(`contentTitle_${lang}`).value = safeTranslations[lang].title || '';
+    if ($(`contentSummary_${lang}`)) $(`contentSummary_${lang}`).value = safeTranslations[lang].summary || '';
+    if ($(`contentFullDetails_${lang}`)) $(`contentFullDetails_${lang}`).value = safeTranslations[lang].fullDetails || '';
+    if ($(`contentTerms_${lang}`)) $(`contentTerms_${lang}`).value = safeTranslations[lang].terms || '';
+    if ($(`contentCtaLabel_${lang}`)) $(`contentCtaLabel_${lang}`).value = safeTranslations[lang].ctaLabel || '';
+  });
+}
+
 function syncContentEditorFromDom(type = getActiveType()) {
   const editor = getContentEditorState(type);
-  editor.title = $('contentTitle')?.value.trim() || '';
-  editor.summary = $('contentSummary')?.value.trim() || '';
-  editor.fullDetails = $('contentFullDetails')?.value.trim() || '';
-  editor.terms = $('contentTerms')?.value.trim() || '';
-  editor.ctaLabel = $('contentCtaLabel')?.value.trim() || '';
+  editor.translations = readLocaleEditorInputs();
+  const primary = pickEditorPrimaryTranslation(editor.translations);
+  editor.title = primary.title || '';
+  editor.summary = primary.summary || '';
+  editor.fullDetails = primary.fullDetails || '';
+  editor.terms = primary.terms || '';
+  editor.ctaLabel = primary.ctaLabel || '';
   editor.pointsCost = Math.max(0, Number($('contentPointsCost')?.value || editor.pointsCost || 0));
   editor.rewardCategory = $('contentRewardCategory')?.value.trim() || '';
   editor.stockTotal = Math.max(0, Number($('contentRewardStock')?.value || editor.stockTotal || 0));
@@ -403,11 +505,7 @@ function syncMemberEditorFromDom() {
 
 function hydrateContentEditorFromState(type = getActiveType()) {
   const editor = getContentEditorState(type);
-  if ($('contentTitle')) $('contentTitle').value = editor.title || '';
-  if ($('contentSummary')) $('contentSummary').value = editor.summary || '';
-  if ($('contentFullDetails')) $('contentFullDetails').value = editor.fullDetails || '';
-  if ($('contentTerms')) $('contentTerms').value = editor.terms || '';
-  if ($('contentCtaLabel')) $('contentCtaLabel').value = editor.ctaLabel || '';
+  hydrateLocaleEditorInputs(editor.translations || {});
   if ($('contentPointsCost')) $('contentPointsCost').value = String(Number(editor.pointsCost || 0) || 0);
   if ($('contentRewardCategory')) $('contentRewardCategory').value = editor.rewardCategory || '';
   if ($('contentRewardStock')) $('contentRewardStock').value = String(Number(editor.stockTotal || 0) || 0);
@@ -417,6 +515,7 @@ function hydrateContentEditorFromState(type = getActiveType()) {
   if ($('contentCoverFile')) $('contentCoverFile').value = '';
   if ($('contentGalleryFiles')) $('contentGalleryFiles').value = '';
   updateEditorHeader();
+  setActiveContentLocale(editor.activeLocale || 'en', { silent: true });
   updateCoverPreview();
   updateCoverMeta();
   renderGalleryPreview();
@@ -540,33 +639,34 @@ function renderContentList() {
   }
 
   container.innerHTML = items.map((item) => {
-    const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
-    const statusLabel = getContentStatusLabel(item.status || 'draft');
-    const statusClass = getContentStatusBadgeClass(item.status || 'draft');
+    const localized = getLocalizedContent(item, 'en');
+    const image = localized.coverImageUrl || localized.galleryImages?.[0]?.url || '';
+    const statusLabel = getContentStatusLabel(localized.status || 'draft');
+    const statusClass = getContentStatusBadgeClass(localized.status || 'draft');
     return `
-      <article class="content-admin-card ${getContentEditorState(type).docId === item.id ? 'active' : ''}">
-        ${image ? `<img class="content-admin-card-image" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || '')}" loading="lazy">` : '<div class="content-admin-card-image fallback">No image</div>'}
+      <article class="content-admin-card ${getContentEditorState(type).docId === localized.id ? 'active' : ''}">
+        ${image ? `<img class="content-admin-card-image" src="${escapeHtml(image)}" alt="${escapeHtml(localized.title || '')}" loading="lazy">` : '<div class="content-admin-card-image fallback">No image</div>'}
         <div class="content-admin-card-body">
           <div class="content-admin-card-top">
-            <strong>${escapeHtml(item.title || '(Untitled)')}</strong>
-            <small>${escapeHtml(item.updatedLabel || item.createdLabel || '')}</small>
+            <strong>${escapeHtml(localized.title || '(Untitled)')}</strong>
+            <small>${escapeHtml(localized.updatedLabel || localized.createdLabel || '')}</small>
           </div>
           <div class="gallery-badge-row mt-sm">
             <span class="mini-badge ${statusClass}">${escapeHtml(statusLabel)}</span>
-            ${type === 'rewards' && Number(item.pointsCost || 0) > 0 ? `<span class="mini-badge gold">${formatNumber(item.pointsCost)} pts</span>` : ''}
-            ${type === 'rewards' && (item.rewardCategory || item.category) ? `<span class="mini-badge">${escapeHtml(item.rewardCategory || item.category)}</span>` : ''}
-            ${type === 'rewards' ? `<span class="mini-badge ${item.rewardIsActive === false ? 'subtle' : ''}">${item.rewardIsActive === false ? 'Paused' : 'Active'}</span>` : ''}
-            ${type === 'rewards' ? `<span class="mini-badge ${Number(item.stockTotal || 0) > 0 && Number(item.stockRemaining || 0) <= 0 ? 'subtle' : ''}">${Number(item.stockTotal || 0) > 0 ? `${formatNumber(item.stockRemaining || 0)} left` : 'Unlimited'}</span>` : ''}
-            ${type === 'rewards' ? `<span class="mini-badge">${formatNumber(item.rewardCodeExpiryDays || item.codeExpiryDays || 30)}d code</span>` : ''}
-            ${Array.isArray(item.galleryImages) && item.galleryImages.length ? `<span class="mini-badge">${item.galleryImages.length} photos</span>` : ''}
+            ${type === 'rewards' && Number(localized.pointsCost || 0) > 0 ? `<span class="mini-badge gold">${formatNumber(localized.pointsCost)} pts</span>` : ''}
+            ${type === 'rewards' && (localized.rewardCategory || localized.category) ? `<span class="mini-badge">${escapeHtml(localized.rewardCategory || localized.category)}</span>` : ''}
+            ${type === 'rewards' ? `<span class="mini-badge ${localized.rewardIsActive === false ? 'subtle' : ''}">${localized.rewardIsActive === false ? 'Paused' : 'Active'}</span>` : ''}
+            ${type === 'rewards' ? `<span class="mini-badge ${Number(localized.stockTotal || 0) > 0 && Number(localized.stockRemaining || 0) <= 0 ? 'subtle' : ''}">${Number(localized.stockTotal || 0) > 0 ? `${formatNumber(localized.stockRemaining || 0)} left` : 'Unlimited'}</span>` : ''}
+            ${type === 'rewards' ? `<span class="mini-badge">${formatNumber(localized.rewardCodeExpiryDays || localized.codeExpiryDays || 30)}d code</span>` : ''}
+            ${Array.isArray(localized.galleryImages) && localized.galleryImages.length ? `<span class="mini-badge">${localized.galleryImages.length} photos</span>` : ''}
           </div>
-          <p>${escapeHtml(item.summary || item.body || '')}</p>
+          <p>${escapeHtml(localized.summary || localized.body || '')}</p>
           <div class="content-admin-card-actions">
-            <button class="ghost-btn" type="button" data-content-action="edit" data-item-id="${escapeHtml(item.id)}">Edit</button>
-            ${item.status === 'published'
-              ? `<button class="ghost-btn" type="button" data-content-action="unpublish" data-item-id="${escapeHtml(item.id)}">Unpublish</button>`
-              : `<button class="secondary-btn" type="button" data-content-action="publish" data-item-id="${escapeHtml(item.id)}">Publish</button>`}
-            <button class="danger-btn" type="button" data-content-action="delete" data-item-id="${escapeHtml(item.id)}">Delete</button>
+            <button class="ghost-btn" type="button" data-content-action="edit" data-item-id="${escapeHtml(localized.id)}">Edit</button>
+            ${localized.status === 'published'
+              ? `<button class="ghost-btn" type="button" data-content-action="unpublish" data-item-id="${escapeHtml(localized.id)}">Unpublish</button>`
+              : `<button class="secondary-btn" type="button" data-content-action="publish" data-item-id="${escapeHtml(localized.id)}">Publish</button>`}
+            <button class="danger-btn" type="button" data-content-action="delete" data-item-id="${escapeHtml(localized.id)}">Delete</button>
             ${type === 'rewards'
               ? `<a class="ghost-btn" href="./redemption.html">Open redemption page</a>`
               : `<a class="ghost-btn" href="./${type}-detail.html?id=${encodeURIComponent(item.id)}">Open detail</a>`}
@@ -955,6 +1055,7 @@ async function ensureEditingDocId(type = getActiveType()) {
     fullDetails: editor.fullDetails,
     terms: editor.terms,
     ctaLabel: editor.ctaLabel,
+    translations: editor.translations,
     pointsCost: editor.pointsCost,
     rewardCategory: editor.rewardCategory,
     stockTotal: editor.stockTotal,
@@ -1240,8 +1341,9 @@ async function persistCurrentContentEditor(type = getActiveType()) {
   syncContentEditorFromDom(type);
   const editor = getContentEditorState(type);
 
-  if (!editor.title || !editor.summary || !editor.fullDetails) {
-    showToast('กรอก title, summary และ full details ก่อนบันทึก', 'error');
+  const primary = pickEditorPrimaryTranslation(editor.translations || {});
+  if (!primary.title || !primary.summary || !primary.fullDetails) {
+    showToast('ใส่ข้อมูลอย่างน้อย 1 ภาษาให้ครบ title, summary และ full details ก่อนบันทึก', 'error');
     return null;
   }
 
@@ -1252,6 +1354,7 @@ async function persistCurrentContentEditor(type = getActiveType()) {
     fullDetails: editor.fullDetails,
     terms: editor.terms,
     ctaLabel: editor.ctaLabel,
+    translations: editor.translations,
     pointsCost: editor.pointsCost,
     rewardCategory: editor.rewardCategory,
     stockTotal: editor.stockTotal,
@@ -2029,6 +2132,22 @@ function bindAdminContentTabs() {
   $('contentGalleryFiles')?.addEventListener('change', () => {
     const count = Array.from($('contentGalleryFiles')?.files || []).length;
     updateUploadStatus('contentGalleryUploadStatus', count ? `เลือกรูป gallery แล้ว ${count} รูป — กด Upload Gallery Images` : '');
+  });
+
+  document.querySelectorAll('.locale-tab-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      const locale = button.dataset.localeTab || 'en';
+      syncContentEditorFromDom(getActiveType());
+      setActiveContentLocale(locale);
+    });
+  });
+
+  CONTENT_LANGS.forEach((lang) => {
+    ['Title', 'Summary', 'FullDetails', 'Terms', 'CtaLabel'].forEach((field) => {
+      const el = document.getElementById(`content${field}_${lang}`);
+      if (!el) return;
+      el.addEventListener('input', () => syncContentEditorFromDom(getActiveType()));
+    });
   });
 
   $('memberIdInput')?.addEventListener('blur', () => {

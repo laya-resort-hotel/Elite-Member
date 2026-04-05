@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./assets/css/components.css?v=20260404invite2" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260405lang4"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405cms4"></script>
 </head>
 <body data-page="admin">
   <div id="app" class="app-shell">
@@ -138,16 +138,101 @@
 
             <div class="readonly-note" id="cmsReadOnlyNote">หน้านี้จะบันทึกได้เมื่อ login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จ</div>
 
-            <div class="grid-2 mt-md admin-editor-grid">
-              <div>
-                <label class="field-label" for="contentTitle">Title</label>
-                <input id="contentTitle" class="input" type="text" placeholder="Title" />
+            <section class="admin-locale-section mt-md">
+              <div class="panel-title-row compact-row admin-locale-head">
+                <div>
+                  <div class="eyebrow gold">4-language CMS</div>
+                  <h5>Resident content by language</h5>
+                </div>
+                <div class="admin-locale-switch" role="tablist" aria-label="Content language tabs">
+                  <button class="locale-tab-btn active" type="button" data-locale-tab="en">EN</button>
+                  <button class="locale-tab-btn" type="button" data-locale-tab="th">TH</button>
+                  <button class="locale-tab-btn" type="button" data-locale-tab="ru">RU</button>
+                  <button class="locale-tab-btn" type="button" data-locale-tab="zh">ZH</button>
+                </div>
               </div>
-              <div>
-                <label class="field-label" for="contentCtaLabel">CTA label</label>
-                <input id="contentCtaLabel" class="input" type="text" placeholder="Learn more" />
+              <div class="info-note">กรอกข้อความของ Resident แยกภาษาได้จริงตรงนี้ ส่วนรูปภาพ คะแนน สต๊อก และสถานะ Publish จะใช้ร่วมกันทุกภาษา</div>
+
+              <div class="locale-editor-panel active" data-locale-panel="en">
+                <div class="locale-editor-label">English content</div>
+                <div class="grid-2 mt-sm admin-editor-grid">
+                  <div>
+                    <label class="field-label" for="contentTitle_en">Title (EN)</label>
+                    <input id="contentTitle_en" class="input" type="text" placeholder="English title" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="contentCtaLabel_en">CTA label (EN)</label>
+                    <input id="contentCtaLabel_en" class="input" type="text" placeholder="Learn more" />
+                  </div>
+                </div>
+                <label class="field-label" for="contentSummary_en">Summary (EN)</label>
+                <textarea id="contentSummary_en" class="input textarea textarea-sm" placeholder="English summary"></textarea>
+                <label class="field-label" for="contentFullDetails_en">Full details (EN)</label>
+                <textarea id="contentFullDetails_en" class="input textarea" placeholder="English full details"></textarea>
+                <label class="field-label" for="contentTerms_en">Terms (EN)</label>
+                <textarea id="contentTerms_en" class="input textarea textarea-sm" placeholder="One term per line"></textarea>
               </div>
-            </div>
+
+              <div class="locale-editor-panel" data-locale-panel="th">
+                <div class="locale-editor-label">Thai content</div>
+                <div class="grid-2 mt-sm admin-editor-grid">
+                  <div>
+                    <label class="field-label" for="contentTitle_th">Title (TH)</label>
+                    <input id="contentTitle_th" class="input" type="text" placeholder="ชื่อภาษาไทย" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="contentCtaLabel_th">CTA label (TH)</label>
+                    <input id="contentCtaLabel_th" class="input" type="text" placeholder="อ่านเพิ่มเติม" />
+                  </div>
+                </div>
+                <label class="field-label" for="contentSummary_th">Summary (TH)</label>
+                <textarea id="contentSummary_th" class="input textarea textarea-sm" placeholder="สรุปภาษาไทย"></textarea>
+                <label class="field-label" for="contentFullDetails_th">Full details (TH)</label>
+                <textarea id="contentFullDetails_th" class="input textarea" placeholder="รายละเอียดภาษาไทย"></textarea>
+                <label class="field-label" for="contentTerms_th">Terms (TH)</label>
+                <textarea id="contentTerms_th" class="input textarea textarea-sm" placeholder="1 บรรทัดต่อ 1 ข้อกำหนด"></textarea>
+              </div>
+
+              <div class="locale-editor-panel" data-locale-panel="ru">
+                <div class="locale-editor-label">Russian content</div>
+                <div class="grid-2 mt-sm admin-editor-grid">
+                  <div>
+                    <label class="field-label" for="contentTitle_ru">Title (RU)</label>
+                    <input id="contentTitle_ru" class="input" type="text" placeholder="Русский заголовок" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="contentCtaLabel_ru">CTA label (RU)</label>
+                    <input id="contentCtaLabel_ru" class="input" type="text" placeholder="Подробнее" />
+                  </div>
+                </div>
+                <label class="field-label" for="contentSummary_ru">Summary (RU)</label>
+                <textarea id="contentSummary_ru" class="input textarea textarea-sm" placeholder="Русское описание"></textarea>
+                <label class="field-label" for="contentFullDetails_ru">Full details (RU)</label>
+                <textarea id="contentFullDetails_ru" class="input textarea" placeholder="Подробное описание на русском"></textarea>
+                <label class="field-label" for="contentTerms_ru">Terms (RU)</label>
+                <textarea id="contentTerms_ru" class="input textarea textarea-sm" placeholder="Одна строка = одно условие"></textarea>
+              </div>
+
+              <div class="locale-editor-panel" data-locale-panel="zh">
+                <div class="locale-editor-label">Chinese content</div>
+                <div class="grid-2 mt-sm admin-editor-grid">
+                  <div>
+                    <label class="field-label" for="contentTitle_zh">Title (ZH)</label>
+                    <input id="contentTitle_zh" class="input" type="text" placeholder="中文标题" />
+                  </div>
+                  <div>
+                    <label class="field-label" for="contentCtaLabel_zh">CTA label (ZH)</label>
+                    <input id="contentCtaLabel_zh" class="input" type="text" placeholder="了解更多" />
+                  </div>
+                </div>
+                <label class="field-label" for="contentSummary_zh">Summary (ZH)</label>
+                <textarea id="contentSummary_zh" class="input textarea textarea-sm" placeholder="中文摘要"></textarea>
+                <label class="field-label" for="contentFullDetails_zh">Full details (ZH)</label>
+                <textarea id="contentFullDetails_zh" class="input textarea" placeholder="中文详细内容"></textarea>
+                <label class="field-label" for="contentTerms_zh">Terms (ZH)</label>
+                <textarea id="contentTerms_zh" class="input textarea textarea-sm" placeholder="每行一个条款"></textarea>
+              </div>
+            </section>
 
             <div id="rewardConfigBlock" class="grid-2 mt-md admin-editor-grid hidden">
               <div>
@@ -176,14 +261,6 @@
               </div>
             </div>
 
-            <label class="field-label" for="contentSummary">Summary</label>
-            <textarea id="contentSummary" class="input textarea textarea-sm" placeholder="Short summary"></textarea>
-
-            <label class="field-label" for="contentFullDetails">Full details</label>
-            <textarea id="contentFullDetails" class="input textarea" placeholder="Full details"></textarea>
-
-            <label class="field-label" for="contentTerms">Terms</label>
-            <textarea id="contentTerms" class="input textarea textarea-sm" placeholder="One term per line"></textarea>
 
             <div class="admin-media-intro mt-md">
               <div class="admin-media-intro-card">

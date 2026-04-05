@@ -17,7 +17,9 @@ import { state } from '../core/state.js';
 import { formatDate } from '../core/format.js';
 import { deleteStoragePaths } from './storage-service.js';
 
+export const CONTENT_LANGS = ['en', 'th', 'ru', 'zh'];
 const CONTENT_STATUSES = ['draft', 'published', 'unpublished'];
+const LANGUAGE_PRIORITY = ['en', 'th', 'ru', 'zh'];
 
 function stringValue(value = '') {
   return String(value || '').trim();
@@ -40,6 +42,112 @@ function toBoolean(value, fallback = true) {
   if (value === 'true') return true;
   if (value === 'false') return false;
   return fallback;
+}
+
+function blankTranslationEntry() {
+  return {
+    title: '',
+    summary: '',
+    fullDetails: '',
+    terms: '',
+    ctaLabel: '',
+  };
+}
+
+function normalizeTranslationEntry(entry = {}, fallback = {}) {
+  return {
+    title: stringValue(entry.title || fallback.title),
+    summary: stringValue(entry.summary || fallback.summary),
+    fullDetails: stringValue(entry.fullDetails || fallback.fullDetails),
+    terms: stringValue(entry.terms || fallback.terms),
+    ctaLabel: stringValue(entry.ctaLabel || fallback.ctaLabel),
+  };
+}
+
+function translationHasContent(entry = {}) {
+  return ['title', 'summary', 'fullDetails', 'terms', 'ctaLabel'].some((field) => stringValue(entry[field]));
+}
+
+export function normalizeContentTranslations(value = {}, fallback = {}) {
+  const translations = {};
+  CONTENT_LANGS.forEach((lang) => {
+    const source = value?.[lang] || {};
+    const langFallback = lang === 'en'
+      ? {
+          title: fallback.title,
+          summary: fallback.summary || fallback.body,
+          fullDetails: fallback.fullDetails || (Array.isArray(fallback.details) ? fallback.details.join('\n') : fallback.details),
+          terms: Array.isArray(fallback.terms) ? fallback.terms.join('\n') : fallback.terms,
+          ctaLabel: fallback.ctaLabel,
+        }
+      : {
+          title: fallback[`title_${lang}`],
+          summary: fallback[`summary_${lang}`],
+          fullDetails: fallback[`fullDetails_${lang}`],
+          terms: fallback[`terms_${lang}`],
+          ctaLabel: fallback[`ctaLabel_${lang}`],
+        };
+    translations[lang] = normalizeTranslationEntry(source, langFallback);
+  });
+  return translations;
+}
+
+function pickPreferredLanguage(lang = state.currentLanguage || 'en') {
+  return [lang, ...LANGUAGE_PRIORITY.filter((code) => code !== lang)];
+}
+
+function pickFieldFromTranslations(translations = {}, field = 'title', lang = state.currentLanguage || 'en', fallback = '') {
+  const preferred = pickPreferredLanguage(lang);
+  for (const code of preferred) {
+    const value = stringValue(translations?.[code]?.[field]);
+    if (value) return value;
+  }
+  return stringValue(fallback);
+}
+
+function pickBestTranslation(translations = {}, lang = state.currentLanguage || 'en') {
+  const preferred = pickPreferredLanguage(lang);
+  for (const code of preferred) {
+    const entry = normalizeTranslationEntry(translations?.[code] || {});
+    if (translationHasContent(entry)) {
+      return { lang: code, entry };
+    }
+  }
+  return { lang: 'en', entry: blankTranslationEntry() };
+}
+
+export function getLocalizedContent(item = {}, lang = state.currentLanguage || 'en') {
+  const translations = normalizeContentTranslations(item.translations || {}, item);
+  const localizedTitle = pickFieldFromTranslations(translations, 'title', lang, item.title);
+  const localizedSummary = pickFieldFromTranslations(translations, 'summary', lang, item.summary || item.body);
+  const localizedFullDetails = pickFieldFromTranslations(
+    translations,
+    'fullDetails',
+    lang,
+    item.fullDetails || (Array.isArray(item.details) ? item.details.join('\n') : item.details)
+  );
+  const localizedTerms = pickFieldFromTranslations(
+    translations,
+    'terms',
+    lang,
+    Array.isArray(item.terms) ? item.terms.join('\n') : item.terms
+  );
+  const localizedCtaLabel = pickFieldFromTranslations(translations, 'ctaLabel', lang, item.ctaLabel || 'Learn more') || 'Learn more';
+  const chosen = pickBestTranslation(translations, lang);
+
+  return {
+    ...item,
+    translations,
+    localizedLanguage: chosen.lang,
+    title: localizedTitle,
+    summary: localizedSummary,
+    body: localizedSummary,
+    fullDetails: localizedFullDetails,
+    details: linesValue(localizedFullDetails),
+    terms: linesValue(localizedTerms),
+    termsText: localizedTerms,
+    ctaLabel: localizedCtaLabel,
+  };
 }
 
 function normalizeGalleryImages(value = []) {
@@ -103,11 +211,13 @@ function pickCoverFromGallery(galleryImages = [], fallbackUrl = '', fallbackPath
 }
 
 function normalizeContentPayload(payload = {}) {
-  const title = stringValue(payload.title);
-  const summary = stringValue(payload.summary);
-  const fullDetails = stringValue(payload.fullDetails);
-  const termsText = stringValue(payload.terms);
-  const ctaLabel = stringValue(payload.ctaLabel) || 'Learn more';
+  const translations = normalizeContentTranslations(payload.translations || {}, payload);
+  const preferred = pickBestTranslation(translations, 'en').entry;
+  const title = stringValue(payload.title || preferred.title);
+  const summary = stringValue(payload.summary || preferred.summary);
+  const fullDetails = stringValue(payload.fullDetails || preferred.fullDetails);
+  const termsText = stringValue(payload.terms || preferred.terms);
+  const ctaLabel = stringValue(payload.ctaLabel || preferred.ctaLabel) || 'Learn more';
   const pointsCost = Math.max(0, Number(payload.pointsCost || 0));
   const rewardCategory = stringValue(payload.rewardCategory || payload.category);
   const stockTotal = integerValue(payload.stockTotal || payload.stock || 0, 0);
@@ -130,6 +240,7 @@ function normalizeContentPayload(payload = {}) {
     details: linesValue(fullDetails),
     terms: linesValue(termsText),
     ctaLabel,
+    translations,
     pointsCost,
     rewardCategory,
     category: rewardCategory,
@@ -199,6 +310,8 @@ function enrichContentDocument(collectionName, snapOrData, id = '') {
   const status = resolveContentStatus(data);
   const publishedAt = data.publishedAt || null;
   const unpublishedAt = data.unpublishedAt || null;
+  const translations = normalizeContentTranslations(data.translations || {}, data);
+  const primary = pickBestTranslation(translations, 'en').entry;
 
   const stockTotal = integerValue(data.stockTotal ?? 0, 0);
   const stockRemaining = data.stockRemaining == null ? (stockTotal > 0 ? stockTotal : null) : integerValue(data.stockRemaining, stockTotal);
@@ -207,6 +320,14 @@ function enrichContentDocument(collectionName, snapOrData, id = '') {
   return {
     id: docId,
     ...data,
+    title: stringValue(data.title || primary.title),
+    summary: stringValue(data.summary || data.body || primary.summary),
+    body: stringValue(data.body || data.summary || primary.summary),
+    fullDetails: stringValue(data.fullDetails || primary.fullDetails),
+    details: Array.isArray(data.details) && data.details.length ? data.details : linesValue(data.fullDetails || primary.fullDetails),
+    terms: Array.isArray(data.terms) && data.terms.length ? data.terms : linesValue(Array.isArray(data.terms) ? data.terms.join('\n') : (data.terms || primary.terms)),
+    ctaLabel: stringValue(data.ctaLabel || primary.ctaLabel || 'Learn more') || 'Learn more',
+    translations,
     status,
     statusLabel: toStatusLabel(status),
     isPublished: status === 'published',
@@ -263,6 +384,7 @@ export async function createContentShell(collectionName, payload = {}) {
     details: Array.isArray(normalized.details) ? normalized.details : [],
     terms: Array.isArray(normalized.terms) ? normalized.terms : [],
     ctaLabel: normalized.ctaLabel || 'Learn more',
+    translations: normalized.translations,
     coverImageUrl: normalized.coverImageUrl || '',
     coverImagePath: normalized.coverImagePath || '',
     coverImageName: normalized.coverImageName || '',
@@ -290,7 +412,7 @@ export async function loadCollectionSafe(name, options = {}) {
   const snap = await getDocs(qRef);
   return snap.docs
     .map((d) => enrichContentDocument(name, d))
-    .filter((row) => row.title || row.summary || row.coverImageUrl || row.imageCount)
+    .filter((row) => row.title || row.summary || row.coverImageUrl || row.imageCount || Object.values(row.translations || {}).some(translationHasContent))
     .filter((row) => matchesLoadOptions(row, options));
 }
 

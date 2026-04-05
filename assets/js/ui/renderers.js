@@ -1,6 +1,7 @@
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js';
-import { t } from '../core/i18n.js';
+import { t, getLanguage } from '../core/i18n.js';
+import { getLocalizedContent } from '../services/content-service.js';
 
 function setAllById(id, value) {
   document.querySelectorAll(`[id="${id}"]`).forEach((node) => {
@@ -23,17 +24,18 @@ export function renderCards(listEl, items = [], emptyText = t('common.noData'), 
 
   const contentType = typeof options === 'string' ? options : options.contentType;
   listEl.innerHTML = items.map((item) => {
-    const href = contentType ? buildContentDetailHref(contentType, item, `./${contentType}.html`) : '';
+    const localized = getLocalizedContent(item, getLanguage());
+    const href = contentType ? buildContentDetailHref(contentType, localized, `./${contentType}.html`) : '';
     const wrapperTag = href ? 'a' : 'div';
     const wrapperAttrs = href
-      ? `class="card-item card-item-link" href="${href}" aria-label="${escapeHtml(item.title || item.outlet || contentType || 'detail')}"`
+      ? `class="card-item card-item-link" href="${href}" aria-label="${escapeHtml(localized.title || localized.outlet || contentType || 'detail')}"`
       : 'class="card-item"';
 
     return `
       <${wrapperTag} ${wrapperAttrs}>
-        <h4>${escapeHtml(item.title || item.outlet || '-')}</h4>
-        <p>${escapeHtml(item.summary || item.body || item.description || '')}</p>
-        ${item.createdLabel ? `<small>${escapeHtml(item.createdLabel)}</small>` : ''}
+        <h4>${escapeHtml(localized.title || localized.outlet || '-')}</h4>
+        <p>${escapeHtml(localized.summary || localized.body || localized.description || '')}</p>
+        ${localized.createdLabel ? `<small>${escapeHtml(localized.createdLabel)}</small>` : ''}
       </${wrapperTag}>
     `;
   }).join('');
@@ -47,12 +49,13 @@ function buildContentDetailHref(type, item, fallbackHref) {
 export function renderVaultHome(newsItem, promotionItems = []) {
   const hero = $('homeNewsHero');
   if (hero) {
-    const image = newsItem?.coverImageUrl || newsItem?.galleryImages?.[0]?.url || '';
-    const newsHref = buildContentDetailHref('news', newsItem, './news.html');
+    const localizedNews = getLocalizedContent(newsItem || {}, getLanguage());
+    const image = localizedNews?.coverImageUrl || localizedNews?.galleryImages?.[0]?.url || '';
+    const newsHref = buildContentDetailHref('news', localizedNews, './news.html');
     hero.innerHTML = `
       <a class="vault-news-hero-link" href="${newsHref}">
         <div class="vault-news-image-wrap vault-news-frame">
-          ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(newsItem?.title || t('content.news'))}" />` : `<div class="vault-news-image vault-news-fallback">${escapeHtml(t('content.news'))}</div>`}
+          ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(localizedNews?.title || t('content.news'))}" />` : `<div class="vault-news-image vault-news-fallback">${escapeHtml(t('content.news'))}</div>`}
         </div>
       </a>
     `;
@@ -62,12 +65,13 @@ export function renderVaultHome(newsItem, promotionItems = []) {
   if (promoGrid) {
     const items = promotionItems.slice(0, 3);
     promoGrid.innerHTML = items.map((item) => {
-      const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
-      const promoHref = buildContentDetailHref('promotions', item, './promotions.html');
+      const localized = getLocalizedContent(item, getLanguage());
+      const image = localized.coverImageUrl || localized.galleryImages?.[0]?.url || '';
+      const promoHref = buildContentDetailHref('promotions', localized, './promotions.html');
       return `
-        <a class="vault-promo-card image-only" href="${promoHref}" aria-label="${escapeHtml(item.title || t('content.promotion'))}">
+        <a class="vault-promo-card image-only" href="${promoHref}" aria-label="${escapeHtml(localized.title || t('content.promotion'))}">
           <div class="vault-promo-thumb-wrap">
-            ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || t('content.promotion'))}" />` : `<div class="vault-promo-thumb vault-news-fallback">${escapeHtml(t('content.promotion'))}</div>`}
+            ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(localized.title || t('content.promotion'))}" />` : `<div class="vault-promo-thumb vault-news-fallback">${escapeHtml(t('content.promotion'))}</div>`}
           </div>
         </a>
       `;
