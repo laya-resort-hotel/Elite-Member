@@ -112,6 +112,7 @@ function normalizeContentPayload(payload = {}) {
   const rewardCategory = stringValue(payload.rewardCategory || payload.category);
   const stockTotal = integerValue(payload.stockTotal || payload.stock || 0, 0);
   const rewardIsActive = toBoolean(payload.rewardIsActive, true);
+  const rewardCodeExpiryDays = integerValue(payload.rewardCodeExpiryDays || payload.codeExpiryDays || 30, 30) || 30;
 
   const galleryImages = normalizeGalleryImages(payload.galleryImages);
   const coverFields = pickCoverFromGallery(
@@ -134,6 +135,8 @@ function normalizeContentPayload(payload = {}) {
     category: rewardCategory,
     stockTotal,
     rewardIsActive,
+    rewardCodeExpiryDays,
+    codeExpiryDays: rewardCodeExpiryDays,
     redemptionMode: pointsCost > 0 ? 'points' : stringValue(payload.redemptionMode),
     benefitType: pointsCost > 0 ? 'reward' : stringValue(payload.benefitType),
     coverImageUrl: coverFields.coverImageUrl,
@@ -148,6 +151,7 @@ function buildRewardPersistenceFields(normalized = {}, existingData = null) {
   const rewardCategory = stringValue(normalized.rewardCategory || normalized.category || existingData?.rewardCategory || existingData?.category);
   const stockTotal = integerValue(normalized.stockTotal ?? existingData?.stockTotal ?? 0, 0);
   const rewardIsActive = toBoolean(normalized.rewardIsActive, existingData?.rewardIsActive !== false);
+  const rewardCodeExpiryDays = integerValue(normalized.rewardCodeExpiryDays ?? normalized.codeExpiryDays ?? existingData?.rewardCodeExpiryDays ?? existingData?.codeExpiryDays ?? 30, 30) || 30;
 
   let stockRemaining = null;
   if (stockTotal > 0) {
@@ -165,6 +169,8 @@ function buildRewardPersistenceFields(normalized = {}, existingData = null) {
     stockTotal,
     stockRemaining,
     rewardIsActive,
+    rewardCodeExpiryDays,
+    codeExpiryDays: rewardCodeExpiryDays,
   };
 }
 
@@ -210,6 +216,8 @@ function enrichContentDocument(collectionName, snapOrData, id = '') {
     stockTotal,
     stockRemaining,
     rewardIsActive,
+    rewardCodeExpiryDays: integerValue(data.rewardCodeExpiryDays ?? data.codeExpiryDays ?? 30, 30) || 30,
+    codeExpiryDays: integerValue(data.rewardCodeExpiryDays ?? data.codeExpiryDays ?? 30, 30) || 30,
     rewardAvailable: collectionName === 'reward_catalog'
       ? status === 'published' && rewardIsActive && (stockTotal === 0 || stockRemaining > 0)
       : true,

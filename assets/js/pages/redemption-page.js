@@ -113,6 +113,40 @@ function renderTabs() {
   if ($('rewardGroupTitleText')) $('rewardGroupTitleText').textContent = titleMap[pageState.activeTab] || 'Reward';
 }
 
+function buildRewardQrText(row = {}) {
+  return String(row.redemptionCode || '').trim().toUpperCase();
+}
+
+function renderRewardQRCodes(scope = document) {
+  const nodes = scope.querySelectorAll('[data-redemption-qr]');
+  if (!nodes.length) return;
+  const QRiousCtor = window.QRious;
+  nodes.forEach((canvas) => {
+    if (canvas.dataset.rendered === '1') return;
+    const value = String(canvas.dataset.redemptionQr || '').trim();
+    if (!value) return;
+    if (QRiousCtor) {
+      try {
+        new QRiousCtor({
+          element: canvas,
+          value,
+          size: Number(canvas.dataset.qrSize || 108),
+          level: 'M',
+          foreground: '#111111',
+          background: '#ffffff',
+          padding: 10,
+        });
+        canvas.dataset.rendered = '1';
+        return;
+      } catch (error) {
+        console.warn('Reward QR render failed', error);
+      }
+    }
+    const fallback = canvas.parentElement?.querySelector('.vault-issued-card__qr-fallback');
+    if (fallback) fallback.classList.remove('hidden');
+  });
+}
+
 function rewardStatusMessage(pointsRequired, points) {
   return `Need ${formatNumber(Math.max(pointsRequired - points, 0))} more points`;
 }
@@ -198,9 +232,20 @@ function buildIssuedCard(row) {
     : row.status === 'expired'
       ? `Expired ${formatDate(row.expiresAt)}`
       : `Valid until ${formatDate(row.expiresAt)}`;
+  const qrValue = buildRewardQrText(row);
   const actionButton = row.status === 'issued'
     ? `<button type="button" class="vault-code-copy-btn" data-copy-code="${escapeHtml(row.redemptionCode || '')}">Copy code</button>`
     : `<span class="vault-code-status vault-code-status-${escapeHtml(row.status || 'issued')}">${escapeHtml(String(row.status || 'issued').toUpperCase())}</span>`;
+  const qrBlock = row.status === 'issued'
+    ? `<div class="vault-issued-card__qr">
+         <canvas class="vault-issued-card__qr-canvas" data-redemption-qr="${escapeHtml(qrValue)}" data-qr-size="112" width="112" height="112"></canvas>
+         <div class="vault-issued-card__qr-fallback hidden">${escapeHtml(qrValue)}</div>
+         <div class="vault-issued-card__qr-note">Staff can scan this QR</div>
+       </div>`
+    : `<div class="vault-issued-card__qr vault-issued-card__qr--status">${actionButton}</div>`;
+  const actionWrap = row.status === 'issued'
+    ? `<div class="vault-issued-card__action">${actionButton}</div>`
+    : '';
   return `
     <div class="vault-issued-card ${row.status === 'used' ? 'is-used' : row.status === 'expired' ? 'is-expired' : ''}">
       <div class="vault-issued-card__thumb">${row.rewardImageUrl ? `<img src="${escapeHtml(row.rewardImageUrl)}" alt="${escapeHtml(row.rewardTitle)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
@@ -210,10 +255,11 @@ function buildIssuedCard(row) {
           <span class="vault-issued-card__points">${formatNumber(row.pointsCost || 0)} P</span>
         </div>
         <div class="vault-issued-card__code">${escapeHtml(row.redemptionCode || '-')}</div>
-        <div class="vault-issued-card__hint">Show this code to staff before billing</div>
+        <div class="vault-issued-card__hint">Show this QR or code to staff before billing</div>
         <div class="vault-issued-card__meta">${escapeHtml(row.rewardCategory || 'Reward')} • ${escapeHtml(footer)}</div>
       </div>
-      <div class="vault-issued-card__action">${actionButton}</div>
+      ${qrBlock}
+      ${actionWrap}
     </div>
   `;
 }
@@ -226,6 +272,7 @@ function renderRedemptionGroup(rows = [], emptyText = 'No rewards here yet') {
     return;
   }
   container.innerHTML = rows.map((row) => buildIssuedCard(row)).join('');
+  renderRewardQRCodes(container);
   container.querySelectorAll('[data-copy-code]').forEach((button) => {
     if (button.dataset.bound) return;
     button.dataset.bound = '1';

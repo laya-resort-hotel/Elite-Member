@@ -193,3 +193,13 @@
   border-color: rgba(215, 110, 110, 0.4);
   color: #ffd8d8;
 }
+
+
+.resident-scanner-video-wrap--reward {
+  min-height: 220px;
+}
+
+.resident-scanner-frame--wide {
+  width: min(78%, 360px);
+  aspect-ratio: 1.15;
+}

@@ -120,7 +120,8 @@ export async function redeemReward(rewardId) {
     const category = String(reward.rewardCategory || reward.category || '').trim();
     const imageUrl = String(reward.coverImageUrl || reward.galleryImages?.[0]?.url || '').trim();
     const redemptionCode = generateRedemptionCode(8);
-    const expiresAt = Timestamp.fromDate(new Date(Date.now() + DEFAULT_EXPIRY_DAYS * 24 * 60 * 60 * 1000));
+    const expiryDays = Math.max(1, Number(reward.rewardCodeExpiryDays || reward.codeExpiryDays || DEFAULT_EXPIRY_DAYS));
+    const expiresAt = Timestamp.fromDate(new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000));
     const basePayload = {
       residentId,
       memberId: residentId,
@@ -148,6 +149,7 @@ export async function redeemReward(rewardId) {
       usedOutlet: '',
       usedNote: '',
       expiresAt,
+      rewardCodeExpiryDays: expiryDays,
     };
 
     transaction.set(redemptionRef, basePayload);

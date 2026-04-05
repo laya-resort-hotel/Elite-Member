@@ -162,7 +162,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'redemption': {
-        const mod = await import('./pages/redemption-page.js?v=20260405rewardcode1');
+        const mod = await import('./pages/redemption-page.js?v=20260405rewardcode2');
         await mod.loadRedemptionPage();
         break;
       }
@@ -223,7 +223,7 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'resident-points': {
-        const mod = await import('./pages/resident-points-page.js?v=20260405rewardcode1');
+        const mod = await import('./pages/resident-points-page.js?v=20260405rewardcode2');
         bindPageOnce('resident-points', mod.bindResidentPointScannerPage);
         await mod.loadResidentPointScannerPage();
         break;

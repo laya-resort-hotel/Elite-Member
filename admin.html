@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="./assets/css/components.css?v=20260404invite2" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260404invite2"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405rewardcode2"></script>
 </head>
 <body data-page="admin">
   <div id="app" class="app-shell">
@@ -162,13 +162,17 @@
                 <label class="field-label" for="contentRewardStock">Stock</label>
                 <input id="contentRewardStock" class="input" type="number" min="0" step="1" placeholder="0 = unlimited" />
               </div>
-              <div class="reward-config-note">
+              <div>
+                <label class="field-label" for="contentRewardExpiryDays">Code expiry (days)</label>
+                <input id="contentRewardExpiryDays" class="input" type="number" min="1" step="1" placeholder="เช่น 30" />
+              </div>
+              <div class="reward-config-note reward-config-note--full">
                 <label class="field-label" for="contentRewardActive">Reward active</label>
                 <label class="switch-row">
                   <input id="contentRewardActive" type="checkbox" checked />
                   <span>เปิดให้แลกของรางวัลนี้</span>
                 </label>
-                <div class="info-note no-margin">แท็บนี้ใช้กับ Redemption reward โดยตรง เมื่อ Publish แล้ว รายการจะไปแสดงในหน้า Redemption หากเปิด active และสต๊อกยังเหลือ</div>
+                <div class="info-note no-margin">แท็บนี้ใช้กับ Redemption reward โดยตรง เมื่อ Publish แล้ว รายการจะไปแสดงในหน้า Redemption หากเปิด active และสต๊อกยังเหลือ โดยสามารถกำหนดอายุของ reward code ได้จากช่อง Code expiry</div>
               </div>
             </div>
 

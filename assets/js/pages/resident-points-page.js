@@ -19,8 +19,13 @@ const pageState = {
   detector: null,
   detectorReady: false,
   scannerRunning: false,
+  rewardScannerStream: null,
+  rewardScanLoopHandle: 0,
+  rewardScannerRunning: false,
   lastScanValue: '',
   lastScanAt: 0,
+  lastRewardScanValue: '',
+  lastRewardScanAt: 0,
   recentTransactions: [],
 };
 
@@ -279,6 +284,8 @@ async function startScanner() {
 function bindScannerControls() {
   $('startResidentScannerBtn')?.addEventListener('click', startScanner);
   $('stopResidentScannerBtn')?.addEventListener('click', stopScanner);
+  $('startRewardScannerBtn')?.addEventListener('click', startRewardScanner);
+  $('stopRewardScannerBtn')?.addEventListener('click', stopRewardScanner);
   $('resolveResidentBtn')?.addEventListener('click', handleResolveResident);
   $('clearResidentScanBtn')?.addEventListener('click', () => {
     if ($('residentScanValueInput')) $('residentScanValueInput').value = '';
@@ -294,6 +301,81 @@ function bindSpendForm() {
   $('markRewardCodeUsedBtn')?.addEventListener('click', handleMarkRewardCodeUsed);
 }
 
+
+async function stopRewardScanner() {
+  if (pageState.rewardScanLoopHandle) {
+    cancelAnimationFrame(pageState.rewardScanLoopHandle);
+    pageState.rewardScanLoopHandle = 0;
+  }
+  if (pageState.rewardScannerStream) {
+    pageState.rewardScannerStream.getTracks().forEach((track) => track.stop());
+    pageState.rewardScannerStream = null;
+  }
+  const video = $('rewardQrVideo');
+  if (video) {
+    video.pause();
+    video.srcObject = null;
+  }
+  pageState.rewardScannerRunning = false;
+}
+
+async function onRewardDetected(value) {
+  const clean = String(value || '').trim().toUpperCase();
+  if (!clean) return;
+  const now = Date.now();
+  if (clean === pageState.lastRewardScanValue && now - pageState.lastRewardScanAt < 2500) return;
+  pageState.lastRewardScanValue = clean;
+  pageState.lastRewardScanAt = now;
+  if ($('rewardCodeInput')) $('rewardCodeInput').value = clean;
+  await stopRewardScanner();
+  setRewardCodeStatus(`Scanned reward code ${clean}`, 'success');
+  showToast(`Scanned ${clean}`, 'success');
+}
+
+async function rewardScanLoop() {
+  const video = $('rewardQrVideo');
+  if (!video || !pageState.rewardScannerRunning || !pageState.detectorReady || !pageState.detector) return;
+  try {
+    const results = await pageState.detector.detect(video);
+    const first = results?.[0];
+    const value = first?.rawValue || '';
+    if (value) {
+      await onRewardDetected(value);
+      return;
+    }
+  } catch (error) {
+    console.warn('Reward barcode detect failed', error);
+  }
+  pageState.rewardScanLoopHandle = requestAnimationFrame(rewardScanLoop);
+}
+
+async function startRewardScanner() {
+  const video = $('rewardQrVideo');
+  if (!video) return;
+  try {
+    await ensureDetector();
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
+    pageState.rewardScannerStream = stream;
+    video.srcObject = stream;
+    video.setAttribute('playsinline', 'true');
+    await video.play();
+    pageState.rewardScannerRunning = true;
+    setRewardCodeStatus('Scanner is ready. Point the camera at the reward QR.', 'info');
+    pageState.rewardScanLoopHandle = requestAnimationFrame(rewardScanLoop);
+  } catch (error) {
+    console.error(error);
+    setRewardCodeStatus(error?.message || 'Unable to start reward scanner', 'error');
+    showToast(error?.message || 'Unable to start reward scanner', 'error');
+    await stopRewardScanner();
+  }
+}
 
 function setRewardCodeStatus(message = '', tone = 'info') {
   const box = $('rewardCodeUseStatus');
@@ -354,5 +436,5 @@ export function bindResidentPointScannerPage() {
   setFormulaCopy();
   updateAmountPreview();
   renderRecentTransactions();
-  window.addEventListener('beforeunload', stopScanner, { once: true });
+  window.addEventListener('beforeunload', () => { stopScanner(); stopRewardScanner(); }, { once: true });
 }
