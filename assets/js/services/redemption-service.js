@@ -11,6 +11,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { state } from '../core/state.js';
+import { t } from '../core/i18n.js';
 
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const DEFAULT_EXPIRY_DAYS = 30;
@@ -48,7 +49,7 @@ function normalizeRedemptionSnapshot(id, data = {}) {
   return {
     id,
     ...data,
-    rewardTitle: String(data.rewardTitle || data.title || 'Reward').trim() || 'Reward',
+    rewardTitle: String(data.rewardTitle || data.title || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder'),
     rewardImageUrl: String(data.rewardImageUrl || data.coverImageUrl || '').trim(),
     rewardCategory: String(data.rewardCategory || '').trim(),
     redemptionCode: String(data.redemptionCode || data.code || '').trim().toUpperCase(),
@@ -73,12 +74,12 @@ function isExpiredRecord(record = {}) {
 export async function redeemReward(rewardId) {
   const currentUser = getCurrentUser();
   if (!state.firebaseReady || !state.db || !currentUser) {
-    throw new Error('Please log in before redeeming rewards');
+    throw new Error(t('common.loginRequired'));
   }
 
   const residentId = currentResidentId();
-  if (!residentId) throw new Error('Resident profile not linked');
-  if (!rewardId) throw new Error('Reward ID is required');
+  if (!residentId) throw new Error(t('redemption.profileNotLinked'));
+  if (!rewardId) throw new Error(t('redemption.rewardIdRequired'));
 
   const rewardRef = doc(state.db, 'reward_catalog', rewardId);
   const walletRef = doc(state.db, 'resident_wallets', residentId);
@@ -88,13 +89,13 @@ export async function redeemReward(rewardId) {
 
   const result = await runTransaction(state.db, async (transaction) => {
     const rewardSnap = await transaction.get(rewardRef);
-    if (!rewardSnap.exists()) throw new Error('Reward not found');
+    if (!rewardSnap.exists()) throw new Error(t('redemption.rewardNotFound'));
     const reward = rewardSnap.data() || {};
 
     const pointsCost = Math.max(0, Number(reward.pointsCost || 0));
-    if (!pointsCost) throw new Error('Reward points are not configured');
-    if ((reward.status || 'draft') !== 'published') throw new Error('Reward is not published');
-    if (reward.rewardIsActive === false) throw new Error('Reward is currently inactive');
+    if (!pointsCost) throw new Error(t('redemption.rewardNotConfigured'));
+    if ((reward.status || 'draft') !== 'published') throw new Error(t('redemption.rewardNotPublished'));
+    if (reward.rewardIsActive === false) throw new Error(t('redemption.rewardPaused'));
 
     const stockTotal = Math.max(0, Number(reward.stockTotal || 0));
     const currentStock = stockTotal > 0
@@ -102,7 +103,7 @@ export async function redeemReward(rewardId) {
       : null;
 
     if (stockTotal > 0 && currentStock <= 0) {
-      throw new Error('Reward is out of stock');
+      throw new Error(t('redemption.outOfStock'));
     }
 
     const walletSnap = await transaction.get(walletRef);
@@ -110,13 +111,13 @@ export async function redeemReward(rewardId) {
     const wallet = walletSnap.data() || {};
     const currentPoints = Math.max(0, Number(wallet.currentPoints || 0));
     if (currentPoints < pointsCost) {
-      throw new Error('Not enough points');
+      throw new Error(t('redemption.notEnoughPoints'));
     }
 
     const nextBalance = currentPoints - pointsCost;
     const nextRedeemed = Math.max(0, Number(wallet.lifetimeRedeemed || 0)) + pointsCost;
     const nextStock = stockTotal > 0 ? currentStock - 1 : null;
-    const title = String(reward.title || 'Reward').trim() || 'Reward';
+    const title = String(reward.title || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder');
     const category = String(reward.rewardCategory || reward.category || '').trim();
     const imageUrl = String(reward.coverImageUrl || reward.galleryImages?.[0]?.url || '').trim();
     const redemptionCode = generateRedemptionCode(8);
@@ -134,7 +135,7 @@ export async function redeemReward(rewardId) {
       memberCode: currentMemberCode(),
       requestedByUid: currentUser.uid,
       requestedByEmail: currentUser.email || '',
-      requestedByName: currentUser.displayName || state.currentResident?.displayName || state.currentResident?.fullName || 'Resident',
+      requestedByName: currentUser.displayName || state.currentResident?.displayName || state.currentResident?.fullName || t('common.residentMember'),
       status: 'issued',
       redemptionCode,
       codeStatus: 'active',
@@ -170,7 +171,7 @@ export async function redeemReward(rewardId) {
       rewardTitle: title,
       redemptionCode,
       createdByUid: currentUser.uid,
-      createdByName: currentUser.email || currentUser.displayName || 'Resident',
+      createdByName: currentUser.email || currentUser.displayName || t('common.residentMember'),
       createdAt: serverTimestamp(),
       note: `Redeemed reward: ${title}`,
     });
@@ -239,29 +240,29 @@ export async function loadResidentRedemptions(residentId = '') {
 export async function markRewardCodeUsedByStaff({ code = '', outlet = '', note = '' } = {}) {
   const currentUser = getCurrentUser();
   if (!state.firebaseReady || !state.db || !currentUser) {
-    throw new Error('Please log in before using reward codes');
+    throw new Error(t('common.loginRequired'));
   }
 
   const redemptionCode = String(code || '').trim().toUpperCase();
-  if (!redemptionCode) throw new Error('Please enter reward code');
+  if (!redemptionCode) throw new Error(t('redemption.enterRewardCode'));
 
   const snap = await getDocs(query(collection(state.db, 'redemptions'), where('redemptionCode', '==', redemptionCode), limit(10)));
-  if (snap.empty) throw new Error('Reward code not found');
+  if (snap.empty) throw new Error(t('redemption.rewardCodeNotFound'));
 
   const candidates = snap.docs.map((row) => ({ id: row.id, ref: row.ref, data: row.data() || {} }));
   const chosen = candidates.find((item) => String(item.data.status || '').toLowerCase() === 'issued') || candidates[0];
   const residentId = String(chosen.data.residentId || '').trim();
-  if (!residentId) throw new Error('Resident link not found for this code');
+  if (!residentId) throw new Error(t('redemption.residentLinkNotFound'));
 
   const result = await runTransaction(state.db, async (transaction) => {
     const freshTopSnap = await transaction.get(chosen.ref);
-    if (!freshTopSnap.exists()) throw new Error('Reward code not found');
+    if (!freshTopSnap.exists()) throw new Error(t('redemption.rewardCodeNotFound'));
     const topData = freshTopSnap.data() || {};
     const status = String(topData.status || '').toLowerCase();
-    if (status === 'used') throw new Error('This reward code was already used');
-    if (status === 'expired') throw new Error('This reward code is already expired');
-    if (status !== 'issued') throw new Error('This reward code is not ready to use');
-    if (isExpiredRecord(topData)) throw new Error('This reward code has expired');
+    if (status === 'used') throw new Error(t('redemption.codeAlreadyUsed'));
+    if (status === 'expired') throw new Error(t('redemption.codeAlreadyExpired'));
+    if (status !== 'issued') throw new Error(t('redemption.codeNotReady'));
+    if (isExpiredRecord(topData)) throw new Error(t('redemption.codeExpired'));
 
     const residentMirrorRef = doc(state.db, 'residents', residentId, 'redemptions', chosen.id);
     const updatePayload = {
@@ -282,7 +283,7 @@ export async function markRewardCodeUsedByStaff({ code = '', outlet = '', note =
     return {
       redemptionId: chosen.id,
       residentId,
-      rewardTitle: String(topData.rewardTitle || 'Reward').trim() || 'Reward',
+      rewardTitle: String(topData.rewardTitle || t('redemption.rewardPlaceholder')).trim() || t('redemption.rewardPlaceholder'),
       redemptionCode,
       usedOutlet: updatePayload.usedOutlet,
     };

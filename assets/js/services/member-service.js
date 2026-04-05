@@ -8,6 +8,7 @@ import {
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
+import { t } from '../core/i18n.js';
 
 const EMPLOYEE_DOMAIN = 'employee.layaresident.local';
 
@@ -15,7 +16,7 @@ function fullNameFromRecord(record = {}) {
   return record.displayName
     || record.fullName
     || [record.firstName, record.lastName].filter(Boolean).join(' ').trim()
-    || 'Resident Member';
+    || t('common.residentMember');
 }
 
 function normalizeStatus(value = 'active') {
@@ -114,8 +115,8 @@ function normalizeLegacyMemberRecord(record = {}, id = '') {
     qrCodeValue: record.publicCardCode || record.memberId || '',
     memberCode: record.publicCardCode || record.memberId || '',
     cardNumber: record.cardNumber || '',
-    fullName: record.fullName || [record.firstName, record.lastName].filter(Boolean).join(' ') || 'Resident Member',
-    displayName: record.fullName || [record.firstName, record.lastName].filter(Boolean).join(' ') || 'Resident Member',
+    fullName: record.fullName || [record.firstName, record.lastName].filter(Boolean).join(' ') || t('common.residentMember'),
+    displayName: record.fullName || [record.firstName, record.lastName].filter(Boolean).join(' ') || t('common.residentMember'),
     tier: record.tier === 'elite_black' ? 'Elite Black' : (record.tier || 'Elite Black'),
     status: normalizeStatus(record.status || 'ACTIVE'),
     residence: primaryUnit || '-',

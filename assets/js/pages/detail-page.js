@@ -33,7 +33,7 @@ function getParams() {
 }
 
 function getStatusLabel(status = 'draft') {
-  if (status === 'published') return 'Published';
+  if (status === 'published') return t('detail.published');
   if (status === 'unpublished') return 'Unpublished';
   return 'Draft';
 }
@@ -75,7 +75,7 @@ function normalizeContent(item = {}) {
     fullDetails: fullDetails || details.join('\n'),
     details,
     terms,
-    ctaLabel: item.ctaLabel || 'Contact team',
+    ctaLabel: item.ctaLabel || t('detail.contactTeam'),
     coverImageUrl: primaryImage,
     galleryImages: mergedGallery,
   };
@@ -133,7 +133,7 @@ function renderAdminTools(type, item) {
   if (publishBtn) {
     publishBtn.classList.toggle('hidden', !canManageContent());
     publishBtn.disabled = !manageable || isPublished;
-    publishBtn.textContent = isPublished ? 'Published' : 'Publish this item';
+    publishBtn.textContent = isPublished ? t('detail.published') : t('detail.publishThisItem');
   }
   if (unpublishBtn) {
     unpublishBtn.classList.toggle('hidden', !canManageContent() || !isPublished);
@@ -278,7 +278,7 @@ function renderDetail(type, item) {
       </section>
     `;
   }
-  if ($('detailCtaLabel')) $('detailCtaLabel').textContent = safe.ctaLabel || 'Contact team';
+  if ($('detailCtaLabel')) $('detailCtaLabel').textContent = safe.ctaLabel || t('detail.contactTeam');
   renderAdminTools(type, safe);
 }
 

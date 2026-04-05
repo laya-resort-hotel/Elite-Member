@@ -118,7 +118,7 @@ function buildResidentDisplayName(email = '', primaryUnitCode = '') {
     .replace(/[._-]+/g, ' ')
     .trim()
     .replace(/\b\w/g, (char) => char.toUpperCase());
-  return prettified || `Resident ${primaryUnitCode || ''}`.trim() || 'Resident Member';
+  return prettified || `Resident ${primaryUnitCode || ''}`.trim() || t('common.residentMember');
 }
 
 function makeResidentCode(prefix = 'RES') {

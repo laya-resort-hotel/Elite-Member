@@ -10,6 +10,7 @@ import {
 } from '../core/session.js';
 import { normalizeInviteCode, normalizeUnitCode, parseUnitCodes } from '../services/resident-invite-service.js';
 import { showToast } from '../ui/toast.js';
+import { t } from '../core/i18n.js';
 
 function setText(id, value) {
   const node = $(id);
@@ -34,7 +35,7 @@ function setAuthMode(mode = 'login') {
   $('authModeSignupBtn')?.classList.toggle('active', isSignup);
   $('residentLoginModePanel')?.classList.toggle('hidden', isSignup);
   $('residentSignupModePanel')?.classList.toggle('hidden', !isSignup);
-  $('residentAuthSwitchLabel') && ( $('residentAuthSwitchLabel').textContent = isSignup ? 'First-time Resident Registration' : 'Resident Login');
+  $('residentAuthSwitchLabel') && ( $('residentAuthSwitchLabel').textContent = isSignup ? t('residentLogin.signupLabel') : t('residentLogin.loginLabel'));
 }
 
 function renderRememberState() {
@@ -50,28 +51,28 @@ function renderSessionCard() {
   const resident = state.currentResident || {};
   const sessionMode = getResidentSessionMode();
   const sessionLabel = sessionMode === 'local'
-    ? 'Remembered on this device'
-    : 'Session only · until browser closes';
+    ? t('residentLogin.sessionRemembered')
+    : t('residentLogin.sessionBrowserOnly');
 
   setSessionAppearance(activeResident);
   toggleHidden('residentSessionCard', !activeResident);
   toggleHidden('residentSessionEmptyCard', activeResident);
   toggleHidden('residentSessionActions', !activeResident);
 
-  setText('residentSessionStatus', activeResident ? 'Resident Session Ready' : 'No Active Session');
-  setText('residentSessionName', resident.fullName || resident.displayName || state.currentUser?.displayName || 'Resident Member');
+  setText('residentSessionStatus', activeResident ? t('residentLogin.sessionReady') : t('residentLogin.noActiveSession'));
+  setText('residentSessionName', resident.fullName || resident.displayName || state.currentUser?.displayName || t('common.residentMember'));
   setText('residentSessionEmail', state.currentUser?.email || resident.loginEmail || resident.email || '-');
-  setText('residentSessionMode', activeResident ? sessionLabel : 'No resident session is active on this device.');
+  setText('residentSessionMode', activeResident ? sessionLabel : t('residentLogin.noActiveSessionHint'));
   setText('residentSessionCode', resident.memberCode || resident.qrCodeValue || resident.cardNumber || '-');
   setText('residentSessionResidence', resident.residence || resident.primaryUnitCode || '-');
 
   const submitBtn = $('residentLoginSubmitBtn');
-  if (submitBtn) submitBtn.textContent = activeResident ? 'Switch account' : 'Log in';
+  if (submitBtn) submitBtn.textContent = activeResident ? t('residentLogin.switchAccount') : t('common.logIn');
 }
 
 async function attemptLogin() {
   if (!state.firebaseReady) {
-    showToast('Firebase not ready', 'error');
+    showToast(t('residentLogin.firebaseNotReady'), 'error');
     return;
   }
 
@@ -81,7 +82,7 @@ async function attemptLogin() {
   const submitBtn = $('residentLoginSubmitBtn');
 
   if (!identifier || !password) {
-    showToast('Enter your email and 6-digit PIN first.', 'error');
+    showToast(t('residentLogin.enterEmailAndPin'), 'error');
     return;
   }
 
@@ -91,14 +92,14 @@ async function attemptLogin() {
     await loginWithEmail(identifier, password, { rememberMe });
     saveResidentLoginPreference({ rememberMe, email: identifier });
     markResidentJustLoggedIn();
-    showToast('Resident login success');
+    showToast(t('residentLogin.loginSuccess'));
     window.setTimeout(() => {
       window.location.href = './home.html';
     }, 260);
   } catch (error) {
     console.error(error);
     window.__hideResidentLoader?.();
-    showToast(error?.message || 'Resident login failed', 'error');
+    showToast(error?.message || t('residentLogin.loginFailed'), 'error');
   } finally {
     if (submitBtn) submitBtn.disabled = false;
   }
@@ -106,7 +107,7 @@ async function attemptLogin() {
 
 async function attemptSignup() {
   if (!state.firebaseReady) {
-    showToast('Firebase not ready', 'error');
+    showToast(t('residentLogin.firebaseNotReady'), 'error');
     return;
   }
 
@@ -118,11 +119,11 @@ async function attemptSignup() {
   const submitBtn = $('residentSignupSubmitBtn');
 
   if (!email || !pin || !inviteCode || !primaryUnitCode) {
-    showToast('Enter your email, 6-digit PIN, invitation code, and primary room first.', 'error');
+    showToast(t('residentLogin.signupRequiredFields'), 'error');
     return;
   }
   if (!/^\d{6}$/.test(pin)) {
-    showToast('Your PIN must contain exactly 6 digits.', 'error');
+    showToast(t('residentLogin.invalidPin'), 'error');
     return;
   }
 
@@ -138,18 +139,18 @@ async function attemptSignup() {
     });
     saveResidentLoginPreference({ rememberMe: true, email });
     markResidentJustLoggedIn();
-    showToast('Account created successfully.');
+    showToast(t('residentLogin.signupSuccess'));
     window.setTimeout(() => {
       window.location.href = './home.html';
     }, 400);
   } catch (error) {
     console.error(error);
     window.__hideResidentLoader?.();
-    let message = error?.message || 'Account creation failed.';
-    if (error?.code === 'auth/email-already-in-use') message = 'This email is already registered.';
-    if (error?.code === 'auth/invalid-email') message = 'The email format is invalid.';
-    if (error?.code === 'permission-denied') message = 'Firebase rules do not allow resident sign-up with invitation codes yet.';
-    if (error?.message === 'Invite code does not match the primary room entered') message = 'The invitation code does not match the primary room entered.';
+    let message = error?.message || t('residentLogin.signupFailed');
+    if (error?.code === 'auth/email-already-in-use') message = t('residentLogin.emailAlreadyRegistered');
+    if (error?.code === 'auth/invalid-email') message = t('residentLogin.invalidEmail');
+    if (error?.code === 'permission-denied') message = t('residentLogin.invitationNotAllowed');
+    if (error?.message === 'Invite code does not match the primary room entered') message = t('residentLogin.invitationRoomMismatch');
     showToast(message, 'error');
   } finally {
     if (submitBtn) submitBtn.disabled = false;
@@ -161,25 +162,25 @@ async function sendResetLink() {
   const btn = $('sendResetLinkBtn');
 
   if (!identifier) {
-    showToast('Enter the resident email before sending the reset link.', 'error');
+    showToast(t('residentLogin.enterEmailForReset'), 'error');
     return;
   }
 
   try {
     if (btn) btn.disabled = true;
     const email = await sendLoginResetEmail(identifier);
-    showToast(`Reset link sent to ${email}`);
+    showToast(t('residentLogin.resetSentToast', { email }));
     const status = $('forgotPasswordStatus');
     if (status) {
-      status.textContent = `Password reset link sent to ${email}.`;
+      status.textContent = t('residentLogin.resetSentStatus', { email });
       status.classList.remove('hidden');
     }
   } catch (error) {
     console.error(error);
-    showToast(error?.message || 'Failed to send reset link.', 'error');
+    showToast(error?.message || t('residentLogin.resetFailed'), 'error');
     const status = $('forgotPasswordStatus');
     if (status) {
-      status.textContent = error?.message || 'Failed to send reset link.';
+      status.textContent = error?.message || t('residentLogin.resetFailed');
       status.classList.remove('hidden');
     }
   } finally {
@@ -194,7 +195,7 @@ function toggleForgotPasswordPanel() {
 
   const willShow = panel.classList.contains('hidden');
   panel.classList.toggle('hidden', !willShow);
-  trigger.textContent = willShow ? 'Hide reset options' : 'Forgot PIN?';
+  trigger.textContent = willShow ? t('residentLogin.hideResetOptions') : t('residentLogin.forgotPin');
 }
 
 function bindEnterKeys() {
@@ -311,7 +312,7 @@ function renderJustLoggedInHint() {
 
   if (consumeResidentJustLoggedIn()) {
     notice.classList.remove('hidden');
-    notice.textContent = 'Resident session ready · Opening Home now';
+    notice.textContent = t('residentLogin.sessionOpeningHome');
     window.setTimeout(() => {
       notice.classList.add('hidden');
     }, 2200);

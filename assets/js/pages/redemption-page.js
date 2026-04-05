@@ -11,6 +11,7 @@ import {
 } from '../services/redemption-service.js';
 import { demoRewards } from '../data/rewards.js';
 import { loadResidentForUser, loadUserProfile } from '../services/member-service.js';
+import { t } from '../core/i18n.js';
 
 const pageState = {
   activeTab: 'for-you',
@@ -21,7 +22,7 @@ const pageState = {
 
 function emptyResident() {
   return {
-    fullName: 'Resident Member',
+    fullName: t('common.residentMember'),
     tier: 'Elite Black',
     status: 'INACTIVE',
     residence: '-',
@@ -86,7 +87,7 @@ async function resolveResidentForRedemptionPage() {
   }
 
   const emailPrefix = String(email || '').trim().split('@')[0] || '';
-  const guessedName = authUser?.displayName?.trim() || profile?.displayName || emailPrefix || 'Resident Member';
+  const guessedName = authUser?.displayName?.trim() || profile?.displayName || emailPrefix || t('common.residentMember');
   return {
     ...emptyResident(),
     fullName: guessedName,
@@ -105,12 +106,12 @@ function renderTabs() {
   });
 
   const titleMap = {
-    'for-you': 'Reward',
-    'your-rewards': 'Your Rewards',
-    used: 'Used Rewards',
-    expired: 'Expired Rewards',
+    'for-you': t('redemption.rewardPlaceholder'),
+    'your-rewards': t('redemption.groupYourRewards'),
+    used: t('redemption.groupUsedRewards'),
+    expired: t('redemption.groupExpiredRewards'),
   };
-  if ($('rewardGroupTitleText')) $('rewardGroupTitleText').textContent = titleMap[pageState.activeTab] || 'Reward';
+  if ($('rewardGroupTitleText')) $('rewardGroupTitleText').textContent = titleMap[pageState.activeTab] || t('redemption.rewardPlaceholder');
 }
 
 function buildRewardQrText(row = {}) {
@@ -148,7 +149,7 @@ function renderRewardQRCodes(scope = document) {
 }
 
 function rewardStatusMessage(pointsRequired, points) {
-  return `Need ${formatNumber(Math.max(pointsRequired - points, 0))} more points`;
+  return t('redemption.needMorePoints', { points: formatNumber(Math.max(pointsRequired - points, 0)) });
 }
 
 function renderRewardCatalog(rewards = [], points = 0) {
@@ -168,17 +169,17 @@ function renderRewardCatalog(rewards = [], points = 0) {
     const isRewardActive = reward.rewardIsActive !== false;
     const canRedeem = points >= pointsRequired && pointsRequired > 0 && isStockAvailable && isRewardActive;
     const imageUrl = reward.coverImageUrl || reward.imageUrl || reward.galleryImages?.[0]?.url || '';
-    const title = reward.title || 'Reward';
+    const title = reward.title || t('redemption.rewardPlaceholder');
     const category = reward.rewardCategory || reward.category || '';
     const statusHint = !isRewardActive
-      ? 'Reward paused'
+      ? t('redemption.rewardPaused')
       : !isStockAvailable
-        ? 'Out of stock'
+        ? t('redemption.outOfStock')
         : canRedeem
-          ? 'Ready to redeem'
+          ? t('redemption.readyToRedeem')
           : rewardStatusMessage(pointsRequired, points);
-    const stockLabel = stockTotal > 0 ? `${formatNumber(stockRemaining)} left` : 'Unlimited';
-    const buttonLabel = !isRewardActive ? 'Inactive' : !isStockAvailable ? 'Out of stock' : 'Redeem';
+    const stockLabel = stockTotal > 0 ? t('redemption.left', { count: formatNumber(stockRemaining) }) : t('redemption.unlimited');
+    const buttonLabel = !isRewardActive ? t('redemption.inactive') : !isStockAvailable ? t('redemption.outOfStock') : t('redemption.redeem');
     return `
       <div class="reward-card vault-reward-card">
         <div class="reward-thumb vault-reward-thumb">${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(title)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
@@ -203,7 +204,7 @@ function renderRewardCatalog(rewards = [], points = 0) {
       if (!rewardId) return;
       try {
         btn.disabled = true;
-        btn.textContent = 'Redeeming...';
+        btn.textContent = t('redemption.redeeming');
         const result = await redeemReward(rewardId);
         pageState.currentPoints = Number(result.balanceAfter || 0);
         if (state.currentResident) state.currentResident.points = pageState.currentPoints;
@@ -214,12 +215,12 @@ function renderRewardCatalog(rewards = [], points = 0) {
         pageState.residentRedemptions = await loadResidentRedemptions(state.currentResident?.residentId || state.residentId || '');
         pageState.activeTab = 'your-rewards';
         renderCurrentTab();
-        showToast(`Reward code ${result.redemptionCode} created`, 'success');
+        showToast(t('redemption.rewardCodeCreated', { code: result.redemptionCode }), 'success');
       } catch (error) {
         console.error(error);
         btn.disabled = false;
-        btn.textContent = 'Redeem';
-        showToast(error?.message || 'Redeem failed', 'error');
+        btn.textContent = t('redemption.redeem');
+        showToast(error?.message || t('redemption.redeemFailed'), 'error');
       }
     });
   });
@@ -228,10 +229,10 @@ function renderRewardCatalog(rewards = [], points = 0) {
 function buildIssuedCard(row) {
   const usedBy = row.usedByName || row.usedByEmail || row.usedOutlet || '';
   const footer = row.status === 'used'
-    ? `Used ${formatDate(row.usedAt)}${usedBy ? ` • ${usedBy}` : ''}`
+    ? `${t('redemption.usedOn', { date: formatDate(row.usedAt) })}${usedBy ? ` • ${usedBy}` : ''}`
     : row.status === 'expired'
-      ? `Expired ${formatDate(row.expiresAt)}`
-      : `Valid until ${formatDate(row.expiresAt)}`;
+      ? t('redemption.expiredOn', { date: formatDate(row.expiresAt) })
+      : t('redemption.validUntil', { date: formatDate(row.expiresAt) });
   const qrValue = buildRewardQrText(row);
   const actionButton = row.status === 'issued'
     ? `<button type="button" class="vault-code-copy-btn" data-copy-code="${escapeHtml(row.redemptionCode || '')}">Copy code</button>`
@@ -257,12 +258,12 @@ function buildIssuedCard(row) {
       <div class="vault-issued-card__thumb">${thumbInner}${usedStamp}</div>
       <div class="vault-issued-card__body">
         <div class="vault-issued-card__title-row">
-          <h3>${escapeHtml(row.rewardTitle || 'Reward')}</h3>
+          <h3>${escapeHtml(row.rewardTitle || t('redemption.rewardPlaceholder'))}</h3>
           <span class="vault-issued-card__points">${formatNumber(row.pointsCost || 0)} P</span>
         </div>
         <div class="vault-issued-card__code">${escapeHtml(row.redemptionCode || '-')}</div>
         <div class="vault-issued-card__hint">Show this QR or code to staff before billing</div>
-        <div class="vault-issued-card__meta">${escapeHtml(row.rewardCategory || 'Reward')} • ${escapeHtml(footer)}</div>
+        <div class="vault-issued-card__meta">${escapeHtml(row.rewardCategory || t('redemption.rewardPlaceholder'))} • ${escapeHtml(footer)}</div>
       </div>
       ${qrBlock}
       ${actionWrap}
@@ -270,7 +271,7 @@ function buildIssuedCard(row) {
   `;
 }
 
-function renderRedemptionGroup(rows = [], emptyText = 'No rewards here yet') {
+function renderRedemptionGroup(rows = [], emptyText = t('common.noRewardsHereYet')) {
   const container = $('rewardList');
   if (!container) return;
   if (!rows.length) {
@@ -286,7 +287,7 @@ function renderRedemptionGroup(rows = [], emptyText = 'No rewards here yet') {
       const code = button.dataset.copyCode || '';
       try {
         await navigator.clipboard.writeText(code);
-        showToast('Reward code copied', 'success');
+        showToast(t('redemption.copied'), 'success');
       } catch (_) {
         showToast(code, 'info');
       }
@@ -299,13 +300,13 @@ function renderCurrentTab() {
   const groups = splitResidentRedemptions(pageState.residentRedemptions || []);
   switch (pageState.activeTab) {
     case 'your-rewards':
-      renderRedemptionGroup(groups.issued, 'No active reward codes yet');
+      renderRedemptionGroup(groups.issued, t('common.noActiveRewardCodesYet'));
       break;
     case 'used':
-      renderRedemptionGroup(groups.used, 'No used rewards yet');
+      renderRedemptionGroup(groups.used, t('common.noUsedRewardsYet'));
       break;
     case 'expired':
-      renderRedemptionGroup(groups.expired, 'No expired rewards');
+      renderRedemptionGroup(groups.expired, t('common.noExpiredRewards'));
       break;
     case 'for-you':
     default:
@@ -342,7 +343,7 @@ export async function loadRedemptionPage() {
   } catch (error) {
     console.error(error);
     pageState.rewards = [];
-    showToast('Unable to read rewards from Firebase', 'error');
+    showToast(t('redemption.unableToReadRewards'), 'error');
   }
 
   try {

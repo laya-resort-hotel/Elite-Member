@@ -7,8 +7,10 @@ import { showToast } from './ui/toast.js';
 import { renderResidentCard, updateStatusLabels } from './ui/renderers.js';
 import { bindFlipCards } from './ui/card-flip.js';
 import { clearResidentJustLoggedIn, clearResidentSessionMode } from './core/session.js';
+import { initLanguage, applyTranslations, openLanguagePicker, t } from './core/i18n.js';
 
 const page = document.body?.dataset?.page || 'index';
+initLanguage();
 const contentType = document.body?.dataset?.contentType || '';
 const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-codes', 'resident-points']);
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption', 'about', 'contact', 'faq']);
@@ -118,7 +120,7 @@ function go(url) {
 
 function emptyResident() {
   return {
-    fullName: 'Resident Member',
+    fullName: t('common.residentMember'),
     tier: 'Elite Black',
     status: 'INACTIVE',
     residence: '-',
@@ -174,7 +176,7 @@ async function initCurrentPage(isLive = false) {
         const btn = document.getElementById('changeLanguageBtn');
         if (btn && !btn.dataset.bound) {
           btn.dataset.bound = '1';
-          btn.addEventListener('click', () => showToast('ระบบสลับภาษาจะทำต่อในรอบถัดไป'));
+          btn.addEventListener('click', () => openLanguagePicker());
         }
         break;
       }
@@ -239,6 +241,7 @@ async function initCurrentPage(isLive = false) {
     updateStatusLabels({ modeState: 'Page Error' });
     showToast(error?.message || error?.toString?.() || 'Page init failed', 'error');
   } finally {
+    applyTranslations(page);
     hideResidentLoader();
   }
 }

@@ -3,11 +3,12 @@ import { $ } from '../core/dom.js';
 import { loadCollectionSafe } from '../services/content-service.js';
 import { loadResidentPointHistory } from '../services/member-service.js';
 import { renderCards, renderResidentCard, renderResidentPointHistoryMini, updateStatusLabels, renderVaultHome } from '../ui/renderers.js';
+import { t } from '../core/i18n.js';
 import { showToast } from '../ui/toast.js';
 
 function emptyResident() {
   return {
-    fullName: 'Resident Member',
+    fullName: t('common.residentMember'),
     tier: 'Elite Black',
     status: 'INACTIVE',
     residence: '-',

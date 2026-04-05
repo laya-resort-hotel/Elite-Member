@@ -11,6 +11,7 @@ export const state = {
   currentMode: 'auth',
   memberCode: '',
   residentId: '',
+  currentLanguage: 'en',
 };
 
 export function setMode(mode) {

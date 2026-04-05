@@ -1,5 +1,6 @@
 import { $, $$ } from '../core/dom.js';
 import { escapeHtml, formatDate, formatNumber, formatTHB } from '../core/format.js';
+import { t } from '../core/i18n.js';
 
 function setAllById(id, value) {
   document.querySelectorAll(`[id="${id}"]`).forEach((node) => {
@@ -13,7 +14,7 @@ export function updateStatusLabels({ firebaseState, authState, modeState }) {
   if (modeState !== undefined && $('modeState')) $('modeState').textContent = modeState;
 }
 
-export function renderCards(listEl, items = [], emptyText = 'No data', options = {}) {
+export function renderCards(listEl, items = [], emptyText = t('common.noData'), options = {}) {
   if (!listEl) return;
   if (!items.length) {
     listEl.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
@@ -51,7 +52,7 @@ export function renderVaultHome(newsItem, promotionItems = []) {
     hero.innerHTML = `
       <a class="vault-news-hero-link" href="${newsHref}">
         <div class="vault-news-image-wrap vault-news-frame">
-          ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(newsItem?.title || 'News')}" />` : '<div class="vault-news-image vault-news-fallback">News</div>'}
+          ${image ? `<img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(newsItem?.title || t('content.news'))}" />` : `<div class="vault-news-image vault-news-fallback">${escapeHtml(t('content.news'))}</div>`}
         </div>
       </a>
     `;
@@ -64,9 +65,9 @@ export function renderVaultHome(newsItem, promotionItems = []) {
       const image = item.coverImageUrl || item.galleryImages?.[0]?.url || '';
       const promoHref = buildContentDetailHref('promotions', item, './promotions.html');
       return `
-        <a class="vault-promo-card image-only" href="${promoHref}" aria-label="${escapeHtml(item.title || 'Promotion')}">
+        <a class="vault-promo-card image-only" href="${promoHref}" aria-label="${escapeHtml(item.title || t('content.promotion'))}">
           <div class="vault-promo-thumb-wrap">
-            ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || 'Promotion')}" />` : '<div class="vault-promo-thumb vault-news-fallback">Promo</div>'}
+            ${image ? `<img class="vault-promo-thumb" src="${escapeHtml(image)}" alt="${escapeHtml(item.title || t('content.promotion'))}" />` : `<div class="vault-promo-thumb vault-news-fallback">${escapeHtml(t('content.promotion'))}</div>`}
           </div>
         </a>
       `;
@@ -74,7 +75,7 @@ export function renderVaultHome(newsItem, promotionItems = []) {
   }
 }
 
-export function renderTable(container, rows = [], emptyText = 'No transactions yet') {
+export function renderTable(container, rows = [], emptyText = t('common.noData')) {
   if (!container) return;
   if (!rows.length) {
     container.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
@@ -85,11 +86,11 @@ export function renderTable(container, rows = [], emptyText = 'No transactions y
       <table class="table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Member</th>
-            <th>Outlet</th>
-            <th>Amount</th>
-            <th>Points</th>
+            <th>${escapeHtml(t('faq.sectionTitle') === 'FAQ' ? 'Date' : 'วันที่')}</th>
+            <th>${escapeHtml(t('common.member'))}</th>
+            <th>${escapeHtml(t('contact.resortLabel') === 'Resort' ? 'Outlet' : 'เอาต์เล็ต')}</th>
+            <th>${escapeHtml(t('contact.phoneLabel') === 'Telephone' ? 'Amount' : 'ยอดใช้จ่าย')}</th>
+            <th>${escapeHtml(t('member.availablePoints'))}</th>
           </tr>
         </thead>
         <tbody>
@@ -109,7 +110,7 @@ export function renderTable(container, rows = [], emptyText = 'No transactions y
 }
 
 export function renderResidentCard(resident = {}) {
-  const fullName = resident.fullName || resident.displayName || 'Resident Member';
+  const fullName = resident.fullName || resident.displayName || t('common.residentMember');
   const initials = fullName.trim().charAt(0).toUpperCase() || 'R';
   const qrCode = resident.qrCodeValue || resident.publicCardCode || resident.memberCode || resident.memberId || 'LAYA-0001';
   const currentPoints = formatNumber(resident.points || 0);
@@ -138,7 +139,7 @@ export function renderResidentCard(resident = {}) {
 export function renderResidentSearchResults(container, residents = []) {
   if (!container) return;
   if (!residents.length) {
-    container.innerHTML = '<div class="card-item"><p>No matching residents</p></div>';
+    container.innerHTML = `<div class="card-item"><p>${escapeHtml(t('common.noData'))}</p></div>`;
     return;
   }
   container.innerHTML = residents.map((resident) => `
@@ -158,7 +159,7 @@ export function renderAdminKpis({ residents = 0, points = 0, spend = 0 }) {
   if ($('kpiSpend')) $('kpiSpend').textContent = formatTHB(spend);
 }
 
-export function renderResidentPointHistoryMini(container, rows = [], emptyText = 'No point history yet') {
+export function renderResidentPointHistoryMini(container, rows = [], emptyText = t('common.noPointHistoryYet')) {
   if (!container) return;
   if (!rows.length) {
     container.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
