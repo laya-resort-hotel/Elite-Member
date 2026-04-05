@@ -1,0 +1,615 @@
+/* Resident mobile-fit pass */
+
+:root {
+  --resident-mobile-gutter: 12px;
+  --resident-mobile-shell: 100%;
+}
+
+body[data-page="home"],
+body[data-page="member"],
+body[data-page="settings"],
+body[data-page="redemption"],
+body[data-page="resident-login"],
+body[data-page="about"],
+body[data-page="contact"],
+body[data-page="faq"],
+body[data-page="news"],
+body[data-page="promotions"],
+body[data-page="benefits"],
+body[data-page="news-detail"],
+body[data-page="promotions-detail"],
+body[data-page="benefits-detail"] {
+  overflow-x: hidden;
+}
+
+@media (max-width: 900px) {
+  .app-shell.customer-shell,
+  .resident-login-shell,
+  body[data-page="news"] #app,
+  body[data-page="promotions"] #app,
+  body[data-page="benefits"] #app,
+  body[data-page="news-detail"] #app,
+  body[data-page="promotions-detail"] #app,
+  body[data-page="benefits-detail"] #app {
+    max-width: var(--resident-mobile-shell);
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .vault-shell {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100svh;
+    box-shadow: none;
+  }
+
+  .vault-appbar-top {
+    height: auto;
+    min-height: 68px;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .vault-appbar-title {
+    font-size: clamp(16px, 4.8vw, 18px);
+  }
+
+  .vault-appbar-subtitle {
+    font-size: 11px;
+  }
+
+  .vault-brand-banner {
+    min-height: 50px;
+    padding: 8px 12px;
+  }
+
+  .vault-brand-banner-logo {
+    font-size: clamp(17px, 4.8vw, 20px);
+    letter-spacing: .14em;
+  }
+
+  .vault-profile-strip {
+    grid-template-columns: 50px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .vault-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .vault-profile-name {
+    font-size: clamp(16px, 5.2vw, 19px);
+  }
+
+  .vault-profile-meta {
+    font-size: 11px;
+  }
+
+  .vault-points-pill {
+    gap: 6px;
+  }
+
+  .vault-points-pill strong {
+    font-size: clamp(26px, 8vw, 34px);
+  }
+
+  .vault-points-pill span {
+    width: 42px;
+    height: 42px;
+    font-size: 22px;
+  }
+
+  .vault-points-pill.small-pill strong {
+    font-size: clamp(20px, 6vw, 26px);
+  }
+
+  .vault-points-pill.small-pill span {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .vault-main-content {
+    gap: 0;
+    padding-bottom: 14px;
+  }
+
+  .vault-section-title,
+  .vault-section-title.light {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .vault-news-image,
+  .vault-news-fallback {
+    height: min(54vw, 300px);
+  }
+
+  .vault-news-copy {
+    padding: 14px 12px 16px;
+  }
+
+  .vault-news-copy h2 {
+    font-size: clamp(21px, 6vw, 28px);
+  }
+
+  .vault-news-copy p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .vault-promo-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 12px 16px;
+    background: #000;
+  }
+
+  .vault-promo-card,
+  .vault-promo-card.image-only {
+    border-radius: 24px;
+    overflow: hidden;
+  }
+
+  .vault-promo-thumb,
+  .vault-promo-card.image-only .vault-promo-thumb {
+    height: 176px;
+  }
+
+  .vault-promo-copy {
+    min-height: auto;
+    padding: 14px;
+  }
+
+  .vault-shortcuts-grid,
+  .member-links-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .vault-shortcut-card {
+    padding: 14px;
+  }
+
+  .vault-reward-tabs {
+    grid-template-columns: repeat(4, minmax(72px, 1fr));
+  }
+
+  .vault-reward-tab {
+    padding: 12px 4px;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .vault-reward-group-title {
+    padding: 14px 12px;
+  }
+
+  .vault-reward-list {
+    padding: 8px 0 14px;
+    gap: 8px;
+  }
+
+  .vault-reward-card {
+    grid-template-columns: 72px minmax(0, 1fr) auto !important;
+    gap: 10px;
+    padding: 10px 12px;
+    min-height: 88px;
+  }
+
+  .vault-reward-thumb {
+    width: 72px;
+    height: 72px;
+  }
+
+  .vault-reward-info h3 {
+    font-size: 14px;
+    margin: 0 0 6px;
+  }
+
+  .vault-reward-info p,
+  .vault-reward-info .muted {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .vault-points-text {
+    font-size: 13px;
+  }
+
+  .vault-reward-action {
+    justify-content: flex-end;
+  }
+
+  .vault-redeem-btn {
+    min-width: 84px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .vault-settings-list {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .vault-settings-item {
+    padding: 14px;
+    gap: 14px;
+    border-radius: 20px;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+
+  .vault-settings-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .vault-settings-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .vault-settings-item span:last-child {
+    font-size: 16px;
+  }
+
+  .resident-auth-main,
+  .resident-auth-main-compact {
+    padding: 0 12px 10px;
+  }
+
+  .resident-auth-hero,
+  .resident-auth-hero-single,
+  .resident-auth-panel,
+  .resident-auth-panel-elevated {
+    border-radius: 24px;
+  }
+
+  .resident-owner-privilege-title {
+    font-size: clamp(16px, 5vw, 20px);
+  }
+
+  .resident-auth-intro p,
+  .resident-login-panel-head p,
+  #residentLoginHint,
+  .upload-note {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .resident-auth-switch {
+    gap: 8px;
+    padding: 6px;
+  }
+
+  .resident-auth-switch-btn,
+  .resident-login-panel .primary-btn,
+  .resident-login-panel .ghost-btn,
+  .resident-login-panel .secondary-btn {
+    min-height: 46px;
+  }
+
+  .resident-login-options {
+    display: grid;
+    gap: 10px;
+  }
+
+  .remember-choice {
+    align-items: flex-start;
+  }
+
+  .remember-choice strong,
+  .remember-choice small {
+    line-height: 1.35;
+  }
+
+  .resident-session-grid,
+  .member-key-grid,
+  .member-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .resident-card-panel,
+  .vault-member-panel {
+    margin: 0 12px;
+  }
+
+  .resident-card-hero,
+  .member-page-panel .resident-card-hero,
+  .vault-member-panel .resident-card-hero {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  .elite-card-toolbar {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .elite-card-scene.large {
+    max-width: none;
+  }
+
+  .member-qr-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .home-member-bar,
+  .home-card-strip {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="news"] .app-shell,
+  body[data-page="promotions"] .app-shell,
+  body[data-page="benefits"] .app-shell,
+  body[data-page="news-detail"] .app-shell,
+  body[data-page="promotions-detail"] .app-shell,
+  body[data-page="benefits-detail"] .app-shell {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 12px;
+  }
+
+  body[data-page="news"] .topbar,
+  body[data-page="promotions"] .topbar,
+  body[data-page="benefits"] .topbar,
+  body[data-page="news-detail"] .topbar,
+  body[data-page="promotions-detail"] .topbar,
+  body[data-page="benefits-detail"] .topbar {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  body[data-page="news"] .page-actions,
+  body[data-page="promotions"] .page-actions,
+  body[data-page="benefits"] .page-actions,
+  body[data-page="news-detail"] .page-actions,
+  body[data-page="promotions-detail"] .page-actions,
+  body[data-page="benefits-detail"] .page-actions {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  body[data-page="news"] .page-actions::-webkit-scrollbar,
+  body[data-page="promotions"] .page-actions::-webkit-scrollbar,
+  body[data-page="benefits"] .page-actions::-webkit-scrollbar,
+  body[data-page="news-detail"] .page-actions::-webkit-scrollbar,
+  body[data-page="promotions-detail"] .page-actions::-webkit-scrollbar,
+  body[data-page="benefits-detail"] .page-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  body[data-page="news"] .page-actions > *,
+  body[data-page="promotions"] .page-actions > *,
+  body[data-page="benefits"] .page-actions > *,
+  body[data-page="news-detail"] .page-actions > *,
+  body[data-page="promotions-detail"] .page-actions > *,
+  body[data-page="benefits-detail"] .page-actions > * {
+    flex: 0 0 auto;
+  }
+
+  body[data-page="news"] .content-two-col,
+  body[data-page="promotions"] .content-two-col,
+  body[data-page="benefits"] .content-two-col,
+  body[data-page="news-detail"] .detail-page-grid,
+  body[data-page="promotions-detail"] .detail-page-grid,
+  body[data-page="benefits-detail"] .detail-page-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body[data-page="news"] .subnav,
+  body[data-page="promotions"] .subnav,
+  body[data-page="benefits"] .subnav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  body[data-page="news"] .subnav::-webkit-scrollbar,
+  body[data-page="promotions"] .subnav::-webkit-scrollbar,
+  body[data-page="benefits"] .subnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  body[data-page="news"] .subnav .nav-btn,
+  body[data-page="promotions"] .subnav .nav-btn,
+  body[data-page="benefits"] .subnav .nav-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 560px) {
+  .bottom-nav.customer-nav,
+  .vault-bottom-nav {
+    width: calc(100vw - 16px);
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+    border-radius: 20px;
+    gap: 2px;
+  }
+
+  .bottom-nav.customer-nav > *,
+  .vault-bottom-nav > * {
+    flex-basis: 0;
+  }
+
+  .vault-bottom-nav .nav-btn,
+  .customer-nav .nav-btn {
+    min-height: 56px;
+    padding: 8px 4px;
+  }
+
+  .nav-ico svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .nav-label {
+    font-size: 11px;
+  }
+
+  .vault-brand-banner-logo {
+    letter-spacing: .12em;
+  }
+
+  .vault-profile-strip {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    padding: 12px 10px;
+  }
+
+  .vault-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .vault-profile-name {
+    font-size: 16px;
+  }
+
+  .vault-points-pill strong {
+    font-size: 22px;
+  }
+
+  .vault-points-pill span {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .vault-news-image,
+  .vault-news-fallback {
+    height: 220px;
+  }
+
+  .vault-promo-grid,
+  .vault-shortcuts-grid,
+  .vault-settings-list,
+  .resident-auth-main,
+  .resident-auth-main-compact {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .vault-reward-card {
+    grid-template-columns: 64px minmax(0,1fr) auto !important;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .vault-reward-thumb {
+    width: 64px;
+    height: 64px;
+  }
+
+  .vault-reward-info h3 {
+    font-size: 13px;
+  }
+
+  .vault-reward-info p,
+  .vault-reward-info .muted,
+  .vault-points-text {
+    font-size: 12px;
+  }
+
+  .vault-redeem-btn {
+    min-width: 78px;
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+
+  .vault-settings-item {
+    padding: 13px 12px;
+    gap: 12px;
+  }
+
+  .vault-settings-item span:last-child {
+    font-size: 15px;
+  }
+
+  .resident-auth-panel,
+  .resident-auth-panel-elevated {
+    padding: 14px;
+  }
+
+  .resident-auth-switch {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .resident-auth-switch-btn {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .field-label {
+    font-size: 12px;
+  }
+
+  .input,
+  .textarea,
+  textarea.input {
+    font-size: 16px;
+  }
+
+  .elite-card-face,
+  .elite-card-scene,
+  .elite-card-scene::before,
+  .elite-card-scene::after {
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 400px) {
+  .vault-appbar-top {
+    grid-template-columns: 34px minmax(0,1fr) auto;
+    gap: 8px;
+  }
+
+  .vault-auth-chip,
+  .vault-auth-chip-logout {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .vault-brand-banner-logo {
+    font-size: 16px;
+    letter-spacing: .1em;
+  }
+
+  .vault-reward-tab {
+    font-size: 9.5px;
+    padding: 11px 2px;
+  }
+
+  .vault-reward-card {
+    grid-template-columns: 56px minmax(0,1fr) auto !important;
+  }
+
+  .vault-reward-thumb {
+    width: 56px;
+    height: 56px;
+  }
+
+  .vault-redeem-btn {
+    min-width: 72px;
+    padding: 8px 8px;
+  }
+}
