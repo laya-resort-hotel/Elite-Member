@@ -1,0 +1,228 @@
+/* Resident mobile compact pass: Home + Settings only */
+
+@media (max-width: 640px) {
+  body[data-page="home"] .vault-appbar-top,
+  body[data-page="settings"] .vault-appbar-top {
+    min-height: 60px;
+    gap: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  body[data-page="home"] .vault-appbar-icon,
+  body[data-page="settings"] .vault-appbar-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  body[data-page="home"] .vault-appbar-title,
+  body[data-page="settings"] .vault-appbar-title {
+    font-size: 15px;
+  }
+
+  body[data-page="home"] .vault-appbar-subtitle,
+  body[data-page="settings"] .vault-appbar-subtitle {
+    font-size: 10px;
+  }
+
+  body[data-page="home"] .vault-auth-chip,
+  body[data-page="settings"] .vault-auth-chip {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  body[data-page="home"] .vault-brand-banner,
+  body[data-page="settings"] .vault-brand-banner {
+    min-height: 42px;
+    padding: 6px 10px;
+  }
+
+  body[data-page="home"] .vault-brand-banner-logo,
+  body[data-page="settings"] .vault-brand-banner-logo {
+    font-size: 15px;
+    letter-spacing: .12em;
+  }
+
+  body[data-page="home"] .vault-profile-strip,
+  body[data-page="settings"] .vault-profile-strip {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 10px;
+    align-items: center;
+  }
+
+  body[data-page="home"] .vault-avatar,
+  body[data-page="settings"] .vault-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 17px;
+  }
+
+  body[data-page="home"] .vault-profile-name,
+  body[data-page="settings"] .vault-profile-name {
+    font-size: 15px;
+  }
+
+  body[data-page="home"] .vault-profile-meta,
+  body[data-page="settings"] .vault-profile-meta {
+    font-size: 10px;
+    margin-top: 2px;
+  }
+
+  body[data-page="home"] .vault-points-pill,
+  body[data-page="settings"] .vault-points-pill {
+    gap: 5px;
+    padding: 7px 8px;
+    border-radius: 16px;
+  }
+
+  body[data-page="home"] .vault-points-pill strong {
+    font-size: clamp(18px, 5.8vw, 23px);
+  }
+
+  body[data-page="settings"] .vault-points-pill.small-pill strong {
+    font-size: clamp(15px, 5vw, 18px);
+  }
+
+  body[data-page="home"] .vault-points-pill span,
+  body[data-page="settings"] .vault-points-pill span {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  body[data-page="home"] .vault-main-content,
+  body[data-page="settings"] .vault-main-content {
+    padding-bottom: 10px;
+  }
+
+  body[data-page="home"] .vault-section-title,
+  body[data-page="settings"] .vault-section-title {
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+
+  body[data-page="home"] .vault-news-image,
+  body[data-page="home"] .vault-news-fallback {
+    height: min(42vw, 210px);
+  }
+
+  body[data-page="home"] .vault-news-copy {
+    padding: 12px;
+  }
+
+  body[data-page="home"] .vault-news-kicker {
+    margin-bottom: 6px;
+    font-size: 10px;
+  }
+
+  body[data-page="home"] .vault-news-copy h2 {
+    font-size: 18px;
+    margin-bottom: 6px;
+    line-height: 1.15;
+  }
+
+  body[data-page="home"] .vault-news-copy p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  body[data-page="home"] .vault-promo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px 10px 12px;
+    background: #000;
+  }
+
+  body[data-page="home"] .vault-promo-card,
+  body[data-page="home"] .vault-promo-card.image-only {
+    border-radius: 16px;
+  }
+
+  body[data-page="home"] .vault-promo-thumb,
+  body[data-page="home"] .vault-promo-card.image-only .vault-promo-thumb {
+    height: 104px;
+  }
+
+  body[data-page="home"] .vault-promo-copy {
+    padding: 10px 10px 11px;
+  }
+
+  body[data-page="home"] .vault-promo-copy strong {
+    font-size: 12px;
+  }
+
+  body[data-page="home"] .vault-promo-copy span {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  body[data-page="home"] .vault-bottom-nav,
+  body[data-page="settings"] .vault-bottom-nav {
+    padding: 6px 5px calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body[data-page="home"] .vault-bottom-nav .nav-btn,
+  body[data-page="settings"] .vault-bottom-nav .nav-btn {
+    gap: 4px;
+    padding: 6px 2px;
+  }
+
+  body[data-page="home"] .nav-ico svg,
+  body[data-page="settings"] .nav-ico svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  body[data-page="home"] .nav-label,
+  body[data-page="settings"] .nav-label {
+    font-size: 10px;
+  }
+
+  body[data-page="settings"] .vault-settings-list {
+    padding: 10px 0 12px;
+    gap: 4px;
+  }
+
+  body[data-page="settings"] .vault-settings-item {
+    gap: 12px;
+    padding: 12px 14px;
+    min-height: 64px;
+  }
+
+  body[data-page="settings"] .vault-settings-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  body[data-page="settings"] .vault-settings-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  body[data-page="settings"] .vault-settings-item span:last-child {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  body[data-page="home"] .vault-promo-grid {
+    gap: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  body[data-page="home"] .vault-promo-thumb,
+  body[data-page="home"] .vault-promo-card.image-only .vault-promo-thumb {
+    height: 94px;
+  }
+
+  body[data-page="settings"] .vault-settings-item {
+    padding: 11px 12px;
+  }
+
+  body[data-page="settings"] .vault-settings-item span:last-child {
+    font-size: 14px;
+  }
+}
