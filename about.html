@@ -9,11 +9,11 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css?v=20260405lang1" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260405static1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260405lang1" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260405cms4"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405static1"></script>
 </head>
 <body data-page="about" class="has-resident-loader">
   <div id="residentRouteLoader" class="resident-route-loader" aria-hidden="false">
@@ -47,7 +47,7 @@
         <div class="vault-avatar" id="memberAvatarLetter">N</div>
         <div class="vault-profile-copy">
           <div class="vault-profile-name" id="memberName">Resident Member</div>
-          <div class="vault-profile-meta">About Laya Resort Phuket</div>
+          <div class="vault-profile-meta" id="staticProfileMeta">About Laya Resort Phuket</div>
         </div>
         <div class="vault-points-pill small-pill">
           <strong id="memberPoints">0</strong>
@@ -56,51 +56,10 @@
       </div>
     </header>
 
-    <main class="main-content vault-main-content">
-      <section class="vault-section-title">ABOUT US</section>
-
-      <section class="panel about-panel">
-        <div class="about-hero-copy">
-          <div class="about-kicker">A refined escape in Cherngtalay, Phuket</div>
-          <h1 class="about-title">Where every stay feels personal.</h1>
-          <p class="about-lead">At Laya Resort Phuket, every stay is designed to feel deeply personal. Set beside the tranquil beauty of Layan Beach in Cherngtalay, our resort is a private sanctuary where refined comfort, natural serenity, and genuine Thai hospitality come together in perfect harmony.</p>
-        </div>
-      </section>
-
-      <section class="panel about-copy-card">
-        <h2 class="about-section-heading">Elegant stays with effortless comfort</h2>
-        <p>Our elegantly appointed rooms and suites are thoughtfully created to offer a sense of space, calm, and effortless luxury. With generous interiors, private balconies, and carefully curated amenities, each stay invites guests to slow down, unwind, and reconnect with the rhythm of the island.</p>
-
-        <h2 class="about-section-heading">A collection of experiences</h2>
-        <p>Beyond the room, Laya Resort Phuket offers a collection of enriching experiences crafted for every kind of traveler. Guests may relax by our three outdoor swimming pools, restore balance in the yoga room, energize in the Fitness Center, or indulge in soothing wellness rituals at Malai Spa. Culinary moments are equally memorable, with our signature outlets—The Taste, Mangrove Bar &amp; Restaurant, and Aroonsawat Café—offering a graceful blend of international favorites and local inspiration.</p>
-
-        <h2 class="about-section-heading">Peaceful, connected, unforgettable</h2>
-        <p>Ideally located just 15 minutes from Phuket International Airport, the resort provides a peaceful escape while remaining close to the island’s vibrant attractions and coastal charm. Whether for a romantic retreat, a family holiday, or a quiet journey of rest and renewal, Laya Resort Phuket welcomes each guest with warmth, elegance, and attentive care.</p>
-
-        <div class="about-quote">From poolside relaxation to sunset cocktails and restorative spa rituals, every moment at Laya Resort Phuket is crafted to leave a lasting impression.</div>
-      </section>
-
-      <section class="panel about-contact-card">
-        <div class="about-contact-grid">
-          <div>
-            <div class="about-contact-label">Location</div>
-            <div class="about-contact-value">Layan Beach, Cherngtalay, Phuket</div>
-          </div>
-          <div>
-            <div class="about-contact-label">Travel time</div>
-            <div class="about-contact-value">Approx. 15 minutes from Phuket International Airport</div>
-          </div>
-          <div>
-            <div class="about-contact-label">Dining</div>
-            <div class="about-contact-value">The Taste · Mangrove Bar &amp; Restaurant · Aroonsawat Café</div>
-          </div>
-          <div>
-            <div class="about-contact-label">Wellness</div>
-            <div class="about-contact-value">Malai Spa · Fitness Center · Yoga Room · Three outdoor pools</div>
-          </div>
-        </div>
-      </section>
-    </main>
+    <main class="main-content vault-main-content" data-static-page="about">
+  <section class="vault-section-title" id="staticPageSectionTitle">ABOUT US</section>
+  <div id="staticPageRoot"></div>
+</main>
   </div>
 
   <nav class="bottom-nav customer-nav vault-bottom-nav">

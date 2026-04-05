@@ -9,10 +9,10 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css?v=20260404invite2" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260405static1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260405cms4"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405static1"></script>
 </head>
 <body data-page="admin">
   <div id="app" class="app-shell">
@@ -539,6 +539,143 @@
           </section>
         </div>
       </section>
+
+
+<section class="panel mt-lg admin-static-panel">
+  <div class="section-head admin-cms-head">
+    <div>
+      <div class="eyebrow gold">Static Pages CMS</div>
+      <h3>About Us / Contact Us / FAQ</h3>
+    </div>
+    <div class="row gap wrap">
+      <a id="openStaticPageLink" class="ghost-btn" href="./about.html" target="_blank" rel="noopener">Open page</a>
+      <button id="saveStaticPageBtn" class="primary-btn" type="button">Save static page</button>
+      <button id="resetStaticPageBtn" class="ghost-btn" type="button">Reload current page</button>
+    </div>
+  </div>
+  <div class="readonly-note" id="staticPageReadOnlyNote">Use this panel to manage About Us, Contact Us, and FAQ in English, Thai, Russian, and Chinese.</div>
+
+  <div class="admin-tabbar static-page-tabbar" role="tablist" aria-label="Static page tabs">
+    <button class="admin-tab-btn static-page-tab-btn active" data-static-page-tab="about" type="button">About Us</button>
+    <button class="admin-tab-btn static-page-tab-btn" data-static-page-tab="contact" type="button">Contact Us</button>
+    <button class="admin-tab-btn static-page-tab-btn" data-static-page-tab="faq" type="button">FAQ</button>
+  </div>
+
+  <div class="info-note mt-sm" id="staticPageInfoNote">จัดการหน้าเนื้อหาคงที่แยก 4 ภาษาได้จริง ส่วนหน้า Resident จะดึงตามภาษาที่แขกเลือกโดยอัตโนมัติ</div>
+
+  <div class="panel static-page-editor-shell mt-md">
+    <div class="panel-title-row compact-row admin-locale-head">
+      <div>
+        <div class="eyebrow gold" id="staticPageTypeLabel">About Us</div>
+        <h5 id="staticPageModeLabel">Static page content</h5>
+      </div>
+      <div class="static-locale-switch" role="tablist" aria-label="Static page language tabs">
+        <button class="locale-tab-btn static-locale-tab-btn active" type="button" data-static-locale-tab="en">EN</button>
+        <button class="locale-tab-btn static-locale-tab-btn" type="button" data-static-locale-tab="th">TH</button>
+        <button class="locale-tab-btn static-locale-tab-btn" type="button" data-static-locale-tab="ru">RU</button>
+        <button class="locale-tab-btn static-locale-tab-btn" type="button" data-static-locale-tab="zh">ZH</button>
+      </div>
+    </div>
+    <div class="info-note static-page-editor-note">ฟิลด์ด้านล่างรองรับ HTML แบบง่าย เช่น &lt;p&gt;, &lt;h2&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt; หากพิมพ์เป็นข้อความธรรมดา ระบบจะเปลี่ยนเป็นย่อหน้าให้อัตโนมัติ</div>
+
+    <div class="static-locale-editor-panel active" data-static-locale-panel="en">
+      <div class="locale-editor-label">English static page</div>
+      <div class="grid-2 mt-sm admin-editor-grid">
+        <div>
+          <label class="field-label" for="staticSectionTitle_en">Section label (EN)</label>
+          <input id="staticSectionTitle_en" class="input" type="text" placeholder="ABOUT US" />
+        </div>
+        <div>
+          <label class="field-label" for="staticProfileMeta_en">Profile subtitle (EN)</label>
+          <input id="staticProfileMeta_en" class="input" type="text" placeholder="About Laya Resort Phuket" />
+        </div>
+      </div>
+      <label class="field-label" for="staticHeroKicker_en">Hero kicker (EN)</label>
+      <input id="staticHeroKicker_en" class="input" type="text" placeholder="A refined escape in Cherngtalay, Phuket" />
+      <label class="field-label" for="staticHeroTitle_en">Hero title (EN)</label>
+      <input id="staticHeroTitle_en" class="input" type="text" placeholder="Where every stay feels personal." />
+      <label class="field-label" for="staticHeroLead_en">Hero lead (EN)</label>
+      <textarea id="staticHeroLead_en" class="input textarea textarea-sm" placeholder="Intro paragraph"></textarea>
+      <label class="field-label" for="staticContentHtml_en">Main content (EN)</label>
+      <textarea id="staticContentHtml_en" class="input textarea static-editor-html" placeholder="HTML or plain text for the main body"></textarea>
+      <label class="field-label" for="staticFooterHtml_en">Bottom block (EN)</label>
+      <textarea id="staticFooterHtml_en" class="input textarea static-editor-footer" placeholder="HTML or plain text for the lower card"></textarea>
+    </div>
+
+    <div class="static-locale-editor-panel" data-static-locale-panel="th">
+      <div class="locale-editor-label">Thai static page</div>
+      <div class="grid-2 mt-sm admin-editor-grid">
+        <div>
+          <label class="field-label" for="staticSectionTitle_th">Section label (TH)</label>
+          <input id="staticSectionTitle_th" class="input" type="text" placeholder="เกี่ยวกับเรา" />
+        </div>
+        <div>
+          <label class="field-label" for="staticProfileMeta_th">Profile subtitle (TH)</label>
+          <input id="staticProfileMeta_th" class="input" type="text" placeholder="เกี่ยวกับลายา รีสอร์ท ภูเก็ต" />
+        </div>
+      </div>
+      <label class="field-label" for="staticHeroKicker_th">Hero kicker (TH)</label>
+      <input id="staticHeroKicker_th" class="input" type="text" placeholder="คำโปรยสั้นภาษาไทย" />
+      <label class="field-label" for="staticHeroTitle_th">Hero title (TH)</label>
+      <input id="staticHeroTitle_th" class="input" type="text" placeholder="หัวข้อหลักภาษาไทย" />
+      <label class="field-label" for="staticHeroLead_th">Hero lead (TH)</label>
+      <textarea id="staticHeroLead_th" class="input textarea textarea-sm" placeholder="เกริ่นนำภาษาไทย"></textarea>
+      <label class="field-label" for="staticContentHtml_th">Main content (TH)</label>
+      <textarea id="staticContentHtml_th" class="input textarea static-editor-html" placeholder="HTML หรือข้อความหลักภาษาไทย"></textarea>
+      <label class="field-label" for="staticFooterHtml_th">Bottom block (TH)</label>
+      <textarea id="staticFooterHtml_th" class="input textarea static-editor-footer" placeholder="HTML หรือบล็อกล่างภาษาไทย"></textarea>
+    </div>
+
+    <div class="static-locale-editor-panel" data-static-locale-panel="ru">
+      <div class="locale-editor-label">Russian static page</div>
+      <div class="grid-2 mt-sm admin-editor-grid">
+        <div>
+          <label class="field-label" for="staticSectionTitle_ru">Section label (RU)</label>
+          <input id="staticSectionTitle_ru" class="input" type="text" placeholder="О НАС" />
+        </div>
+        <div>
+          <label class="field-label" for="staticProfileMeta_ru">Profile subtitle (RU)</label>
+          <input id="staticProfileMeta_ru" class="input" type="text" placeholder="О курорте Laya Resort Phuket" />
+        </div>
+      </div>
+      <label class="field-label" for="staticHeroKicker_ru">Hero kicker (RU)</label>
+      <input id="staticHeroKicker_ru" class="input" type="text" placeholder="Краткий заголовок на русском" />
+      <label class="field-label" for="staticHeroTitle_ru">Hero title (RU)</label>
+      <input id="staticHeroTitle_ru" class="input" type="text" placeholder="Основной заголовок на русском" />
+      <label class="field-label" for="staticHeroLead_ru">Hero lead (RU)</label>
+      <textarea id="staticHeroLead_ru" class="input textarea textarea-sm" placeholder="Вступительный текст на русском"></textarea>
+      <label class="field-label" for="staticContentHtml_ru">Main content (RU)</label>
+      <textarea id="staticContentHtml_ru" class="input textarea static-editor-html" placeholder="HTML или основной текст на русском"></textarea>
+      <label class="field-label" for="staticFooterHtml_ru">Bottom block (RU)</label>
+      <textarea id="staticFooterHtml_ru" class="input textarea static-editor-footer" placeholder="HTML или нижний блок на русском"></textarea>
+    </div>
+
+    <div class="static-locale-editor-panel" data-static-locale-panel="zh">
+      <div class="locale-editor-label">Chinese static page</div>
+      <div class="grid-2 mt-sm admin-editor-grid">
+        <div>
+          <label class="field-label" for="staticSectionTitle_zh">Section label (ZH)</label>
+          <input id="staticSectionTitle_zh" class="input" type="text" placeholder="关于我们" />
+        </div>
+        <div>
+          <label class="field-label" for="staticProfileMeta_zh">Profile subtitle (ZH)</label>
+          <input id="staticProfileMeta_zh" class="input" type="text" placeholder="关于 Laya Resort Phuket" />
+        </div>
+      </div>
+      <label class="field-label" for="staticHeroKicker_zh">Hero kicker (ZH)</label>
+      <input id="staticHeroKicker_zh" class="input" type="text" placeholder="中文短句" />
+      <label class="field-label" for="staticHeroTitle_zh">Hero title (ZH)</label>
+      <input id="staticHeroTitle_zh" class="input" type="text" placeholder="中文主标题" />
+      <label class="field-label" for="staticHeroLead_zh">Hero lead (ZH)</label>
+      <textarea id="staticHeroLead_zh" class="input textarea textarea-sm" placeholder="中文导语"></textarea>
+      <label class="field-label" for="staticContentHtml_zh">Main content (ZH)</label>
+      <textarea id="staticContentHtml_zh" class="input textarea static-editor-html" placeholder="HTML 或中文主体内容"></textarea>
+      <label class="field-label" for="staticFooterHtml_zh">Bottom block (ZH)</label>
+      <textarea id="staticFooterHtml_zh" class="input textarea static-editor-footer" placeholder="HTML 或中文底部内容"></textarea>
+    </div>
+  </div>
+</section>
+
 
       <section class="panel mt-lg">
         <div class="section-head">

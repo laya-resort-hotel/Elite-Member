@@ -352,6 +352,11 @@ function validResidentPointRedeemCreate() {
       allow write: if isAdminLike();
     }
 
+    match /site_pages/{docId} {
+      allow read: if signedIn();
+      allow write: if isAdminLike();
+    }
+
     match /residents/{residentId} {
       allow get: if isAdminLike() || residentOwnedByCurrentUserDoc();
       allow list: if isAdminLike();

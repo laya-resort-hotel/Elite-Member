@@ -168,18 +168,24 @@ async function initCurrentPage(isLive = false) {
         await mod.loadRedemptionPage();
         break;
       }
-      case 'settings':
-      case 'about':
-      case 'contact':
-      case 'faq': {
-        renderResidentCard(state.currentResident || emptyResident());
-        const btn = document.getElementById('changeLanguageBtn');
-        if (btn && !btn.dataset.bound) {
-          btn.dataset.bound = '1';
-          btn.addEventListener('click', () => openLanguagePicker());
-        }
-        break;
-      }
+
+case 'settings': {
+  renderResidentCard(state.currentResident || emptyResident());
+  const btn = document.getElementById('changeLanguageBtn');
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => openLanguagePicker());
+  }
+  break;
+}
+case 'about':
+case 'contact':
+case 'faq': {
+  renderResidentCard(state.currentResident || emptyResident());
+  const mod = await import('./pages/static-page.js?v=20260405static1');
+  await mod.loadStaticPage(page);
+  break;
+}
       case 'news':
       case 'promotions':
       case 'benefits': {
@@ -204,13 +210,13 @@ async function initCurrentPage(isLive = false) {
         break;
       }
       case 'admin': {
-        const mod = await import('./pages/admin-page.js?v=20260405cms4');
+        const mod = await import('./pages/admin-page.js?v=20260405static1');
         bindPageOnce('admin', mod.bindAdminPage);
         await mod.loadAdminDashboard();
         break;
       }
       case 'invite-codes': {
-        const mod = await import('./pages/admin-page.js?v=20260405cms4');
+        const mod = await import('./pages/admin-page.js?v=20260405static1');
         bindPageOnce('invite-codes', mod.bindInviteCodeManagerPage);
         await mod.loadInviteCodeManagerPage();
         break;

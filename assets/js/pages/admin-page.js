@@ -36,6 +36,7 @@ import {
 import { renderAdminKpis, renderResidentSearchResults, renderTable, updateStatusLabels } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
 import { escapeHtml, formatTHB, formatNumber } from '../core/format.js';
+import { STATIC_PAGE_KEYS, STATIC_PAGE_LABELS, blankStaticPageEditorState, normalizeStaticPageEditorState, loadStaticPageContent, saveStaticPageContent } from '../services/static-page-service.js';
 
 const labelMap = {
   news: 'News',
@@ -72,6 +73,18 @@ const adminMembersState = {
   cache: [],
   editor: blankMemberEditorState(),
   insights: blankMemberInsightsState(),
+};
+
+
+
+const adminStaticPageState = {
+  activePage: 'about',
+  activeLocale: 'en',
+  pages: {
+    about: blankStaticPageEditorState('about'),
+    contact: blankStaticPageEditorState('contact'),
+    faq: blankStaticPageEditorState('faq'),
+  },
 };
 
 const adminInviteState = {
@@ -2160,6 +2173,179 @@ function bindAdminContentTabs() {
   });
 }
 
+
+
+function getActiveStaticPage() {
+  return adminStaticPageState.activePage;
+}
+
+function getStaticPageEditorState(pageKey = getActiveStaticPage()) {
+  return adminStaticPageState.pages[pageKey] || blankStaticPageEditorState(pageKey);
+}
+
+function setStaticPageEditorState(pageKey, nextState = {}) {
+  adminStaticPageState.pages[pageKey] = normalizeStaticPageEditorState({
+    ...getStaticPageEditorState(pageKey),
+    ...nextState,
+    slug: pageKey,
+  });
+}
+
+function updateStaticPageReadonlyNote() {
+  const note = $('staticPageReadOnlyNote');
+  if (!note) return;
+  if (canManageContent()) {
+    note.textContent = 'หน้านี้จะบันทึก Static Pages จริงลง Firestore collection: site_pages และแขกจะเห็นตามภาษาที่เลือกทันที';
+    return;
+  }
+  note.textContent = 'ต้อง login เป็น admin / manager / staff และเชื่อม Firebase สำเร็จก่อน จึงจะบันทึก Static Pages ได้';
+}
+
+function updateStaticPageHeader() {
+  const pageKey = getActiveStaticPage();
+  const label = STATIC_PAGE_LABELS[pageKey] || pageKey;
+  if ($('staticPageTypeLabel')) $('staticPageTypeLabel').textContent = label;
+  if ($('staticPageModeLabel')) $('staticPageModeLabel').textContent = `${label} • Static Pages CMS`;
+  const openLink = $('openStaticPageLink');
+  if (openLink) {
+    openLink.href = `./${pageKey}.html`;
+    openLink.textContent = `Open ${label}`;
+  }
+}
+
+function readStaticPageEditorInputs() {
+  const translations = {};
+  CONTENT_LANGS.forEach((lang) => {
+    translations[lang] = {
+      sectionTitle: $(`staticSectionTitle_${lang}`)?.value.trim() || '',
+      profileMeta: $(`staticProfileMeta_${lang}`)?.value.trim() || '',
+      heroKicker: $(`staticHeroKicker_${lang}`)?.value.trim() || '',
+      heroTitle: $(`staticHeroTitle_${lang}`)?.value.trim() || '',
+      heroLead: $(`staticHeroLead_${lang}`)?.value.trim() || '',
+      contentHtml: $(`staticContentHtml_${lang}`)?.value.trim() || '',
+      footerHtml: $(`staticFooterHtml_${lang}`)?.value.trim() || '',
+    };
+  });
+  return translations;
+}
+
+function hydrateStaticPageEditorInputs(translations = {}) {
+  const safe = normalizeStaticPageEditorState({ slug: getActiveStaticPage(), translations }).translations;
+  CONTENT_LANGS.forEach((lang) => {
+    if ($(`staticSectionTitle_${lang}`)) $(`staticSectionTitle_${lang}`).value = safe[lang].sectionTitle || '';
+    if ($(`staticProfileMeta_${lang}`)) $(`staticProfileMeta_${lang}`).value = safe[lang].profileMeta || '';
+    if ($(`staticHeroKicker_${lang}`)) $(`staticHeroKicker_${lang}`).value = safe[lang].heroKicker || '';
+    if ($(`staticHeroTitle_${lang}`)) $(`staticHeroTitle_${lang}`).value = safe[lang].heroTitle || '';
+    if ($(`staticHeroLead_${lang}`)) $(`staticHeroLead_${lang}`).value = safe[lang].heroLead || '';
+    if ($(`staticContentHtml_${lang}`)) $(`staticContentHtml_${lang}`).value = safe[lang].contentHtml || '';
+    if ($(`staticFooterHtml_${lang}`)) $(`staticFooterHtml_${lang}`).value = safe[lang].footerHtml || '';
+  });
+}
+
+function syncStaticPageEditorFromDom() {
+  const pageKey = getActiveStaticPage();
+  const current = getStaticPageEditorState(pageKey);
+  setStaticPageEditorState(pageKey, {
+    ...current,
+    translations: readStaticPageEditorInputs(),
+    activeLocale: adminStaticPageState.activeLocale,
+  });
+}
+
+function setActiveStaticLocale(locale = 'en') {
+  adminStaticPageState.activeLocale = CONTENT_LANGS.includes(locale) ? locale : 'en';
+  document.querySelectorAll('.static-locale-tab-btn').forEach((button) => {
+    const active = button.dataset.staticLocaleTab === adminStaticPageState.activeLocale;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.static-locale-editor-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.dataset.staticLocalePanel === adminStaticPageState.activeLocale);
+  });
+}
+
+async function loadStaticPageCmsPanel(options = {}) {
+  if (!$('saveStaticPageBtn')) return;
+  const pageKey = getActiveStaticPage();
+  const current = getStaticPageEditorState(pageKey);
+  if (!options.force && current.__loaded) {
+    hydrateStaticPageEditorInputs(current.translations);
+    setActiveStaticLocale(current.activeLocale || adminStaticPageState.activeLocale || 'en');
+    updateStaticPageHeader();
+    updateStaticPageReadonlyNote();
+    return;
+  }
+  try {
+    const data = await loadStaticPageContent(pageKey);
+    setStaticPageEditorState(pageKey, { ...data, __loaded: true });
+    hydrateStaticPageEditorInputs(getStaticPageEditorState(pageKey).translations);
+    setActiveStaticLocale(getStaticPageEditorState(pageKey).activeLocale || adminStaticPageState.activeLocale || 'en');
+    updateStaticPageHeader();
+    updateStaticPageReadonlyNote();
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'Failed to load static page', 'error');
+  }
+}
+
+async function setActiveStaticPage(pageKey = 'about', options = {}) {
+  if (!$('saveStaticPageBtn') || !STATIC_PAGE_KEYS.includes(pageKey)) return;
+  syncStaticPageEditorFromDom();
+  adminStaticPageState.activePage = pageKey;
+  document.querySelectorAll('.static-page-tab-btn').forEach((button) => {
+    const active = button.dataset.staticPageTab === pageKey;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  await loadStaticPageCmsPanel(options);
+}
+
+async function saveActiveStaticPageEditor() {
+  if (!canManageContent()) {
+    showToast('Login เป็น admin / manager / staff ก่อนบันทึก Static Pages', 'error');
+    return;
+  }
+  const pageKey = getActiveStaticPage();
+  syncStaticPageEditorFromDom();
+  try {
+    const saved = await saveStaticPageContent(pageKey, getStaticPageEditorState(pageKey));
+    setStaticPageEditorState(pageKey, { ...saved, __loaded: true });
+    hydrateStaticPageEditorInputs(getStaticPageEditorState(pageKey).translations);
+    showToast(`${STATIC_PAGE_LABELS[pageKey] || pageKey} saved`);
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'Save static page failed', 'error');
+  }
+}
+
+function bindStaticPageCms() {
+  if (!$('saveStaticPageBtn')) return;
+  updateStaticPageReadonlyNote();
+  document.querySelectorAll('.static-page-tab-btn').forEach((button) => {
+    button.addEventListener('click', async () => {
+      await setActiveStaticPage(button.dataset.staticPageTab || 'about');
+    });
+  });
+  document.querySelectorAll('.static-locale-tab-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      syncStaticPageEditorFromDom();
+      setActiveStaticLocale(button.dataset.staticLocaleTab || 'en');
+    });
+  });
+  CONTENT_LANGS.forEach((lang) => {
+    ['SectionTitle', 'ProfileMeta', 'HeroKicker', 'HeroTitle', 'HeroLead', 'ContentHtml', 'FooterHtml'].forEach((field) => {
+      const el = document.getElementById(`static${field}_${lang}`);
+      if (!el) return;
+      el.addEventListener('input', syncStaticPageEditorFromDom);
+    });
+  });
+  $('saveStaticPageBtn')?.addEventListener('click', saveActiveStaticPageEditor);
+  $('resetStaticPageBtn')?.addEventListener('click', async () => {
+    await loadStaticPageCmsPanel({ force: true });
+    showToast('Reloaded current static page');
+  });
+}
+
 function bindInviteCodeManager() {
   $('adminInviteCodeList')?.addEventListener('click', handleInviteListClick);
   $('inviteFilterBar')?.addEventListener('click', handleInviteFilterClick);
@@ -2229,6 +2415,7 @@ export async function loadAdminDashboard() {
     await loadInviteCodes({ force: true });
   }
   if (!getMemberEditorState().memberId) resetMemberEditor();
+  await loadStaticPageCmsPanel();
   setTab(getActiveType());
   if (isMembersTab()) {
     await loadMembersTab({ force: true });
@@ -2240,6 +2427,7 @@ export async function loadAdminDashboard() {
 export function bindAdminPage() {
   bindSpendForm();
   bindAdminContentTabs();
+  bindStaticPageCms();
 
   if ($('loadAdminDataBtn')) {
     $('loadAdminDataBtn').addEventListener('click', async () => {

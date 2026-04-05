@@ -3090,3 +3090,51 @@ body.lightbox-open {
     border-radius: 18px;
   }
 }
+
+
+.static-page-tabbar {
+  margin-top: 16px;
+}
+
+.static-page-editor-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.static-locale-switch {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.static-locale-editor-panel {
+  display: none;
+}
+
+.static-locale-editor-panel.active {
+  display: block;
+}
+
+.static-page-editor-note {
+  margin-top: 6px;
+}
+
+.static-editor-html {
+  min-height: 220px;
+}
+
+.static-editor-footer {
+  min-height: 140px;
+}
+
+.static-page-content-card :is(p, li) {
+  line-height: 1.7;
+}
+
+.static-page-content-card :is(h2, h3) {
+  margin-top: 22px;
+}
+
+.contact-grid-single {
+  grid-template-columns: 1fr;
+}
