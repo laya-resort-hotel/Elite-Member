@@ -2,6 +2,7 @@ import { $, $$ } from '../core/dom.js';
 import { formatDate, formatNumber, formatTHB, escapeHtml } from '../core/format.js';
 import { state } from '../core/state.js';
 import { showToast } from '../ui/toast.js';
+import { markRewardCodeUsedByStaff } from '../services/redemption-service.js';
 import {
   POINT_RULE,
   awardResidentSpendPoints,
@@ -290,6 +291,37 @@ function bindScannerControls() {
 function bindSpendForm() {
   $('residentSpendAmountInput')?.addEventListener('input', updateAmountPreview);
   $('residentRewardActionBtn')?.addEventListener('click', handleSaveSpend);
+  $('markRewardCodeUsedBtn')?.addEventListener('click', handleMarkRewardCodeUsed);
+}
+
+
+function setRewardCodeStatus(message = '', tone = 'info') {
+  const box = $('rewardCodeUseStatus');
+  if (!box) return;
+  box.textContent = message || 'Enter the reward code shown in the resident app, then mark it as used.';
+  box.dataset.tone = tone;
+}
+
+async function handleMarkRewardCodeUsed() {
+  const code = $('rewardCodeInput')?.value || '';
+  const outlet = $('rewardCodeOutletInput')?.value || '';
+  const note = $('rewardCodeNoteInput')?.value || '';
+  const button = $('markRewardCodeUsedBtn');
+  try {
+    if (button) button.disabled = true;
+    setRewardCodeStatus('Checking reward code...', 'info');
+    const result = await markRewardCodeUsedByStaff({ code, outlet, note });
+    setRewardCodeStatus(`Code ${result.redemptionCode} marked as used`, 'success');
+    if ($('rewardCodeInput')) $('rewardCodeInput').value = '';
+    if ($('rewardCodeNoteInput')) $('rewardCodeNoteInput').value = '';
+    showToast(`Marked ${result.redemptionCode} as used`, 'success');
+  } catch (error) {
+    console.error(error);
+    setRewardCodeStatus(error?.message || 'Unable to use reward code', 'error');
+    showToast(error?.message || 'Unable to use reward code', 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 function bindQuickOutletButtons() {
@@ -311,6 +343,7 @@ export async function loadResidentPointScannerPage() {
   setFormulaCopy();
   updateAmountPreview();
   renderSelectedResident();
+  setRewardCodeStatus();
   await refreshRecentTransactions();
 }
 

@@ -183,3 +183,13 @@
     text-align: left;
   }
 }
+
+#rewardCodeUseStatus[data-tone="success"] {
+  border-color: rgba(113, 193, 142, 0.4);
+  color: #d8f2de;
+}
+
+#rewardCodeUseStatus[data-tone="error"] {
+  border-color: rgba(215, 110, 110, 0.4);
+  color: #ffd8d8;
+}

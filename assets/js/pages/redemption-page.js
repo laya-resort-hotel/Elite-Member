@@ -1,13 +1,23 @@
-
 import { state } from '../core/state.js';
 import { $ } from '../core/dom.js';
-import { escapeHtml, formatNumber } from '../core/format.js';
+import { escapeHtml, formatDate, formatNumber } from '../core/format.js';
 import { renderResidentCard } from '../ui/renderers.js';
 import { showToast } from '../ui/toast.js';
 import { loadCollectionSafe } from '../services/content-service.js';
-import { redeemReward } from '../services/redemption-service.js';
+import {
+  loadResidentRedemptions,
+  redeemReward,
+  splitResidentRedemptions,
+} from '../services/redemption-service.js';
 import { demoRewards } from '../data/rewards.js';
 import { loadResidentForUser, loadUserProfile } from '../services/member-service.js';
+
+const pageState = {
+  activeTab: 'for-you',
+  rewards: [],
+  residentRedemptions: [],
+  currentPoints: 0,
+};
 
 function emptyResident() {
   return {
@@ -20,6 +30,14 @@ function emptyResident() {
     points: 0,
     totalSpend: 0,
   };
+}
+
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value?.toDate === 'function') return value.toDate().getTime();
+  if (value instanceof Date) return value.getTime();
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 async function resolveResidentForRedemptionPage() {
@@ -80,40 +98,35 @@ async function resolveResidentForRedemptionPage() {
   };
 }
 
-export async function loadRedemptionPage() {
-  const resident = await resolveResidentForRedemptionPage();
-  renderResidentCard(resident);
-  const points = Number(resident.points || 0);
-  if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
+function renderTabs() {
+  document.querySelectorAll('.vault-reward-tab').forEach((button) => {
+    const tabKey = button.dataset.tab || 'for-you';
+    button.classList.toggle('active', tabKey === pageState.activeTab);
+  });
 
-  try {
-    const rewardItems = await loadCollectionSafe('reward_catalog', { limit: 100, publishedOnly: true });
-    const fallbackBenefits = rewardItems.length ? [] : await loadCollectionSafe('benefits', { limit: 100, publishedOnly: true });
-    const rewards = (rewardItems.length ? rewardItems : fallbackBenefits)
-      .filter((item) => item.isActive !== false && Number(item.pointsCost || 0) > 0)
-      .sort((a, b) => Number(a.pointsCost || 0) - Number(b.pointsCost || 0));
-    renderRewards(rewards, points);
-  } catch (error) {
-    console.error(error);
-    renderRewards([], points, { useDemoFallback: true });
-    showToast('อ่าน rewards จาก Firebase ไม่สำเร็จ', 'error');
-  }
+  const titleMap = {
+    'for-you': 'Reward',
+    'your-rewards': 'Your Rewards',
+    used: 'Used Rewards',
+    expired: 'Expired Rewards',
+  };
+  if ($('rewardGroupTitleText')) $('rewardGroupTitleText').textContent = titleMap[pageState.activeTab] || 'Reward';
 }
 
-let currentRewardItems = [];
-let currentPointsBalance = 0;
+function rewardStatusMessage(pointsRequired, points) {
+  return `Need ${formatNumber(Math.max(pointsRequired - points, 0))} more points`;
+}
 
-function renderRewards(rewards = [], points, options = {}) {
+function renderRewardCatalog(rewards = [], points = 0) {
   const container = $('rewardList');
   if (!container) return;
-  const list = rewards.length ? rewards : (options.useDemoFallback ? demoRewards : []);
-  currentRewardItems = Array.isArray(list) ? list.map((item) => ({ ...item })) : [];
-  currentPointsBalance = Number(points || 0);
+  const list = rewards.length ? rewards : demoRewards;
   if (!list.length) {
     container.innerHTML = '<div class="card-item"><p>No rewards available</p></div>';
     return;
   }
-container.innerHTML = list.map((reward) => {
+
+  container.innerHTML = list.map((reward) => {
     const pointsRequired = Number(reward.pointsCost || reward.pointsRequired || 0);
     const stockTotal = Number(reward.stockTotal || 0);
     const stockRemaining = reward.stockRemaining == null ? (stockTotal > 0 ? stockTotal : null) : Number(reward.stockRemaining || 0);
@@ -129,7 +142,7 @@ container.innerHTML = list.map((reward) => {
         ? 'Out of stock'
         : canRedeem
           ? 'Ready to redeem'
-          : `Need ${formatNumber(Math.max(pointsRequired - points, 0))} more points`;
+          : rewardStatusMessage(pointsRequired, points);
     const stockLabel = stockTotal > 0 ? `${formatNumber(stockRemaining)} left` : 'Unlimited';
     const buttonLabel = !isRewardActive ? 'Inactive' : !isStockAvailable ? 'Out of stock' : 'Redeem';
     return `
@@ -147,6 +160,7 @@ container.innerHTML = list.map((reward) => {
       </div>
     `;
   }).join('');
+
   container.querySelectorAll('[data-reward-id]').forEach((btn) => {
     if (btn.dataset.bound) return;
     btn.dataset.bound = '1';
@@ -157,13 +171,16 @@ container.innerHTML = list.map((reward) => {
         btn.disabled = true;
         btn.textContent = 'Redeeming...';
         const result = await redeemReward(rewardId);
-        currentPointsBalance = Number(result.balanceAfter || 0);
-        if ($('memberPoints')) $('memberPoints').textContent = formatNumber(currentPointsBalance);
-        currentRewardItems = currentRewardItems.map((item) => item.id === rewardId
+        pageState.currentPoints = Number(result.balanceAfter || 0);
+        if (state.currentResident) state.currentResident.points = pageState.currentPoints;
+        if ($('memberPoints')) $('memberPoints').textContent = formatNumber(pageState.currentPoints);
+        pageState.rewards = pageState.rewards.map((item) => item.id === rewardId
           ? { ...item, stockRemaining: result.reward.stockRemaining }
           : item);
-        renderRewards(currentRewardItems, currentPointsBalance);
-        showToast('Redeemed successfully', 'success');
+        pageState.residentRedemptions = await loadResidentRedemptions(state.currentResident?.residentId || state.residentId || '');
+        pageState.activeTab = 'your-rewards';
+        renderCurrentTab();
+        showToast(`Reward code ${result.redemptionCode} created`, 'success');
       } catch (error) {
         console.error(error);
         btn.disabled = false;
@@ -172,4 +189,115 @@ container.innerHTML = list.map((reward) => {
       }
     });
   });
+}
+
+function buildIssuedCard(row) {
+  const usedBy = row.usedByName || row.usedByEmail || row.usedOutlet || '';
+  const footer = row.status === 'used'
+    ? `Used ${formatDate(row.usedAt)}${usedBy ? ` • ${usedBy}` : ''}`
+    : row.status === 'expired'
+      ? `Expired ${formatDate(row.expiresAt)}`
+      : `Valid until ${formatDate(row.expiresAt)}`;
+  const actionButton = row.status === 'issued'
+    ? `<button type="button" class="vault-code-copy-btn" data-copy-code="${escapeHtml(row.redemptionCode || '')}">Copy code</button>`
+    : `<span class="vault-code-status vault-code-status-${escapeHtml(row.status || 'issued')}">${escapeHtml(String(row.status || 'issued').toUpperCase())}</span>`;
+  return `
+    <div class="vault-issued-card ${row.status === 'used' ? 'is-used' : row.status === 'expired' ? 'is-expired' : ''}">
+      <div class="vault-issued-card__thumb">${row.rewardImageUrl ? `<img src="${escapeHtml(row.rewardImageUrl)}" alt="${escapeHtml(row.rewardTitle)}" />` : '<div class="reward-thumb-placeholder">Reward</div>'}</div>
+      <div class="vault-issued-card__body">
+        <div class="vault-issued-card__title-row">
+          <h3>${escapeHtml(row.rewardTitle || 'Reward')}</h3>
+          <span class="vault-issued-card__points">${formatNumber(row.pointsCost || 0)} P</span>
+        </div>
+        <div class="vault-issued-card__code">${escapeHtml(row.redemptionCode || '-')}</div>
+        <div class="vault-issued-card__hint">Show this code to staff before billing</div>
+        <div class="vault-issued-card__meta">${escapeHtml(row.rewardCategory || 'Reward')} • ${escapeHtml(footer)}</div>
+      </div>
+      <div class="vault-issued-card__action">${actionButton}</div>
+    </div>
+  `;
+}
+
+function renderRedemptionGroup(rows = [], emptyText = 'No rewards here yet') {
+  const container = $('rewardList');
+  if (!container) return;
+  if (!rows.length) {
+    container.innerHTML = `<div class="card-item"><p>${escapeHtml(emptyText)}</p></div>`;
+    return;
+  }
+  container.innerHTML = rows.map((row) => buildIssuedCard(row)).join('');
+  container.querySelectorAll('[data-copy-code]').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = '1';
+    button.addEventListener('click', async () => {
+      const code = button.dataset.copyCode || '';
+      try {
+        await navigator.clipboard.writeText(code);
+        showToast('Reward code copied', 'success');
+      } catch (_) {
+        showToast(code, 'info');
+      }
+    });
+  });
+}
+
+function renderCurrentTab() {
+  renderTabs();
+  const groups = splitResidentRedemptions(pageState.residentRedemptions || []);
+  switch (pageState.activeTab) {
+    case 'your-rewards':
+      renderRedemptionGroup(groups.issued, 'No active reward codes yet');
+      break;
+    case 'used':
+      renderRedemptionGroup(groups.used, 'No used rewards yet');
+      break;
+    case 'expired':
+      renderRedemptionGroup(groups.expired, 'No expired rewards');
+      break;
+    case 'for-you':
+    default:
+      renderRewardCatalog(pageState.rewards, pageState.currentPoints);
+      break;
+  }
+}
+
+function bindTabButtons() {
+  document.querySelectorAll('.vault-reward-tab').forEach((button) => {
+    if (button.dataset.bound) return;
+    button.dataset.bound = '1';
+    button.addEventListener('click', () => {
+      pageState.activeTab = button.dataset.tab || 'for-you';
+      renderCurrentTab();
+    });
+  });
+}
+
+export async function loadRedemptionPage() {
+  bindTabButtons();
+  const resident = await resolveResidentForRedemptionPage();
+  renderResidentCard(resident);
+  const points = Number(resident.points || 0);
+  pageState.currentPoints = points;
+  if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
+
+  try {
+    const rewardItems = await loadCollectionSafe('reward_catalog', { limit: 100, publishedOnly: true });
+    const fallbackBenefits = rewardItems.length ? [] : await loadCollectionSafe('benefits', { limit: 100, publishedOnly: true });
+    pageState.rewards = (rewardItems.length ? rewardItems : fallbackBenefits)
+      .filter((item) => item.isActive !== false && Number(item.pointsCost || 0) > 0)
+      .sort((a, b) => Number(a.pointsCost || 0) - Number(b.pointsCost || 0));
+  } catch (error) {
+    console.error(error);
+    pageState.rewards = [];
+    showToast('Unable to read rewards from Firebase', 'error');
+  }
+
+  try {
+    pageState.residentRedemptions = await loadResidentRedemptions(state.currentResident?.residentId || state.residentId || resident?.residentId || '');
+  } catch (error) {
+    console.warn(error);
+    pageState.residentRedemptions = [];
+  }
+
+  renderCurrentTab();
 }

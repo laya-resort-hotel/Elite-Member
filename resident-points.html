@@ -9,18 +9,18 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
-  <link rel="stylesheet" href="./assets/css/components.css?v=20260404residentpoints1" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260405rewardcode1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
-  <link rel="stylesheet" href="./assets/css/resident-points.css?v=20260404residentpoints1" />
+  <link rel="stylesheet" href="./assets/css/resident-points.css?v=20260405rewardcode1" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260404residentpoints1"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405rewardcode1"></script>
 </head>
 <body data-page="resident-points">
   <div id="app" class="app-shell">
     <header class="topbar">
       <div>
         <div class="eyebrow">LAYA RESIDENT</div>
-        <h1><a class="brand-link" href="./index.html">Resident Point Scanner</a></h1>
+        <h1><a class="brand-link" href="./index.html">Resident Point & Reward Scanner</a></h1>
       </div>
       <div class="page-actions">
         <span class="badge-inline"><span>Firebase</span><strong id="firebaseState">Loading...</strong></span>
@@ -33,8 +33,8 @@
     <main class="main-content">
       <section class="panel page-hero">
         <div class="eyebrow gold">Staff Point Entry</div>
-        <h2>Scan resident QR and add points automatically</h2>
-        <p class="page-intro">พนักงานสแกน QR ของแขกหรือกรอกรหัสสมาชิก แล้วใส่ยอดใช้จ่าย ระบบจะคำนวณคะแนนอัตโนมัติด้วยสูตรเดียวกันทั้งระบบ</p>
+        <h2>Scan resident QR, add points, and validate reward codes</h2>
+        <p class="page-intro">พนักงานสแกน QR ของแขกหรือกรอกรหัสสมาชิก เพื่อเพิ่มแต้มจากยอดใช้จ่าย และสามารถกรอก reward code เพื่อเปลี่ยนเป็น used ได้จากหน้าจอเดียวกัน</p>
         <div class="row gap wrap mt-md">
           <span class="badge-inline"><span>Point Formula</span><strong id="residentPointFormulaText">35 THB = 10 points</strong></span>
           <span class="badge-inline"><span>Access</span><strong>Staff / Manager / Admin</strong></span>
@@ -141,6 +141,33 @@
 
           <div class="row gap wrap mt-md">
             <button id="residentRewardActionBtn" class="primary-btn" type="button" disabled>Save spend & add points</button>
+          </div>
+
+          <div class="section-head mt-lg">
+            <div>
+              <h3>4. Use reward code</h3>
+              <span class="eyebrow">Redeemed reward verification</span>
+            </div>
+          </div>
+
+          <div class="readonly-note mt-sm" id="rewardCodeUseStatus" data-tone="info">Enter the reward code shown in the resident app, then mark it as used.</div>
+
+          <div class="grid-2 mt-md">
+            <div>
+              <label class="field-label" for="rewardCodeInput">Reward code</label>
+              <input id="rewardCodeInput" class="input" type="text" placeholder="RW8K4M2P" />
+            </div>
+            <div>
+              <label class="field-label" for="rewardCodeOutletInput">Used at outlet</label>
+              <input id="rewardCodeOutletInput" class="input" type="text" placeholder="The Taste" />
+            </div>
+          </div>
+
+          <label class="field-label mt-md" for="rewardCodeNoteInput">Staff note</label>
+          <textarea id="rewardCodeNoteInput" class="input textarea textarea-sm" placeholder="Optional note for reward usage"></textarea>
+
+          <div class="row gap wrap mt-md">
+            <button id="markRewardCodeUsedBtn" class="danger-btn" type="button">Mark code as used</button>
           </div>
         </section>
       </section>

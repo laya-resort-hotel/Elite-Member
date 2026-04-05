@@ -1,14 +1,30 @@
 import {
   collection,
   doc,
+  getDocs,
+  limit,
+  query,
   runTransaction,
   serverTimestamp,
+  Timestamp,
+  where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { state } from '../core/state.js';
 
+const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const DEFAULT_EXPIRY_DAYS = 30;
+
+function authInstance() {
+  if (state.auth) return state.auth;
+  if (state.app) return getAuth(state.app);
+  return null;
+}
+
 function getCurrentUser() {
-  const authUser = state.currentUser || state.auth?.currentUser || null;
+  const authUser = state.currentUser || state.auth?.currentUser || authInstance()?.currentUser || null;
   if (authUser && !state.currentUser) state.currentUser = authUser;
+  if (authUser && !state.auth) state.auth = authInstance();
   return authUser;
 }
 
@@ -18,6 +34,40 @@ function currentResidentId() {
 
 function currentMemberCode() {
   return state.currentResident?.memberCode || state.currentResident?.publicCardCode || '';
+}
+
+function generateRedemptionCode(length = 8) {
+  let output = 'RW';
+  while (output.length < length) {
+    output += CODE_ALPHABET.charAt(Math.floor(Math.random() * CODE_ALPHABET.length));
+  }
+  return output.slice(0, length);
+}
+
+function normalizeRedemptionSnapshot(id, data = {}) {
+  return {
+    id,
+    ...data,
+    rewardTitle: String(data.rewardTitle || data.title || 'Reward').trim() || 'Reward',
+    rewardImageUrl: String(data.rewardImageUrl || data.coverImageUrl || '').trim(),
+    rewardCategory: String(data.rewardCategory || '').trim(),
+    redemptionCode: String(data.redemptionCode || data.code || '').trim().toUpperCase(),
+    pointsCost: Math.max(0, Number(data.pointsCost || 0)),
+    status: String(data.status || 'issued').trim().toLowerCase(),
+  };
+}
+
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value?.toDate === 'function') return value.toDate().getTime();
+  if (value instanceof Date) return value.getTime();
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function isExpiredRecord(record = {}) {
+  const expiresAtMs = toMillis(record.expiresAt);
+  return Boolean(expiresAtMs && expiresAtMs < Date.now() && String(record.status || '').toLowerCase() !== 'used');
 }
 
 export async function redeemReward(rewardId) {
@@ -33,6 +83,7 @@ export async function redeemReward(rewardId) {
   const rewardRef = doc(state.db, 'reward_catalog', rewardId);
   const walletRef = doc(state.db, 'resident_wallets', residentId);
   const redemptionRef = doc(collection(state.db, 'redemptions'));
+  const residentRedemptionRef = doc(state.db, 'residents', residentId, 'redemptions', redemptionRef.id);
   const pointTxRef = doc(collection(state.db, 'resident_point_transactions'));
 
   const result = await runTransaction(state.db, async (transaction) => {
@@ -68,8 +119,9 @@ export async function redeemReward(rewardId) {
     const title = String(reward.title || 'Reward').trim() || 'Reward';
     const category = String(reward.rewardCategory || reward.category || '').trim();
     const imageUrl = String(reward.coverImageUrl || reward.galleryImages?.[0]?.url || '').trim();
-
-    transaction.set(redemptionRef, {
+    const redemptionCode = generateRedemptionCode(8);
+    const expiresAt = Timestamp.fromDate(new Date(Date.now() + DEFAULT_EXPIRY_DAYS * 24 * 60 * 60 * 1000));
+    const basePayload = {
       residentId,
       memberId: residentId,
       rewardId,
@@ -81,12 +133,27 @@ export async function redeemReward(rewardId) {
       memberCode: currentMemberCode(),
       requestedByUid: currentUser.uid,
       requestedByEmail: currentUser.email || '',
+      requestedByName: currentUser.displayName || state.currentResident?.displayName || state.currentResident?.fullName || 'Resident',
       status: 'issued',
+      redemptionCode,
+      codeStatus: 'active',
       source: 'resident_redemption',
       createdAt: serverTimestamp(),
+      issuedAt: serverTimestamp(),
       approvedAt: serverTimestamp(),
       usedAt: null,
-      expiresAt: null,
+      usedByUid: '',
+      usedByEmail: '',
+      usedByName: '',
+      usedOutlet: '',
+      usedNote: '',
+      expiresAt,
+    };
+
+    transaction.set(redemptionRef, basePayload);
+    transaction.set(residentRedemptionRef, {
+      ...basePayload,
+      redemptionId: redemptionRef.id,
     });
 
     transaction.set(pointTxRef, {
@@ -99,6 +166,7 @@ export async function redeemReward(rewardId) {
       sourceRefId: redemptionRef.id,
       rewardId,
       rewardTitle: title,
+      redemptionCode,
       createdByUid: currentUser.uid,
       createdByName: currentUser.email || currentUser.displayName || 'Resident',
       createdAt: serverTimestamp(),
@@ -125,7 +193,9 @@ export async function redeemReward(rewardId) {
 
     return {
       redemptionId: redemptionRef.id,
+      redemptionCode,
       balanceAfter: nextBalance,
+      residentId,
       reward: {
         id: rewardId,
         title,
@@ -149,4 +219,90 @@ export async function redeemReward(rewardId) {
   }
 
   return result;
+}
+
+export async function loadResidentRedemptions(residentId = '') {
+  const cleanResidentId = String(residentId || currentResidentId() || '').trim();
+  if (!state.firebaseReady || !state.db || !cleanResidentId) return [];
+  const snap = await getDocs(query(collection(state.db, 'residents', cleanResidentId, 'redemptions'), limit(100)));
+  return snap.docs
+    .map((row) => normalizeRedemptionSnapshot(row.id, row.data()))
+    .sort((a, b) => {
+      const aTime = Math.max(toMillis(a.createdAt), toMillis(a.issuedAt), toMillis(a.usedAt));
+      const bTime = Math.max(toMillis(b.createdAt), toMillis(b.issuedAt), toMillis(b.usedAt));
+      return bTime - aTime;
+    });
+}
+
+export async function markRewardCodeUsedByStaff({ code = '', outlet = '', note = '' } = {}) {
+  const currentUser = getCurrentUser();
+  if (!state.firebaseReady || !state.db || !currentUser) {
+    throw new Error('Please log in before using reward codes');
+  }
+
+  const redemptionCode = String(code || '').trim().toUpperCase();
+  if (!redemptionCode) throw new Error('Please enter reward code');
+
+  const snap = await getDocs(query(collection(state.db, 'redemptions'), where('redemptionCode', '==', redemptionCode), limit(10)));
+  if (snap.empty) throw new Error('Reward code not found');
+
+  const candidates = snap.docs.map((row) => ({ id: row.id, ref: row.ref, data: row.data() || {} }));
+  const chosen = candidates.find((item) => String(item.data.status || '').toLowerCase() === 'issued') || candidates[0];
+  const residentId = String(chosen.data.residentId || '').trim();
+  if (!residentId) throw new Error('Resident link not found for this code');
+
+  const result = await runTransaction(state.db, async (transaction) => {
+    const freshTopSnap = await transaction.get(chosen.ref);
+    if (!freshTopSnap.exists()) throw new Error('Reward code not found');
+    const topData = freshTopSnap.data() || {};
+    const status = String(topData.status || '').toLowerCase();
+    if (status === 'used') throw new Error('This reward code was already used');
+    if (status === 'expired') throw new Error('This reward code is already expired');
+    if (status !== 'issued') throw new Error('This reward code is not ready to use');
+    if (isExpiredRecord(topData)) throw new Error('This reward code has expired');
+
+    const residentMirrorRef = doc(state.db, 'residents', residentId, 'redemptions', chosen.id);
+    const updatePayload = {
+      status: 'used',
+      codeStatus: 'used',
+      usedAt: serverTimestamp(),
+      usedByUid: currentUser.uid,
+      usedByEmail: currentUser.email || '',
+      usedByName: currentUser.displayName || currentUser.email || 'Staff',
+      usedOutlet: String(outlet || '').trim(),
+      usedNote: String(note || '').trim(),
+      updatedAt: serverTimestamp(),
+    };
+
+    transaction.update(chosen.ref, updatePayload);
+    transaction.update(residentMirrorRef, updatePayload);
+
+    return {
+      redemptionId: chosen.id,
+      residentId,
+      rewardTitle: String(topData.rewardTitle || 'Reward').trim() || 'Reward',
+      redemptionCode,
+      usedOutlet: updatePayload.usedOutlet,
+    };
+  });
+
+  return result;
+}
+
+export function splitResidentRedemptions(rows = []) {
+  const normalized = Array.isArray(rows) ? rows.map((row) => ({ ...row })) : [];
+  const groups = { issued: [], used: [], expired: [] };
+  normalized.forEach((row) => {
+    const lowerStatus = String(row.status || '').toLowerCase();
+    if (lowerStatus === 'used') {
+      groups.used.push(row);
+      return;
+    }
+    if (lowerStatus === 'expired' || isExpiredRecord(row)) {
+      groups.expired.push({ ...row, status: 'expired' });
+      return;
+    }
+    groups.issued.push(row);
+  });
+  return groups;
 }

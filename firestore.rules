@@ -317,9 +317,12 @@ function validResidentPointRedeemCreate() {
     }
 
     match /redemptions/{docId} {
-      allow get, list: if isAdminLike() || (signedIn() && resource.data.requestedByUid == myUid());
-      allow create: if signedIn() && request.resource.data.requestedByUid == myUid();
-      allow update: if isAdminLike() || (signedIn() && resource.data.requestedByUid == myUid());
+      allow get, list: if isAdminLike();
+      allow create: if signedIn()
+        && request.resource.data.requestedByUid == myUid()
+        && request.resource.data.residentId is string
+        && residentOwnedByCurrentUser(request.resource.data.residentId);
+      allow update: if isAdminLike();
       allow delete: if isAdminLike();
     }
 
@@ -354,6 +357,17 @@ function validResidentPointRedeemCreate() {
       allow list: if isAdminLike();
       allow create: if isAdminLike() || validSelfResidentCreate(residentId);
       allow update, delete: if isAdminLike();
+
+      match /redemptions/{docId} {
+        allow get, list: if isAdminLike() || residentOwnedByCurrentUser(residentId);
+        allow create: if isAdminLike() || (
+          signedIn()
+          && residentOwnedByCurrentUser(residentId)
+          && request.resource.data.requestedByUid == myUid()
+        );
+        allow update: if isAdminLike();
+        allow delete: if isAdminLike();
+      }
     }
 
     match /resident_wallets/{residentId} {

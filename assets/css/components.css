@@ -2616,3 +2616,139 @@ body.lightbox-open {
     flex: 1 1 100%;
   }
 }
+
+/* Redemption flow v42 */
+.vault-redeem-btn.ready {
+  background: linear-gradient(180deg, #c41221 0%, #8f0012 100%);
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 20px rgba(143,0,18,.24);
+}
+.vault-redeem-btn.ready:hover {
+  background: linear-gradient(180deg, #d01929 0%, #990014 100%);
+}
+.vault-issued-card {
+  display: grid;
+  grid-template-columns: 94px minmax(0,1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(244,244,244,.98));
+  border: 1px solid rgba(255,255,255,.1);
+}
+.vault-issued-card + .vault-issued-card {
+  border-top: 0;
+}
+.vault-issued-card__thumb,
+.vault-issued-card__thumb img {
+  width: 94px;
+  height: 94px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+.vault-issued-card__thumb {
+  background: #ddd;
+  overflow: hidden;
+}
+.vault-issued-card__body {
+  min-width: 0;
+}
+.vault-issued-card__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.vault-issued-card__title-row h3 {
+  margin: 0;
+  color: #111;
+  font-size: 16px;
+  line-height: 1.3;
+}
+.vault-issued-card__points {
+  color: #8f0012;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.vault-issued-card__code {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  letter-spacing: .18em;
+  font-size: 15px;
+  font-weight: 800;
+}
+.vault-issued-card__hint {
+  margin-top: 8px;
+  color: #730211;
+  font-size: 12px;
+  font-weight: 600;
+}
+.vault-issued-card__meta {
+  margin-top: 8px;
+  color: #545860;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.vault-issued-card__action {
+  display: flex;
+  justify-content: flex-end;
+}
+.vault-code-copy-btn,
+.vault-code-status {
+  min-width: 112px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+.vault-code-copy-btn {
+  border: 0;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+.vault-code-status {
+  background: #e7e7e7;
+  color: #333;
+}
+.vault-code-status-used {
+  background: #d8e7d9;
+  color: #1f5b2a;
+}
+.vault-code-status-expired {
+  background: #f3e0e0;
+  color: #8a1d1d;
+}
+.vault-issued-card.is-used,
+.vault-issued-card.is-expired {
+  opacity: .96;
+}
+@media (max-width: 720px) {
+  .vault-issued-card {
+    grid-template-columns: 80px minmax(0,1fr);
+  }
+  .vault-issued-card__thumb,
+  .vault-issued-card__thumb img {
+    width: 80px;
+    height: 80px;
+  }
+  .vault-issued-card__action {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+  .vault-code-copy-btn,
+  .vault-code-status {
+    min-width: 0;
+    width: 100%;
+  }
+}

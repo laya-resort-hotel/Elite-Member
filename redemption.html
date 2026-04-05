@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./assets/css/responsive.css" />
   <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260404residentloader2" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
-  <script type="module" src="./assets/js/main.js?v=20260405residentredemptionfix5"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405rewardcode1"></script>
 </head>
 <body data-page="redemption" class="has-resident-loader">
   <div id="residentRouteLoader" class="resident-route-loader" aria-hidden="false">
@@ -59,15 +59,15 @@
       <section class="vault-section-title">PRIVILEGE</section>
       <section class="vault-tabs-panel">
         <div class="vault-reward-tabs">
-          <button class="vault-reward-tab active" type="button">FOR YOU</button>
-          <button class="vault-reward-tab" type="button" disabled>YOUR REWARDS</button>
-          <button class="vault-reward-tab" type="button" disabled>USED</button>
-          <button class="vault-reward-tab" type="button" disabled>EXPIRED</button>
+          <button class="vault-reward-tab active" type="button" data-tab="for-you">FOR YOU</button>
+          <button class="vault-reward-tab" type="button" data-tab="your-rewards">YOUR REWARDS</button>
+          <button class="vault-reward-tab" type="button" data-tab="used">USED</button>
+          <button class="vault-reward-tab" type="button" data-tab="expired">EXPIRED</button>
         </div>
       </section>
 
       <section class="vault-reward-group panel-white">
-        <div class="vault-reward-group-title">Reward <span aria-hidden="true">⌄</span></div>
+        <div class="vault-reward-group-title"><span id="rewardGroupTitleText">Reward</span><span aria-hidden="true">⌄</span></div>
         <div id="rewardList" class="reward-list vault-reward-list"></div>
       </section>
     </main>
