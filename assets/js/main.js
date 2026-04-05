@@ -158,7 +158,7 @@ async function initCurrentPage(isLive = false) {
       case 'resident':
       case 'home':
       case 'member': {
-        const mod = await import('./pages/resident-page.js?v=20260405cms4b');
+        const mod = await import('./pages/resident-page.js?v=20260405promoall1');
         bindPageOnce(page, mod.bindResidentPage);
         await mod.loadResidentDashboard();
         break;

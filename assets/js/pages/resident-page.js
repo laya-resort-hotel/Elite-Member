@@ -37,7 +37,7 @@ export async function loadResidentDashboard() {
     const [benefits, news, promotions, pointHistory] = await Promise.all([
       loadCollectionSafe('benefits', { limit: 3 }),
       loadCollectionSafe('news', { limit: 3 }),
-      loadCollectionSafe('promotions', { limit: 3 }),
+      loadCollectionSafe('promotions'),
       state.currentResident?.residentId ? loadResidentPointHistory(state.currentResident.residentId, 8) : Promise.resolve([]),
     ]);
 

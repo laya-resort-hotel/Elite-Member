@@ -63,7 +63,7 @@ export function renderVaultHome(newsItem, promotionItems = []) {
 
   const promoGrid = $('homePromotionGrid');
   if (promoGrid) {
-    const items = promotionItems.slice(0, 3);
+    const items = promotionItems;
     promoGrid.innerHTML = items.map((item) => {
       const localized = getLocalizedContent(item, getLanguage());
       const image = localized.coverImageUrl || localized.galleryImages?.[0]?.url || '';
