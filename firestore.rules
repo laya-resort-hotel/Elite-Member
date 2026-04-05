@@ -218,10 +218,12 @@ function validResidentWalletRedeemUpdate(residentId) {
   return signedIn()
     && residentOwnedByCurrentUser(residentId)
     && request.resource.data.residentId == resource.data.residentId
-    && request.resource.data.pendingPoints == resource.data.pendingPoints
-    && request.resource.data.lifetimeEarned == resource.data.lifetimeEarned
+    && request.resource.data.currentPoints is int
+    && request.resource.data.lifetimeRedeemed is int
     && request.resource.data.currentPoints < resource.data.currentPoints
     && request.resource.data.lifetimeRedeemed > resource.data.lifetimeRedeemed
+    && request.resource.data.pendingPoints == resource.data.pendingPoints
+    && request.resource.data.lifetimeEarned == resource.data.lifetimeEarned
     && (resource.data.currentPoints - request.resource.data.currentPoints)
         == (request.resource.data.lifetimeRedeemed - resource.data.lifetimeRedeemed);
 }
@@ -230,10 +232,8 @@ function validResidentRewardStockUpdate() {
   return signedIn()
     && resource.data.status == 'published'
     && (!resource.data.keys().hasAny(['rewardIsActive']) || resource.data.rewardIsActive == true)
-    && resource.data.keys().hasAny(['stockTotal'])
-    && resource.data.stockTotal is int
-    && resource.data.stockTotal > 0
     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stockRemaining', 'updatedAt', 'updatedBy'])
+    && resource.data.stockRemaining is int
     && request.resource.data.stockRemaining is int
     && request.resource.data.stockRemaining == resource.data.stockRemaining - 1
     && request.resource.data.stockRemaining >= 0;
@@ -364,6 +364,7 @@ function validResidentPointRedeemCreate() {
           signedIn()
           && residentOwnedByCurrentUser(residentId)
           && request.resource.data.requestedByUid == myUid()
+          && request.resource.data.residentId == residentId
         );
         allow update: if isAdminLike();
         allow delete: if isAdminLike();
