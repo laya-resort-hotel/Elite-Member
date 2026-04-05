@@ -235,3 +235,16 @@
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+
+/* Compact pass still keeps the home news image uncropped */
+body[data-page="home"] .vault-news-image {
+  height: auto !important;
+  max-height: none !important;
+  width: 100%;
+  object-fit: contain;
+}
+
+body[data-page="home"] .vault-news-fallback {
+  height: 200px !important;
+}

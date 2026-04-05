@@ -671,3 +671,26 @@ body[data-page="benefits-detail"] {
     min-height: 58px;
   }
 }
+
+
+/* Home news hero: let the image keep its natural ratio on mobile */
+body[data-page="home"] .vault-news-hero-link {
+  display: block;
+  overflow: hidden;
+  border-radius: 26px;
+}
+
+body[data-page="home"] .vault-news-image-wrap {
+  line-height: 0;
+}
+
+body[data-page="home"] .vault-news-image {
+  height: auto !important;
+  max-height: none !important;
+  width: 100%;
+  object-fit: contain;
+}
+
+body[data-page="home"] .vault-news-fallback {
+  height: 220px !important;
+}
