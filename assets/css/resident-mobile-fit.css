@@ -613,3 +613,61 @@ body[data-page="benefits-detail"] {
     padding: 8px 8px;
   }
 }
+
+
+/* Resident mobile bottom-nav visibility fix */
+@media (max-width: 900px) {
+  body[data-page="home"],
+  body[data-page="member"],
+  body[data-page="settings"],
+  body[data-page="redemption"],
+  body[data-page="about"],
+  body[data-page="contact"],
+  body[data-page="faq"] {
+    padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body[data-page="home"] .vault-shell,
+  body[data-page="member"] .vault-shell,
+  body[data-page="settings"] .vault-shell,
+  body[data-page="redemption"] .vault-shell,
+  body[data-page="about"] .vault-shell,
+  body[data-page="contact"] .vault-shell,
+  body[data-page="faq"] .vault-shell {
+    padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-nav.customer-nav,
+  .vault-bottom-nav {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    z-index: 1200;
+    box-sizing: border-box;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .bottom-nav.customer-nav .nav-btn,
+  .vault-bottom-nav .nav-btn {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .bottom-nav.customer-nav,
+  .vault-bottom-nav {
+    width: calc(100vw - 16px);
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    padding: 8px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-radius: 20px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.45);
+  }
+
+  .bottom-nav.customer-nav .nav-btn,
+  .vault-bottom-nav .nav-btn {
+    min-height: 58px;
+  }
+}

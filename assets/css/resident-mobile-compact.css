@@ -226,3 +226,12 @@
     font-size: 14px;
   }
 }
+
+
+@media (max-width: 560px) {
+  body[data-page="home"] .vault-bottom-nav,
+  body[data-page="settings"] .vault-bottom-nav {
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+}
