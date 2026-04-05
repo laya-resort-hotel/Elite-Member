@@ -346,7 +346,13 @@ export function bindDetailPage(type) {
   }
   if ($('detailCtaBtn')) {
     $('detailCtaBtn').addEventListener('click', () => {
-      showToast(`${labelMap[type]} action is ready for next step`);
+      const contactUrl = 'https://www.facebook.com/layaresortphuket';
+      const isResidentSide = !canManageContent();
+      if (isResidentSide) {
+        window.open(contactUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      window.open(contactUrl, '_blank', 'noopener,noreferrer');
     });
   }
   ensureLightbox();
