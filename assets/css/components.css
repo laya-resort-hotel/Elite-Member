@@ -659,31 +659,44 @@ body.lightbox-open {
 
 .elite-card-back-badge {
   position: absolute;
-  top: 8%;
+  top: 10.8%;
   right: 6%;
-  min-width: 34%;
-  max-width: 42%;
-  height: 15%;
-  padding: 0 18px;
-  display: flex;
+  width: auto;
+  min-width: 0;
+  max-width: 20%;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(5, 7, 10, 0.96), rgba(5, 7, 10, 0.86));
-  border: 1px solid rgba(216, 188, 124, 0.24);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.28);
-  backdrop-filter: blur(4px);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .elite-card-back-badge span {
-  color: #f3ead3;
+  color: #f4e0a6;
   font-weight: 700;
-  font-size: clamp(14px, 2vw, 20px);
-  letter-spacing: .14em;
+  font-size: clamp(11px, 1.35vw, 14px);
+  letter-spacing: .16em;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 640px) {
+  .elite-card-back-badge {
+    top: 11.2%;
+    right: 5.2%;
+    max-width: 22%;
+  }
+
+  .elite-card-back-badge span {
+    font-size: clamp(10px, 1.8vw, 12px);
+    letter-spacing: .12em;
+  }
 }
 
 .resident-card-panel {
