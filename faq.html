@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>LAYA Resident – FAQ</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d0f12" />
+  <meta name="description" content="Frequently asked questions about Laya Resort Phuket" />
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./assets/css/base.css" />
+  <link rel="stylesheet" href="./assets/css/layout.css" />
+  <link rel="stylesheet" href="./assets/css/components.css?v=20260405faq1" />
+  <link rel="stylesheet" href="./assets/css/responsive.css" />
+  <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260405faq1" />
+  <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script type="module" src="./assets/js/main.js?v=20260405faq1"></script>
+</head>
+<body data-page="faq" class="has-resident-loader">
+  <div id="residentRouteLoader" class="resident-route-loader" aria-hidden="false">
+    <div class="resident-route-loader__inner">
+      <div class="resident-route-loader__logo-wrap">
+        <img src="./assets/images/laya-loader-logo.png" alt="Laya Suites &amp; Residences" class="resident-route-loader__logo" />
+      </div>
+      <div class="resident-route-loader__caption">Loading Resident Experience</div>
+    </div>
+  </div>
+
+  <div id="app" class="app-shell customer-shell vault-shell">
+    <header class="vault-header vault-header-with-appbar">
+      <div class="vault-appbar-top">
+        <a class="vault-appbar-icon vault-appbar-back" href="./settings.html" aria-label="Back to settings">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M14.5 5 7.5 12l7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <div class="vault-appbar-copy">
+          <div class="vault-appbar-title">LAYA Resident</div>
+          <div class="vault-appbar-subtitle">layaresortphuket.com</div>
+        </div>
+        <div class="vault-appbar-actions">
+          <a id="residentLoginBtn" class="vault-auth-chip hidden" href="./resident-login.html">Log in</a>
+          <button id="logoutBtn" class="vault-auth-chip vault-auth-chip-logout hidden" type="button">Log out</button>
+        </div>
+      </div>
+      <div class="vault-brand-banner">
+        <div class="vault-brand-banner-logo">ELITE BLACK CARD</div>
+      </div>
+      <div class="vault-profile-strip">
+        <div class="vault-avatar" id="memberAvatarLetter">N</div>
+        <div class="vault-profile-copy">
+          <div class="vault-profile-name" id="memberName">Resident Member</div>
+          <div class="vault-profile-meta">Frequently asked questions</div>
+        </div>
+        <div class="vault-points-pill small-pill">
+          <strong id="memberPoints">0</strong>
+          <span>P</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content vault-main-content">
+      <section class="vault-section-title">FAQ</section>
+
+      <section class="panel about-panel">
+        <div class="about-hero-copy">
+          <div class="about-kicker">Helpful information for your stay</div>
+          <h1 class="about-title">Frequently Asked Questions</h1>
+          <p class="about-lead">Find quick answers about Laya Resort Phuket, our facilities, location, dining, and guest services. For anything more specific, our team will always be pleased to assist you.</p>
+        </div>
+      </section>
+
+      <section class="panel about-copy-card faq-list-card">
+        <div class="faq-item">
+          <h2 class="about-section-heading">1. Where is Laya Resort Phuket located?</h2>
+          <p>Laya Resort Phuket is located near the peaceful shoreline of Layan Beach in Cherngtalay, Phuket, offering a tranquil setting for couples, families, and solo travelers.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">2. How far is the resort from Phuket International Airport?</h2>
+          <p>The resort is approximately 15 minutes away from Phuket International Airport by car, making arrivals and departures convenient and comfortable.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">3. What facilities are available at the resort?</h2>
+          <p>Guests can enjoy three outdoor swimming pools, a fully equipped Fitness Center, a yoga room, Malai Spa, and thoughtfully designed rooms and suites created for comfort and relaxation.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">4. Are there dining options at the resort?</h2>
+          <p>Yes. Our signature dining venues include The Taste, Mangrove Bar &amp; Restaurant, and Aroonsawat Café, offering a selection of local and international flavors for every mood and occasion.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">5. Is Laya Resort Phuket suitable for families?</h2>
+          <p>Yes. The resort offers a calm and welcoming atmosphere with spacious accommodation and facilities that make it suitable for family holidays as well as romantic escapes and individual stays.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">6. Can guests use the spa and fitness facilities?</h2>
+          <p>Guests may enjoy the resort’s wellness and fitness facilities, subject to operating hours and service availability. Please contact our front desk for the latest details during your stay.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">7. Is the resort close to lifestyle attractions and local highlights?</h2>
+          <p>Yes. The resort offers a peaceful retreat while remaining conveniently close to lifestyle destinations, restaurants, and attractions in Cherngtalay and the surrounding Phuket area.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">8. How can I contact Laya Resort Phuket?</h2>
+          <p>You may contact us by telephone at <a class="about-inline-link" href="tel:+6676328888">+66 (0) 7632 8888</a> or by email at <a class="about-inline-link" href="mailto:info@layaresortphuket.com">info@layaresortphuket.com</a>.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">9. Is the resort suitable for romantic getaways?</h2>
+          <p>Absolutely. With its serene location, elegant accommodation, wellness experiences, and inviting dining venues, the resort is well suited for romantic and memorable Phuket escapes.</p>
+        </div>
+        <div class="faq-item">
+          <h2 class="about-section-heading">10. What should I do if I need special assistance or more information?</h2>
+          <p>Please contact our team directly. We will be pleased to assist with reservations, special requests, and any additional information you may need before or during your stay.</p>
+        </div>
+      </section>
+
+      <section class="panel about-contact-card">
+        <div class="about-contact-grid">
+          <div>
+            <div class="about-contact-label">Location</div>
+            <div class="about-contact-value">Layan Beach, Cherngtalay, Phuket</div>
+          </div>
+          <div>
+            <div class="about-contact-label">Travel time</div>
+            <div class="about-contact-value">Approx. 15 minutes from Phuket International Airport</div>
+          </div>
+          <div>
+            <div class="about-contact-label">Phone</div>
+            <div class="about-contact-value">+66 (0) 7632 8888</div>
+          </div>
+          <div>
+            <div class="about-contact-label">Email</div>
+            <div class="about-contact-value">info@layaresortphuket.com</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav customer-nav vault-bottom-nav">
+    <a class="nav-btn" data-page-link="home" href="./home.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 9.8V20h11V9.8" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span><span class="nav-label">Home</span></a>
+    <a class="nav-btn" data-page-link="redemption" href="./redemption.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 9h15v11h-15z" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 9h17v-3h-17z" stroke="currentColor" stroke-width="1.9"/><path d="M12 6v14M8.2 6c-1.3 0-2.2-.8-2.2-1.9 0-.9.7-1.7 1.8-1.7 1.8 0 3 1.7 4.2 3.6C10.9 6 9.7 6 8.2 6Zm7.6 0c1.3 0 2.2-.8 2.2-1.9 0-.9-.7-1.7-1.8-1.7-1.8 0-3 1.7-4.2 3.6C13.1 6 14.3 6 15.8 6Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="nav-label">Redemption</span></a>
+    <a class="nav-btn" data-page-link="member" href="./member.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M3 9.5h18" stroke="currentColor" stroke-width="1.9"/><path d="M7 15h4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><span class="nav-label">Member</span></a>
+    <a class="nav-btn" data-page-link="settings" href="./settings.html"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8.4a3.6 3.6 0 1 1 0 7.2 3.6 3.6 0 0 1 0-7.2Z" stroke="currentColor" stroke-width="1.9"/><path d="M12 3.5v2.1M12 18.4v2.1M20.5 12h-2.1M5.6 12H3.5M18.2 5.8l-1.5 1.5M7.3 16.7l-1.5 1.5M18.2 18.2l-1.5-1.5M7.3 7.3 5.8 5.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><span class="nav-label">Settings</span></a>
+  </nav>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>

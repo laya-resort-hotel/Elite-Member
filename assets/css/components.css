@@ -2973,3 +2973,27 @@ body.lightbox-open {
   color: #f6df9f;
   border-bottom-color: rgba(246, 223, 159, 0.7);
 }
+
+
+.faq-list-card {
+  display: grid;
+  gap: 18px;
+}
+
+.faq-item {
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.faq-item:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.faq-item .about-section-heading {
+  margin-bottom: 8px;
+}
+
+.faq-item p {
+  margin: 0;
+}
