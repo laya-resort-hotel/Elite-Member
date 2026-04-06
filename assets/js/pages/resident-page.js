@@ -42,7 +42,7 @@ export async function loadResidentDashboard() {
     ]);
 
     if ($('homeNewsHero') || $('homePromotionGrid')) {
-      renderVaultHome(news[0] || null, promotions);
+      renderVaultHome(news, promotions);
     }
     if ($('benefitsList')) renderCards($('benefitsList'), benefits, 'No benefits yet', { contentType: 'benefits' });
     if ($('newsList')) renderCards($('newsList'), news, 'No news yet', { contentType: 'news' });

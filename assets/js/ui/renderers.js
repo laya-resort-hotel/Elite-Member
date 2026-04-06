@@ -46,33 +46,65 @@ function buildContentDetailHref(type, item, fallbackHref) {
   return id ? `./${type}-detail.html?id=${encodeURIComponent(id)}` : fallbackHref;
 }
 
-export function renderVaultHome(newsItem, promotionItems = []) {
+export function renderVaultHome(newsItems = [], promotionItems = []) {
   const hero = $('homeNewsHero');
   if (hero) {
-    const localizedNews = getLocalizedContent(newsItem || {}, getLanguage());
-    const imageCandidates = [
-      localizedNews?.coverImageUrl || '',
-      ...((localizedNews?.galleryImages || []).map((item) => item?.url || '').filter(Boolean)),
-    ].filter(Boolean);
-    const images = [...new Set(imageCandidates)];
+    const localizedNewsItems = (Array.isArray(newsItems) ? newsItems : [newsItems])
+      .filter(Boolean)
+      .map((item) => getLocalizedContent(item || {}, getLanguage()));
 
-    hero.innerHTML = images.length
+    let slides = [];
+    if (localizedNewsItems.length > 1) {
+      slides = localizedNewsItems.map((item, index) => ({
+        image: item?.coverImageUrl || item?.galleryImages?.[0]?.url || '',
+        title: item?.title || `${t('content.news')} ${index + 1}`,
+      })).filter((slide) => slide.image);
+    } else if (localizedNewsItems.length === 1) {
+      const item = localizedNewsItems[0];
+      const imageCandidates = [
+        item?.coverImageUrl || '',
+        ...((item?.galleryImages || []).map((galleryItem) => galleryItem?.url || '').filter(Boolean)),
+      ].filter(Boolean);
+      slides = [...new Set(imageCandidates)].map((image, index) => ({
+        image,
+        title: item?.title || `${t('content.news')} ${index + 1}`,
+      }));
+    }
+
+    hero.innerHTML = slides.length
       ? `
-        <div class="vault-news-scroll" aria-label="${escapeHtml(localizedNews?.title || t('content.news'))}">
-          ${images.map((image, index) => `
-            <div class="vault-news-slide">
+        <div class="vault-news-scroll" aria-label="${escapeHtml(t('content.news'))}">
+          ${slides.map((slide, index) => `
+            <div class="vault-news-slide" data-slide-index="${index}">
               <div class="vault-news-image-wrap vault-news-frame">
-                <img class="vault-news-image" src="${escapeHtml(image)}" alt="${escapeHtml(localizedNews?.title || t('content.news'))} ${index + 1}" />
+                <img class="vault-news-image" src="${escapeHtml(slide.image)}" alt="${escapeHtml(slide.title)}" />
               </div>
             </div>
           `).join('')}
         </div>
+        ${slides.length > 1 ? `
+          <div class="vault-news-dots" aria-hidden="true">
+            ${slides.map((_, index) => `<span class="vault-news-dot${index === 0 ? ' is-active' : ''}"></span>`).join('')}
+          </div>
+        ` : ''}
       `
       : `
         <div class="vault-news-image-wrap vault-news-frame">
           <div class="vault-news-image vault-news-fallback">${escapeHtml(t('content.news'))}</div>
         </div>
       `;
+
+    const scroller = hero.querySelector('.vault-news-scroll');
+    const dots = [...hero.querySelectorAll('.vault-news-dot')];
+    if (scroller && dots.length) {
+      const setActiveDot = () => {
+        const slideWidth = scroller.clientWidth || 1;
+        const index = Math.round(scroller.scrollLeft / slideWidth);
+        dots.forEach((dot, dotIndex) => dot.classList.toggle('is-active', dotIndex === index));
+      };
+      scroller.addEventListener('scroll', setActiveDot, { passive: true });
+      setActiveDot();
+    }
   }
 
   const promoGrid = $('homePromotionGrid');

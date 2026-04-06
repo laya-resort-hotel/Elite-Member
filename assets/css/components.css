@@ -3150,8 +3150,25 @@ body.lightbox-open {
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   padding: 0;
   scrollbar-width: none;
+}
+.vault-news-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.vault-news-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.28);
+}
+.vault-news-dot.is-active {
+  width: 20px;
+  background: rgba(255,255,255,.86);
 }
 .vault-news-scroll::-webkit-scrollbar {
   display: none;

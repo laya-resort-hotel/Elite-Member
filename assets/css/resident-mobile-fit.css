@@ -703,6 +703,7 @@ body[data-page="home"] .vault-news-scroll {
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
   border-radius: 26px;
   scrollbar-width: none;
 }
