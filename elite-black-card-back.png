@@ -1,0 +1,447 @@
+import { $, $$ } from '../core/dom.js';
+import { escapeHtml } from '../core/format.js';
+import { state } from '../core/state.js';
+import { t } from '../core/i18n.js';
+import { deleteCMSItem, getLocalizedContent, loadCollectionSafe, loadDocumentById, publishCMSItem, unpublishCMSItem } from '../services/content-service.js?v=20260405cms4b';
+import { showToast } from '../ui/toast.js';
+
+const labelMap = {
+  news: 'News',
+  promotions: 'Promotion',
+  benefits: 'Benefit',
+};
+
+const pageTitleMap = {
+  news: 'News Detail',
+  promotions: 'Promotion Detail',
+  benefits: 'Benefit Detail',
+};
+
+let currentItem = null;
+let currentType = '';
+let lightboxGallery = [];
+let currentLightboxIndex = 0;
+
+function canManageContent() {
+  return state.firebaseReady && state.currentMode.includes('live') && ['admin', 'manager', 'staff'].includes(state.currentRole);
+}
+
+function getParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    id: params.get('id') || ''
+  };
+}
+
+function getStatusLabel(status = 'draft') {
+  if (status === 'published') return t('detail.published');
+  if (status === 'unpublished') return 'Unpublished';
+  return 'Draft';
+}
+
+function getStatusBadgeClass(status = 'draft') {
+  if (status === 'published') return 'gold';
+  if (status === 'unpublished') return 'subtle';
+  return '';
+}
+
+function normalizeContent(item = {}) {
+  const fullDetails = String(item.fullDetails || '').trim();
+  const details = Array.isArray(item.details)
+    ? item.details
+    : String(fullDetails || item.details || item.body || '').split('\n').map((x) => x.trim()).filter(Boolean);
+  const terms = Array.isArray(item.terms)
+    ? item.terms
+    : String(item.terms || '').split('\n').map((x) => x.trim()).filter(Boolean);
+  const galleryImages = Array.isArray(item.galleryImages)
+    ? item.galleryImages.filter((entry) => entry?.url)
+    : [];
+  const primaryImage = item.coverImageUrl || galleryImages[0]?.url || '';
+  const mergedGallery = [];
+  const pushUnique = (entry) => {
+    if (!entry?.url) return;
+    if (mergedGallery.some((existing) => existing.url === entry.url)) return;
+    mergedGallery.push({
+      url: entry.url,
+      path: entry.path || '',
+      name: entry.name || '',
+    });
+  };
+  pushUnique({ url: primaryImage, path: item.coverImagePath || '', name: item.coverImageName || '' });
+  galleryImages.forEach(pushUnique);
+  return {
+    ...item,
+    summary: item.summary || item.body || '',
+    body: item.body || item.summary || '',
+    fullDetails: fullDetails || details.join('\n'),
+    details,
+    terms,
+    ctaLabel: item.ctaLabel || t('detail.contactTeam'),
+    coverImageUrl: primaryImage,
+    galleryImages: mergedGallery,
+  };
+}
+
+function renderList(items = []) {
+  if (!items.length) return '<p class="muted">-</p>';
+  return `<ul class="detail-bullets">${items.map((entry) => `<li>${escapeHtml(entry)}</li>`).join('')}</ul>`;
+}
+
+function getRelated(items, currentId) {
+  return items.filter((entry) => entry.id !== currentId).map((entry) => getLocalizedContent(entry)).slice(0, 3);
+}
+
+function renderRelated(type, items = []) {
+  const target = $('relatedList');
+  if (!target) return;
+  if (!items.length) {
+    target.innerHTML = '<div class="card-item"><p>ไม่มีรายการอื่นในตอนนี้</p></div>';
+    return;
+  }
+  target.innerHTML = items.map((item) => {
+    const href = `./${type}-detail.html?id=${encodeURIComponent(item.id)}`;
+    return `
+    <a class="card-item detail-link-card" href="${href}">
+      <div class="eyebrow gold">Related ${escapeHtml(labelMap[type])}</div>
+      <h4>${escapeHtml(item.title || '-')}</h4>
+      <p>${escapeHtml(item.summary || item.body || '')}</p>
+      <span class="text-link">Open detail</span>
+    </a>
+  `;
+  }).join('');
+}
+
+function renderAdminTools(type, item) {
+  const card = $('detailAdminTools');
+  const editBtn = $('detailEditBtn');
+  const publishBtn = $('detailPublishBtn');
+  const unpublishBtn = $('detailUnpublishBtn');
+  const deleteBtn = $('detailDeleteBtn');
+  const note = $('detailAdminNote');
+  if (!card) return;
+  const manageable = canManageContent() && Boolean(item?.id && item?.createdLabel);
+  const isPublished = item?.status === 'published';
+  card.classList.toggle('hidden', !canManageContent());
+  if (note) {
+    note.textContent = manageable
+      ? `สถานะปัจจุบัน: ${getStatusLabel(item?.status || 'draft')}`
+      : 'ยังไม่มีสิทธิ์แก้ไขรายการนี้';
+  }
+  if (editBtn) {
+    editBtn.classList.toggle('hidden', !canManageContent());
+    editBtn.href = manageable ? `./${type}.html?edit=${encodeURIComponent(item.id)}` : `./${type}.html`;
+  }
+  if (publishBtn) {
+    publishBtn.classList.toggle('hidden', !canManageContent());
+    publishBtn.disabled = !manageable || isPublished;
+    publishBtn.textContent = isPublished ? t('detail.published') : t('detail.publishThisItem');
+  }
+  if (unpublishBtn) {
+    unpublishBtn.classList.toggle('hidden', !canManageContent() || !isPublished);
+    unpublishBtn.disabled = !manageable || !isPublished;
+  }
+  if (deleteBtn) {
+    deleteBtn.classList.toggle('hidden', !canManageContent());
+    deleteBtn.disabled = !manageable;
+  }
+}
+
+function renderGallery(item) {
+  const target = $('detailCoverWrap');
+  if (!target) return;
+  const images = item.galleryImages || [];
+  lightboxGallery = images;
+  currentLightboxIndex = 0;
+  if (!images.length) {
+    target.innerHTML = `<div class="detail-cover detail-cover-fallback"><span>${escapeHtml(labelMap[currentType])}</span></div>`;
+    return;
+  }
+  const mainImage = images[0];
+  target.innerHTML = `
+    <div class="detail-gallery-shell">
+      <button id="detailMainImageBtn" class="detail-main-image-btn" type="button" data-lightbox-index="0" aria-label="Open image fullscreen">
+        <img id="detailMainImage" class="detail-cover" src="${escapeHtml(mainImage.url)}" alt="${escapeHtml(item.title || labelMap[currentType])}" loading="lazy">
+        <span class="detail-zoom-chip">Tap to view full screen</span>
+      </button>
+      ${images.length > 1 ? `
+        <div id="detailThumbList" class="detail-thumb-grid">
+          ${images.map((image, index) => `
+            <button class="detail-thumb ${index === 0 ? 'active' : ''}" type="button" data-image-url="${escapeHtml(image.url)}" data-image-index="${index}">
+              <img src="${escapeHtml(image.url)}" alt="Thumbnail ${index + 1}" loading="lazy">
+            </button>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function ensureLightbox() {
+  if ($('detailLightbox')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'detailLightbox';
+  overlay.className = 'detail-lightbox hidden';
+  overlay.innerHTML = `
+    <div class="detail-lightbox-backdrop" data-lightbox-close></div>
+    <div class="detail-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image preview">
+      <button class="detail-lightbox-close" type="button" data-lightbox-close aria-label="Close fullscreen image">×</button>
+      <button class="detail-lightbox-nav prev" type="button" data-lightbox-nav="prev" aria-label="Previous image">‹</button>
+      <div class="detail-lightbox-stage">
+        <img id="detailLightboxImage" class="detail-lightbox-image" src="" alt="Fullscreen preview">
+        <div id="detailLightboxCaption" class="detail-lightbox-caption">1 / 1</div>
+      </div>
+      <button class="detail-lightbox-nav next" type="button" data-lightbox-nav="next" aria-label="Next image">›</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function updateLightbox() {
+  const image = $('detailLightboxImage');
+  const caption = $('detailLightboxCaption');
+  if (!image || !lightboxGallery.length) return;
+  const safeIndex = Math.max(0, Math.min(currentLightboxIndex, lightboxGallery.length - 1));
+  currentLightboxIndex = safeIndex;
+  const entry = lightboxGallery[safeIndex];
+  image.src = entry.url;
+  image.alt = `${currentType} image ${safeIndex + 1}`;
+  if (caption) caption.textContent = `${safeIndex + 1} / ${lightboxGallery.length}`;
+}
+
+function openLightbox(index = 0) {
+  if (!lightboxGallery.length) return;
+  ensureLightbox();
+  currentLightboxIndex = Number(index) || 0;
+  updateLightbox();
+  $('detailLightbox')?.classList.remove('hidden');
+  document.body.classList.add('lightbox-open');
+}
+
+function closeLightbox() {
+  $('detailLightbox')?.classList.add('hidden');
+  document.body.classList.remove('lightbox-open');
+}
+
+function stepLightbox(direction = 1) {
+  if (!lightboxGallery.length) return;
+  currentLightboxIndex = (currentLightboxIndex + direction + lightboxGallery.length) % lightboxGallery.length;
+  updateLightbox();
+}
+
+function renderDetail(type, item) {
+  const safe = normalizeContent(getLocalizedContent(item));
+  if ($('detailEyebrow')) $('detailEyebrow').textContent = labelMap[type];
+  if ($('detailHeading')) $('detailHeading').textContent = safe.title || pageTitleMap[type];
+  if ($('detailSummary')) $('detailSummary').textContent = safe.summary || safe.body || '';
+  if ($('detailStatusLabel')) {
+    $('detailStatusLabel').textContent = getStatusLabel(safe.status || 'draft');
+    $('detailStatusLabel').className = `mini-badge ${getStatusBadgeClass(safe.status || 'draft')}`.trim();
+  }
+  if ($('detailMeta')) {
+    const galleryCount = safe.galleryImages?.length ? ` • ${safe.galleryImages.length} photos` : '';
+    if (safe.status === 'published' && safe.publishedLabel && safe.publishedLabel !== '-') {
+      $('detailMeta').textContent = `Published ${safe.publishedLabel}${galleryCount}`;
+    } else if (safe.updatedLabel && safe.updatedLabel !== '-') {
+      $('detailMeta').textContent = `Last updated ${safe.updatedLabel}${galleryCount}`;
+    } else {
+      $('detailMeta').textContent = `Draft ${labelMap[type]} detail${galleryCount}`;
+    }
+  }
+  renderGallery(safe);
+  if ($('detailBody')) {
+    $('detailBody').innerHTML = `
+      <section class="detail-section">
+        <div class="section-head"><h3>Overview</h3><span class="eyebrow">Summary</span></div>
+        <p class="detail-paragraph">${escapeHtml(safe.summary || safe.body || '')}</p>
+      </section>
+      <section class="detail-section">
+        <div class="section-head"><h3>Full Details</h3><span class="eyebrow">Expanded content</span></div>
+        <p class="detail-paragraph">${escapeHtml(safe.fullDetails || '').replaceAll('\n', '<br>')}</p>
+      </section>
+      ${safe.galleryImages?.length ? `
+      <section class="detail-section">
+        <div class="section-head"><h3>Photo Gallery</h3><span class="eyebrow">${safe.galleryImages.length} images</span></div>
+        <div class="detail-gallery-grid">
+          ${safe.galleryImages.map((image, index) => `
+            <button class="detail-gallery-card" type="button" data-image-url="${escapeHtml(image.url)}" data-image-index="${index}" data-lightbox-index="${index}">
+              <img src="${escapeHtml(image.url)}" alt="Gallery image ${index + 1}" loading="lazy">
+            </button>
+          `).join('')}
+        </div>
+      </section>` : ''}
+      <section class="detail-section">
+        <div class="section-head"><h3>Key Points</h3><span class="eyebrow">Highlights</span></div>
+        ${renderList(safe.details)}
+      </section>
+      <section class="detail-section">
+        <div class="section-head"><h3>Terms</h3><span class="eyebrow">Conditions</span></div>
+        ${renderList(safe.terms.length ? safe.terms : ['Please contact the hotel team for full details.'])}
+      </section>
+    `;
+  }
+  if ($('detailCtaLabel')) $('detailCtaLabel').textContent = safe.ctaLabel || t('detail.contactTeam');
+  renderAdminTools(type, safe);
+}
+
+async function resolveItem(type) {
+  const { id } = getParams();
+  if (!id || !state.firebaseReady) return null;
+  try {
+    return await loadDocumentById(type, id, { publishedOnly: !canManageContent() });
+  } catch (error) {
+    console.warn(error);
+    showToast('อ่านข้อมูล detail จาก Firestore ไม่ได้', 'error');
+    return null;
+  }
+}
+
+async function loadRelatedItems(type, current) {
+  if (current?.id && state.firebaseReady) {
+    try {
+      const rows = await loadCollectionSafe(type, { limit: 12, publishedOnly: !canManageContent() });
+      return getRelated(rows, current.id);
+    } catch (error) {
+      console.warn(error);
+    }
+  }
+  return [];
+}
+
+function switchMainImage(url, index) {
+  const mainImage = $('detailMainImage');
+  const mainButton = $('detailMainImageBtn');
+  if (mainImage && url) mainImage.src = url;
+  if (mainButton) mainButton.dataset.lightboxIndex = String(index);
+  $$('[data-image-index]').forEach((el) => {
+    el.classList.toggle('active', String(el.dataset.imageIndex) === String(index));
+  });
+}
+
+async function refreshCurrentDetail() {
+  if (!currentType || !currentItem?.id) return null;
+  const reloaded = await loadDocumentById(currentType, currentItem.id, { publishedOnly: !canManageContent() });
+  currentItem = reloaded;
+  return reloaded;
+}
+
+export async function loadDetailPage(type) {
+  currentType = type;
+  const item = await resolveItem(type);
+  currentItem = item;
+  if (!item) {
+    if ($('detailHeading')) $('detailHeading').textContent = `${pageTitleMap[type]} not found`;
+    if ($('detailSummary')) $('detailSummary').textContent = 'ไม่พบข้อมูลรายการนี้';
+    if ($('detailBody')) $('detailBody').innerHTML = '<div class="card-item"><p>ลองกลับไปที่หน้ารายการหลักแล้วเลือกใหม่อีกครั้ง</p></div>';
+    return;
+  }
+  renderDetail(type, item);
+  renderRelated(type, await loadRelatedItems(type, item));
+}
+
+export function bindDetailPage(type) {
+  if ($('backToListBtn')) {
+    $('backToListBtn').addEventListener('click', () => {
+      window.location.href = `./${type}.html`;
+    });
+  }
+  if ($('detailCtaBtn')) {
+    $('detailCtaBtn').addEventListener('click', () => {
+      const contactUrl = 'https://www.facebook.com/layaresortphuket';
+      const isResidentSide = !canManageContent();
+      if (isResidentSide) {
+        window.open(contactUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      window.open(contactUrl, '_blank', 'noopener,noreferrer');
+    });
+  }
+  ensureLightbox();
+  document.addEventListener('click', (event) => {
+    const thumbTrigger = event.target.closest('.detail-thumb');
+    if (thumbTrigger) {
+      switchMainImage(thumbTrigger.dataset.imageUrl || '', thumbTrigger.dataset.imageIndex || '0');
+      return;
+    }
+    const lightboxTrigger = event.target.closest('[data-lightbox-index]');
+    if (lightboxTrigger) {
+      openLightbox(lightboxTrigger.dataset.lightboxIndex || lightboxTrigger.dataset.imageIndex || '0');
+      return;
+    }
+    const closeBtn = event.target.closest('[data-lightbox-close]');
+    if (closeBtn) {
+      closeLightbox();
+      return;
+    }
+    const navBtn = event.target.closest('[data-lightbox-nav]');
+    if (navBtn) {
+      stepLightbox(navBtn.dataset.lightboxNav === 'prev' ? -1 : 1);
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if ($('detailLightbox')?.classList.contains('hidden')) return;
+    if (event.key === 'Escape') closeLightbox();
+    if (event.key === 'ArrowRight') stepLightbox(1);
+    if (event.key === 'ArrowLeft') stepLightbox(-1);
+  });
+  if ($('detailPublishBtn')) {
+    $('detailPublishBtn').addEventListener('click', async () => {
+      if (!canManageContent() || !currentItem?.id) {
+        showToast('รายการนี้ยังเผยแพร่ไม่ได้', 'error');
+        return;
+      }
+      try {
+        await publishCMSItem(currentType, currentItem.id);
+        const updated = await refreshCurrentDetail();
+        if (updated) {
+          renderDetail(currentType, updated);
+          renderRelated(currentType, await loadRelatedItems(currentType, updated));
+        }
+        showToast(`${labelMap[currentType]} published`);
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Publish failed', 'error');
+      }
+    });
+  }
+  if ($('detailUnpublishBtn')) {
+    $('detailUnpublishBtn').addEventListener('click', async () => {
+      if (!canManageContent() || !currentItem?.id) {
+        showToast('รายการนี้ยังยกเลิกเผยแพร่ไม่ได้', 'error');
+        return;
+      }
+      try {
+        await unpublishCMSItem(currentType, currentItem.id);
+        const updated = await refreshCurrentDetail();
+        if (updated) {
+          renderDetail(currentType, updated);
+          renderRelated(currentType, await loadRelatedItems(currentType, updated));
+        }
+        showToast(`${labelMap[currentType]} unpublished`);
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Unpublish failed', 'error');
+      }
+    });
+  }
+  if ($('detailDeleteBtn')) {
+    $('detailDeleteBtn').addEventListener('click', async () => {
+      if (!canManageContent() || !currentItem?.id || !currentItem?.createdLabel) {
+        showToast('รายการนี้ยังลบไม่ได้', 'error');
+        return;
+      }
+      const ok = window.confirm(`ยืนยันลบ ${labelMap[currentType]} นี้?`);
+      if (!ok) return;
+      try {
+        await deleteCMSItem(currentType, currentItem.id);
+        showToast(`Deleted ${labelMap[currentType]}`);
+        window.location.href = `./${currentType}.html`;
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || 'Delete failed', 'error');
+      }
+    });
+  }
+  $$('[data-detail-label]').forEach((el) => {
+    el.textContent = pageTitleMap[type];
+  });
+}

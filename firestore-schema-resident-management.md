@@ -1,0 +1,333 @@
+import { $ } from '../core/dom.js';
+import { state } from '../core/state.js';
+import { loginWithEmail, sendLoginResetEmail, signUpResidentWithInvite } from '../services/auth-service.js';
+import {
+  getResidentLoginPreference,
+  saveResidentLoginPreference,
+  getResidentSessionMode,
+  markResidentJustLoggedIn,
+  consumeResidentJustLoggedIn,
+} from '../core/session.js';
+import { normalizeInviteCode, normalizeUnitCode, parseUnitCodes } from '../services/resident-invite-service.js';
+import { showToast } from '../ui/toast.js';
+import { t } from '../core/i18n.js';
+
+function setText(id, value) {
+  const node = $(id);
+  if (node) node.textContent = value;
+}
+
+function toggleHidden(id, hidden) {
+  const node = $(id);
+  if (node) node.classList.toggle('hidden', !!hidden);
+}
+
+function setSessionAppearance(active) {
+  const shell = $('residentLoginShell');
+  if (!shell) return;
+  shell.classList.toggle('is-session-live', !!active);
+  shell.classList.toggle('is-session-empty', !active);
+}
+
+function setAuthMode(mode = 'login') {
+  const isSignup = mode === 'signup';
+  $('authModeLoginBtn')?.classList.toggle('active', !isSignup);
+  $('authModeSignupBtn')?.classList.toggle('active', isSignup);
+  $('residentLoginModePanel')?.classList.toggle('hidden', isSignup);
+  $('residentSignupModePanel')?.classList.toggle('hidden', !isSignup);
+  $('residentAuthSwitchLabel') && ( $('residentAuthSwitchLabel').textContent = isSignup ? t('residentLogin.signupLabel') : t('residentLogin.loginLabel'));
+}
+
+function renderRememberState() {
+  const pref = getResidentLoginPreference();
+  const remember = $('residentRememberMe');
+  const email = $('residentLoginIdentifier');
+  if (remember) remember.checked = !!pref.rememberMe;
+  if (email && pref.email && !email.value.trim()) email.value = pref.email;
+}
+
+function renderSessionCard() {
+  const activeResident = state.currentUser && state.currentRole === 'resident';
+  const resident = state.currentResident || {};
+  const sessionMode = getResidentSessionMode();
+  const sessionLabel = sessionMode === 'local'
+    ? t('residentLogin.sessionRemembered')
+    : t('residentLogin.sessionBrowserOnly');
+
+  setSessionAppearance(activeResident);
+  toggleHidden('residentSessionCard', !activeResident);
+  toggleHidden('residentSessionEmptyCard', activeResident);
+  toggleHidden('residentSessionActions', !activeResident);
+
+  setText('residentSessionStatus', activeResident ? t('residentLogin.sessionReady') : t('residentLogin.noActiveSession'));
+  setText('residentSessionName', resident.fullName || resident.displayName || state.currentUser?.displayName || t('common.residentMember'));
+  setText('residentSessionEmail', state.currentUser?.email || resident.loginEmail || resident.email || '-');
+  setText('residentSessionMode', activeResident ? sessionLabel : t('residentLogin.noActiveSessionHint'));
+  setText('residentSessionCode', resident.memberCode || resident.qrCodeValue || resident.cardNumber || '-');
+  setText('residentSessionResidence', resident.residence || resident.primaryUnitCode || '-');
+
+  const submitBtn = $('residentLoginSubmitBtn');
+  if (submitBtn) submitBtn.textContent = activeResident ? t('residentLogin.switchAccount') : t('common.logIn');
+}
+
+async function attemptLogin() {
+  if (!state.firebaseReady) {
+    showToast(t('residentLogin.firebaseNotReady'), 'error');
+    return;
+  }
+
+  const identifier = $('residentLoginIdentifier')?.value.trim();
+  const password = $('residentLoginPassword')?.value.trim();
+  const rememberMe = !!$('residentRememberMe')?.checked;
+  const submitBtn = $('residentLoginSubmitBtn');
+
+  if (!identifier || !password) {
+    showToast(t('residentLogin.enterEmailAndPin'), 'error');
+    return;
+  }
+
+  try {
+    if (submitBtn) submitBtn.disabled = true;
+    window.__showResidentLoader?.();
+    await loginWithEmail(identifier, password, { rememberMe });
+    saveResidentLoginPreference({ rememberMe, email: identifier });
+    markResidentJustLoggedIn();
+    showToast(t('residentLogin.loginSuccess'));
+    window.setTimeout(() => {
+      window.location.href = './home.html';
+    }, 260);
+  } catch (error) {
+    console.error(error);
+    window.__hideResidentLoader?.();
+    showToast(error?.message || t('residentLogin.loginFailed'), 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+async function attemptSignup() {
+  if (!state.firebaseReady) {
+    showToast(t('residentLogin.firebaseNotReady'), 'error');
+    return;
+  }
+
+  const email = $('residentSignupEmail')?.value.trim();
+  const pin = $('residentSignupPin')?.value.trim();
+  const inviteCode = normalizeInviteCode($('residentSignupInviteCode')?.value || '');
+  const primaryUnitCode = normalizeUnitCode($('residentSignupPrimaryUnit')?.value || '');
+  const additionalUnits = parseUnitCodes($('residentSignupAdditionalUnits')?.value || '').filter((code) => code !== primaryUnitCode);
+  const submitBtn = $('residentSignupSubmitBtn');
+
+  if (!email || !pin || !inviteCode || !primaryUnitCode) {
+    showToast(t('residentLogin.signupRequiredFields'), 'error');
+    return;
+  }
+  if (!/^\d{6}$/.test(pin)) {
+    showToast(t('residentLogin.invalidPin'), 'error');
+    return;
+  }
+
+  try {
+    if (submitBtn) submitBtn.disabled = true;
+    window.__showResidentLoader?.();
+    await signUpResidentWithInvite({
+      email,
+      pin,
+      inviteCode,
+      primaryUnitCode,
+      additionalUnitCodes: additionalUnits,
+    });
+    saveResidentLoginPreference({ rememberMe: true, email });
+    markResidentJustLoggedIn();
+    showToast(t('residentLogin.signupSuccess'));
+    window.setTimeout(() => {
+      window.location.href = './home.html';
+    }, 400);
+  } catch (error) {
+    console.error(error);
+    window.__hideResidentLoader?.();
+    let message = error?.message || t('residentLogin.signupFailed');
+    if (error?.code === 'auth/email-already-in-use') message = t('residentLogin.emailAlreadyRegistered');
+    if (error?.code === 'auth/invalid-email') message = t('residentLogin.invalidEmail');
+    if (error?.code === 'permission-denied') message = t('residentLogin.invitationNotAllowed');
+    if (error?.message === 'Invite code does not match the primary room entered') message = t('residentLogin.invitationRoomMismatch');
+    showToast(message, 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+}
+
+async function sendResetLink() {
+  const identifier = $('residentLoginIdentifier')?.value.trim() || getResidentLoginPreference().email || state.currentUser?.email || '';
+  const btn = $('sendResetLinkBtn');
+
+  if (!identifier) {
+    showToast(t('residentLogin.enterEmailForReset'), 'error');
+    return;
+  }
+
+  try {
+    if (btn) btn.disabled = true;
+    const email = await sendLoginResetEmail(identifier);
+    showToast(t('residentLogin.resetSentToast', { email }));
+    const status = $('forgotPasswordStatus');
+    if (status) {
+      status.textContent = t('residentLogin.resetSentStatus', { email });
+      status.classList.remove('hidden');
+    }
+  } catch (error) {
+    console.error(error);
+    showToast(error?.message || t('residentLogin.resetFailed'), 'error');
+    const status = $('forgotPasswordStatus');
+    if (status) {
+      status.textContent = error?.message || t('residentLogin.resetFailed');
+      status.classList.remove('hidden');
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function toggleForgotPasswordPanel() {
+  const panel = $('forgotPasswordPanel');
+  const trigger = $('forgotPasswordBtn');
+  if (!panel || !trigger) return;
+
+  const willShow = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !willShow);
+  trigger.textContent = willShow ? t('residentLogin.hideResetOptions') : t('residentLogin.forgotPin');
+}
+
+function bindEnterKeys() {
+  ['residentLoginPassword', 'residentLoginIdentifier'].forEach((id) => {
+    const el = $(id);
+    if (el && !el.dataset.boundEnter) {
+      el.dataset.boundEnter = '1';
+      el.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') attemptLogin();
+      });
+    }
+  });
+
+  ['residentSignupEmail', 'residentSignupPin', 'residentSignupInviteCode', 'residentSignupPrimaryUnit', 'residentSignupAdditionalUnits'].forEach((id) => {
+    const el = $(id);
+    if (el && !el.dataset.boundEnter) {
+      el.dataset.boundEnter = '1';
+      el.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') attemptSignup();
+      });
+    }
+  });
+}
+
+function bindButtons() {
+  const loginBtn = $('residentLoginSubmitBtn');
+  if (loginBtn && !loginBtn.dataset.bound) {
+    loginBtn.dataset.bound = '1';
+    loginBtn.addEventListener('click', attemptLogin);
+  }
+
+  const signupBtn = $('residentSignupSubmitBtn');
+  if (signupBtn && !signupBtn.dataset.bound) {
+    signupBtn.dataset.bound = '1';
+    signupBtn.addEventListener('click', attemptSignup);
+  }
+
+  const resetBtn = $('sendResetLinkBtn');
+  if (resetBtn && !resetBtn.dataset.bound) {
+    resetBtn.dataset.bound = '1';
+    resetBtn.addEventListener('click', sendResetLink);
+  }
+
+  const forgotBtn = $('forgotPasswordBtn');
+  if (forgotBtn && !forgotBtn.dataset.bound) {
+    forgotBtn.dataset.bound = '1';
+    forgotBtn.addEventListener('click', toggleForgotPasswordPanel);
+  }
+
+  const continueBtn = $('residentContinueBtn');
+  if (continueBtn && !continueBtn.dataset.bound) {
+    continueBtn.dataset.bound = '1';
+    continueBtn.addEventListener('click', () => {
+      window.__showResidentLoader?.();
+      window.location.href = './home.html';
+    });
+  }
+
+  const sessionLogoutBtn = $('residentSessionLogoutBtn');
+  if (sessionLogoutBtn && !sessionLogoutBtn.dataset.bound) {
+    sessionLogoutBtn.dataset.bound = '1';
+    sessionLogoutBtn.addEventListener('click', () => {
+      $('logoutBtn')?.click();
+    });
+  }
+
+  const remember = $('residentRememberMe');
+  if (remember && !remember.dataset.bound) {
+    remember.dataset.bound = '1';
+    remember.addEventListener('change', () => {
+      const email = $('residentLoginIdentifier')?.value.trim() || getResidentLoginPreference().email;
+      saveResidentLoginPreference({ rememberMe: remember.checked, email });
+    });
+  }
+
+  const email = $('residentLoginIdentifier');
+  if (email && !email.dataset.rememberBound) {
+    email.dataset.rememberBound = '1';
+    email.addEventListener('change', () => {
+      saveResidentLoginPreference({ rememberMe: !!$('residentRememberMe')?.checked, email: email.value.trim() });
+    });
+  }
+
+  $('authModeLoginBtn')?.addEventListener('click', () => setAuthMode('login'));
+  $('authModeSignupBtn')?.addEventListener('click', () => setAuthMode('signup'));
+  $('authModeSignupBtnInline')?.addEventListener('click', () => setAuthMode('signup'));
+  $('residentGoLoginBtn')?.addEventListener('click', () => setAuthMode('login'));
+}
+
+function bindFieldFormatters() {
+  ['residentSignupInviteCode', 'residentSignupPrimaryUnit'].forEach((id) => {
+    const el = $(id);
+    if (el && !el.dataset.boundFormat) {
+      el.dataset.boundFormat = '1';
+      el.addEventListener('blur', () => {
+        if (id === 'residentSignupInviteCode') el.value = normalizeInviteCode(el.value);
+        if (id === 'residentSignupPrimaryUnit') el.value = normalizeUnitCode(el.value);
+      });
+    }
+  });
+
+  const extra = $('residentSignupAdditionalUnits');
+  if (extra && !extra.dataset.boundFormat) {
+    extra.dataset.boundFormat = '1';
+    extra.addEventListener('blur', () => {
+      extra.value = parseUnitCodes(extra.value).join(', ');
+    });
+  }
+}
+
+function renderJustLoggedInHint() {
+  const notice = $('residentSessionFlash');
+  if (!notice) return;
+
+  if (consumeResidentJustLoggedIn()) {
+    notice.classList.remove('hidden');
+    notice.textContent = t('residentLogin.sessionOpeningHome');
+    window.setTimeout(() => {
+      notice.classList.add('hidden');
+    }, 2200);
+    return;
+  }
+
+  notice.classList.add('hidden');
+}
+
+export function bindResidentLoginPage() {
+  renderRememberState();
+  bindButtons();
+  bindEnterKeys();
+  bindFieldFormatters();
+  renderSessionCard();
+  renderJustLoggedInHint();
+  setAuthMode('login');
+}

@@ -1,0 +1,19 @@
+export const state = {
+  app: null,
+  db: null,
+  auth: null,
+  storage: null,
+  firebaseReady: false,
+  currentUser: null,
+  currentRole: null,
+  currentResident: null,
+  currentProfile: null,
+  currentMode: 'auth',
+  memberCode: '',
+  residentId: '',
+  currentLanguage: 'en',
+};
+
+export function setMode(mode) {
+  state.currentMode = mode;
+}

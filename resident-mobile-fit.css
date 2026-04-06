@@ -1,0 +1,793 @@
+
+:root {
+  --resident-shell-max: 1180px;
+  --resident-surface: linear-gradient(180deg, rgba(255,255,255,.072), rgba(255,255,255,.03));
+  --resident-surface-strong: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.035));
+  --resident-stroke: rgba(216,188,124,.16);
+  --resident-stroke-soft: rgba(255,255,255,.08);
+  --resident-shadow-soft: 0 18px 48px rgba(0,0,0,.24);
+  --resident-shadow-card: 0 22px 60px rgba(0,0,0,.30);
+}
+
+body[data-page="home"],
+body[data-page="member"],
+body[data-page="settings"],
+body[data-page="redemption"],
+body[data-page="resident-login"] {
+  background:
+    radial-gradient(circle at top center, rgba(216,188,124,.11), transparent 0 34%),
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.06), transparent 0 24%),
+    linear-gradient(180deg, #10141b 0%, #0b0d10 56%, #080a0d 100%);
+}
+
+body[data-page="home"]::before,
+body[data-page="member"]::before,
+body[data-page="settings"]::before,
+body[data-page="redemption"]::before,
+body[data-page="resident-login"]::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(216,188,124,.05), transparent 28%, transparent 72%, rgba(216,188,124,.035)),
+    radial-gradient(circle at bottom right, rgba(216,188,124,.05), transparent 22%);
+  opacity: .9;
+}
+
+.app-shell.customer-shell,
+.resident-login-shell {
+  max-width: var(--resident-shell-max);
+  padding-top: 18px;
+}
+
+.vault-shell,
+.resident-login-shell {
+  position: relative;
+  z-index: 1;
+}
+
+.vault-header-with-appbar,
+.resident-login-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 18;
+  padding-bottom: 10px;
+  backdrop-filter: blur(18px);
+}
+
+.vault-header-with-appbar::after,
+.resident-login-topbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(216,188,124,.20), transparent);
+  opacity: .9;
+}
+
+.vault-appbar-top,
+.resident-login-topbar {
+  padding: 6px 0 12px;
+}
+
+.vault-brand-banner,
+.vault-profile-strip,
+.vault-news-hero,
+.vault-promo-card,
+.vault-tabs-panel,
+.vault-reward-group,
+.resident-card-panel,
+.vault-settings-item,
+.resident-login-panel,
+.resident-session-card,
+.metric-card,
+.member-qr-panel,
+.panel,
+.glass {
+  box-shadow: var(--resident-shadow-soft);
+}
+
+.vault-brand-banner {
+  border: 1px solid var(--resident-stroke-soft);
+  background:
+    linear-gradient(135deg, rgba(216,188,124,.16), rgba(216,188,124,.06) 28%, rgba(255,255,255,.03) 62%, rgba(255,255,255,.02));
+}
+
+.vault-brand-banner-logo {
+  letter-spacing: .28em;
+}
+
+.vault-profile-strip {
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), var(--resident-shadow-soft);
+}
+
+.vault-avatar {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 8px 18px rgba(0,0,0,.22);
+}
+
+.vault-points-pill,
+.vault-auth-chip,
+.vault-bottom-nav .nav-btn,
+.primary-btn,
+.secondary-btn,
+.ghost-btn {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 12px 28px rgba(0,0,0,.18);
+}
+
+.vault-auth-chip {
+  min-height: 40px;
+  padding: 0 16px;
+  border-color: rgba(216,188,124,.18);
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(250,245,235,.92));
+}
+
+.vault-auth-chip-logout {
+  background: linear-gradient(180deg, rgba(31,33,37,.96), rgba(12,13,15,.96));
+  border-color: rgba(255,255,255,.10);
+}
+
+.vault-main-content,
+.resident-login-shell .main-content {
+  gap: 24px;
+}
+
+.vault-section-title {
+  font-size: 12px;
+  letter-spacing: .28em;
+  color: rgba(216,188,124,.9);
+  margin-top: 4px;
+}
+
+.vault-news-hero {
+  overflow: hidden;
+  border-radius: 32px;
+  padding: 0;
+  border: 1px solid rgba(216,188,124,.12);
+  background: var(--resident-surface-strong);
+}
+
+.vault-news-image-wrap,
+.vault-news-fallback {
+  position: relative;
+}
+
+.vault-news-image-wrap::after,
+.vault-news-fallback::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 10%, rgba(0,0,0,.28) 100%);
+  pointer-events: none;
+}
+
+.vault-news-copy {
+  padding: 28px 28px 30px;
+}
+
+.vault-news-copy h2 {
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.02;
+  letter-spacing: -.02em;
+}
+
+.vault-news-copy p {
+  max-width: 58ch;
+}
+
+.vault-promo-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.vault-promo-card {
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(216,188,124,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.88));
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+
+.vault-promo-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(216,188,124,.24);
+  box-shadow: var(--resident-shadow-card);
+}
+
+.vault-promo-thumb {
+  height: 164px;
+}
+
+.vault-promo-copy {
+  padding: 18px 18px 20px;
+  min-height: 110px;
+}
+
+.vault-promo-copy strong {
+  font-size: 16px;
+}
+
+.vault-bottom-nav {
+  border: 1px solid rgba(216,188,124,.14);
+  background: linear-gradient(180deg, rgba(12,14,18,.92), rgba(7,8,10,.95));
+  box-shadow: 0 18px 50px rgba(0,0,0,.38);
+}
+
+.vault-bottom-nav .nav-btn {
+  min-height: 62px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+}
+
+.vault-bottom-nav .nav-btn.active {
+  border-color: rgba(216,188,124,.24);
+  background: linear-gradient(180deg, rgba(216,188,124,.16), rgba(216,188,124,.06));
+}
+
+.vault-bottom-nav .nav-btn .nav-label {
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+.vault-member-panel {
+  border-radius: 34px;
+  border: 1px solid rgba(216,188,124,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  padding: 24px;
+}
+
+.vault-member-panel .resident-card-hero {
+  gap: 28px;
+}
+
+.vault-member-panel .resident-card-summary {
+  gap: 14px;
+}
+
+.metric-card,
+.member-qr-panel,
+.vault-settings-item,
+.resident-login-panel,
+.resident-session-card {
+  border-color: rgba(255,255,255,.08);
+  background: var(--resident-surface);
+}
+
+.metric-card {
+  min-height: 98px;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+.metric-card strong {
+  line-height: 1.05;
+}
+
+.member-qr-panel {
+  border-radius: 24px;
+  padding: 20px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.member-qr-panel .qr-wrap {
+  padding: 12px;
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(0,0,0,.16);
+}
+
+.member-page-panel .elite-card-scene {
+  filter: drop-shadow(0 22px 34px rgba(0,0,0,.28));
+}
+
+.member-page-panel .member-key-grid,
+.member-page-panel .member-stats-grid {
+  gap: 14px;
+}
+
+.vault-settings-list {
+  display: grid;
+  gap: 16px;
+}
+
+.vault-settings-item {
+  min-height: 88px;
+  border-radius: 24px;
+  padding: 20px 22px;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.vault-settings-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(216,188,124,.22);
+  background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.035));
+}
+
+.vault-settings-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.resident-login-shell .topbar h1 {
+  font-size: clamp(30px, 4vw, 38px);
+  margin-top: 8px;
+}
+
+.resident-login-hero {
+  align-items: start;
+  gap: 24px;
+}
+
+.resident-login-copy,
+.resident-login-panel {
+  min-height: 100%;
+}
+
+.resident-login-copy h2 {
+  max-width: 15ch;
+  line-height: 1.02;
+}
+
+.resident-login-copy p {
+  max-width: 56ch;
+  line-height: 1.7;
+}
+
+.resident-session-card,
+.resident-login-panel {
+  border-radius: 32px;
+  padding: 26px;
+  border: 1px solid rgba(216,188,124,.16);
+}
+
+.resident-login-panel-head .badge-inline,
+.resident-reset-head .badge-inline,
+.resident-login-topbar .badge-inline {
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.08);
+}
+
+.resident-login-panel .input,
+.resident-login-panel .textarea,
+.resident-login-panel select,
+.resident-login-panel .primary-btn,
+.resident-login-panel .secondary-btn,
+.resident-login-panel .ghost-btn {
+  min-height: 52px;
+  border-radius: 18px;
+}
+
+.resident-login-panel .textarea { min-height: 120px; }
+
+.resident-login-panel .primary-btn {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.resident-check-item {
+  min-height: 74px;
+  border-radius: 20px;
+}
+
+.resident-check-item p,
+.resident-check-item small { line-height: 1.55; }
+
+.resident-session-grid .metric-card,
+.resident-login-security-grid .metric-card {
+  min-height: 118px;
+}
+
+.input,
+select.input,
+textarea.input {
+  background: rgba(255,255,255,.045);
+}
+
+@media (max-width: 900px) {
+  .vault-header-with-appbar,
+  .resident-login-topbar {
+    position: static;
+    backdrop-filter: none;
+  }
+
+  .vault-promo-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .vault-member-panel,
+  .resident-login-panel,
+  .resident-session-card {
+    padding: 22px;
+    border-radius: 28px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell.customer-shell,
+  .resident-login-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .vault-appbar-top {
+    gap: 12px;
+  }
+
+  .vault-brand-banner {
+    min-height: 68px;
+  }
+
+  .vault-profile-strip {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .vault-news-copy {
+    padding: 22px 20px 24px;
+  }
+
+  .vault-news-copy h2 {
+    font-size: 28px;
+  }
+
+  .vault-promo-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .vault-promo-thumb {
+    height: 152px;
+  }
+
+  .vault-member-panel,
+  .resident-login-panel,
+  .resident-session-card,
+  .vault-settings-item,
+  .member-qr-panel,
+  .metric-card {
+    border-radius: 22px;
+  }
+
+  .vault-member-panel,
+  .resident-login-panel,
+  .resident-session-card {
+    padding: 18px;
+  }
+
+  .metric-card {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .member-qr-panel {
+    padding: 18px;
+  }
+
+  .vault-bottom-nav {
+    width: min(100vw - 12px, var(--resident-shell-max));
+    bottom: 10px;
+    padding: 8px;
+    border-radius: 18px;
+  }
+
+  .vault-bottom-nav .nav-btn {
+    min-height: 58px;
+    padding: 12px 8px;
+  }
+
+  .resident-login-copy h2 {
+    max-width: none;
+    font-size: 30px;
+  }
+}
+
+
+.resident-auth-header {
+  gap: 14px;
+}
+
+.resident-auth-banner {
+  margin-top: 8px;
+}
+
+.resident-auth-strip {
+  margin-top: 14px;
+}
+
+.resident-auth-pill {
+  min-width: 210px;
+  justify-content: center;
+  text-align: center;
+}
+
+.resident-auth-main {
+  padding-bottom: 120px;
+}
+
+.resident-auth-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, .9fr);
+  gap: 22px;
+  align-items: start;
+  border-radius: 34px;
+  border: 1px solid rgba(216,188,124,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025));
+}
+
+.resident-auth-copy-block {
+  padding: 28px;
+}
+
+.resident-auth-copy-block h2 {
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+  margin: 0 0 10px;
+}
+
+.resident-auth-copy-block p {
+  max-width: 58ch;
+}
+
+.resident-auth-panel {
+  border-radius: 30px;
+  padding: 24px;
+  border: 1px solid rgba(216,188,124,.14);
+  background: linear-gradient(180deg, rgba(10,12,16,.88), rgba(10,12,16,.72));
+}
+
+.resident-auth-mode-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.resident-auth-mode-panel.hidden {
+  display: none;
+}
+
+body[data-page='resident-login'] .input {
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.09);
+}
+
+body[data-page='resident-login'] .input:focus {
+  border-color: rgba(216,188,124,.35);
+  box-shadow: 0 0 0 3px rgba(216,188,124,.08);
+}
+
+@media (max-width: 980px) {
+  .resident-auth-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .resident-auth-copy-block,
+  .resident-auth-panel {
+    padding: 18px;
+  }
+
+  .resident-auth-pill {
+    min-width: 0;
+  }
+}
+
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.resident-auth-header-compact {
+  gap: 10px;
+}
+
+.resident-auth-banner-compact {
+  margin-top: 2px;
+}
+
+.resident-auth-main-compact {
+  padding-top: 6px;
+}
+
+.resident-auth-hero-single {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 34px;
+  border: 1px solid rgba(216,188,124,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+}
+
+.resident-auth-panel-elevated {
+  width: min(100%, 760px);
+  padding: 24px;
+  border-radius: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.32);
+}
+
+.resident-auth-intro {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.resident-auth-intro h2 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 36px);
+  line-height: 1.02;
+  letter-spacing: -.03em;
+}
+
+.resident-auth-intro p {
+  margin: 0;
+  color: rgba(255,255,255,.76);
+  max-width: 58ch;
+}
+
+.resident-login-panel-head {
+  align-items: flex-start;
+}
+
+body[data-page='resident-login'] .resident-auth-switch {
+  margin-top: 6px;
+}
+
+body[data-page='resident-login'] .resident-login-options {
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .resident-auth-panel-elevated {
+    width: 100%;
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .resident-auth-hero-single {
+    padding: 10px;
+  }
+
+  .resident-auth-intro h2 {
+    font-size: 30px;
+  }
+}
+
+
+body[data-page="resident-login"] .resident-auth-intro-clean {
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+body[data-page="resident-login"] .resident-owner-privilege-title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  width: 100%;
+  background: linear-gradient(180deg, #b30017 0%, #980013 100%);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 0;
+  padding: 10px 16px;
+  font-size: clamp(24px, 4vw, 38px);
+  line-height: 1.02;
+  letter-spacing: .08em;
+  font-weight: 800;
+  color: rgba(255,255,255,.98);
+  text-transform: uppercase;
+  box-shadow: 0 12px 24px rgba(88, 0, 8, 0.28);
+}
+
+body[data-page="resident-login"] .resident-auth-intro-clean p {
+  margin: 0;
+  color: rgba(255,255,255,.88);
+  max-width: 58ch;
+}
+
+@media (max-width: 720px) {
+  body[data-page="resident-login"] .resident-owner-privilege-title {
+    min-height: 42px;
+    padding: 9px 14px;
+    font-size: 24px;
+    letter-spacing: .06em;
+  }
+}
+
+html.resident-loader-active,
+html.resident-loader-active body.has-resident-loader {
+  overflow: hidden;
+}
+
+.resident-route-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(169, 131, 58, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(6, 9, 14, 0.96) 0%, rgba(7, 10, 16, 0.985) 100%);
+  backdrop-filter: blur(8px);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .28s ease, visibility .28s ease;
+}
+
+.resident-route-loader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.resident-route-loader__inner {
+  min-width: min(84vw, 320px);
+  padding: 28px 30px 24px;
+  border-radius: 28px;
+  text-align: center;
+  border: 1px solid rgba(205, 167, 89, 0.28);
+  background: linear-gradient(180deg, rgba(20, 24, 32, 0.96) 0%, rgba(11, 14, 20, 0.98) 100%);
+  box-shadow: 0 24px 60px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.resident-route-loader__logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(52vw, 280px);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.resident-route-loader__logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 36px rgba(0, 0, 0, 0.35));
+  animation: residentLoaderPulse 1.8s ease-in-out infinite;
+}
+
+.resident-route-loader__caption {
+  margin-top: 10px;
+  font-size: 12px;
+  letter-spacing: .22em;
+  color: rgba(240, 224, 191, 0.82);
+  text-transform: uppercase;
+}
+
+@keyframes residentLoaderPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(154,110,21,.20); }
+  50% { transform: scale(1.04); box-shadow: 0 10px 32px rgba(189,145,57,.28); }
+}
+
+@media (max-width: 720px) {
+  .resident-route-loader__inner {
+    min-width: min(88vw, 300px);
+    padding: 24px 22px 22px;
+    border-radius: 24px;
+  }
+
+  .resident-route-loader__logo-wrap {
+    width: min(64vw, 220px);
+  }
+
+  .resident-route-loader__caption {
+    font-size: 10px;
+    letter-spacing: .18em;
+  }
+}
