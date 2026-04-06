@@ -77,7 +77,8 @@ export function renderVaultHome(newsItems = [], promotionItems = []) {
           ${slides.map((slide, index) => `
             <div class="vault-news-slide" data-slide-index="${index}">
               <div class="vault-news-image-wrap vault-news-frame">
-                <img class="vault-news-image" src="${escapeHtml(slide.image)}" alt="${escapeHtml(slide.title)}" />
+                <img class="vault-news-image-bg" src="${escapeHtml(slide.image)}" alt="" aria-hidden="true" draggable="false" />
+                <img class="vault-news-image" src="${escapeHtml(slide.image)}" alt="${escapeHtml(slide.title)}" draggable="false" />
               </div>
             </div>
           `).join('')}

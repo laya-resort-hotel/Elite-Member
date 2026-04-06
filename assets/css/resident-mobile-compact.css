@@ -267,3 +267,18 @@ body[data-page="home"] .vault-news-slide {
   min-width: 100%;
   scroll-snap-align: start;
 }
+
+
+body[data-page="home"] .vault-news-image-wrap {
+  aspect-ratio: 16 / 9 !important;
+}
+body[data-page="home"] .vault-news-image {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+body[data-page="home"] .vault-news-image-bg {
+  width: 100% !important;
+  height: 100% !important;
+}

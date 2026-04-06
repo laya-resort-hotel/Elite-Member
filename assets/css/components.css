@@ -3150,7 +3150,7 @@ body.lightbox-open {
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  touch-action: auto;
   padding: 0;
   scrollbar-width: none;
 }
@@ -3180,4 +3180,51 @@ body.lightbox-open {
 }
 .vault-news-hero {
   cursor: default;
+}
+
+
+/* News slides: keep every image frame same size while preserving full artwork */
+body[data-page="home"] .vault-news-image-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 26px;
+  background: #111;
+}
+body[data-page="home"] .vault-news-image-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(18px);
+  transform: scale(1.08);
+  opacity: .75;
+}
+body[data-page="home"] .vault-news-image-bg,
+body[data-page="home"] .vault-news-image {
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+body[data-page="home"] .vault-news-scroll {
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+}
+body[data-page="home"] .vault-news-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+body[data-page="home"] .vault-news-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+body[data-page="home"] .vault-news-slide {
+  display: block;
 }
