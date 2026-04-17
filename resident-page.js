@@ -1,15 +1,2 @@
-import { $$ } from '../core/dom.js';
-
-const screens = () => $$('.screen');
-const navButtons = () => $$('[data-screen]');
-
-export function setScreen(screenId) {
-  screens().forEach((screen) => screen.classList.toggle('active', screen.id === screenId));
-  navButtons().forEach((btn) => btn.classList.toggle('active', btn.dataset.screen === screenId));
-}
-
-export function bindScreenButtons() {
-  navButtons().forEach((btn) => {
-    btn.addEventListener('click', () => setScreen(btn.dataset.screen));
-  });
-}
+// Patched on 2026-04-17: root shim to prevent drift. Edit the file under /assets/js instead.
+export * from './assets/js/pages/resident-page.js';
