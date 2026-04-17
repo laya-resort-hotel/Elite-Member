@@ -14,6 +14,8 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
 
+const DEFAULT_SPEND_PER_POINT = 1;
+
 function normalizeSpendTransaction(d) {
   const row = d.data ? d.data() : d;
   const id = d.id || row.id || '';
@@ -72,8 +74,7 @@ export async function addSpendTransaction({ memberCode, memberName, outlet, amou
   if (pointRate > 0) {
     pointsEarned = Math.floor(safeAmount * pointRate);
   } else {
-    const settingsSnap = await getDoc(doc(state.db, 'app_settings', 'points'));
-    const spendPerPoint = Number(settingsSnap.exists() ? (settingsSnap.data()?.defaultSpendPerPoint || 20) : 20);
+    const spendPerPoint = DEFAULT_SPEND_PER_POINT;
     pointsEarned = Math.floor(safeAmount / spendPerPoint);
   }
 
@@ -105,7 +106,7 @@ export async function addSpendTransaction({ memberCode, memberName, outlet, amou
       pointRuleSnapshot: {
         ruleId: pointRate > 0 ? 'manual_rate' : 'default',
         pointRate: pointRate > 0 ? pointRate : null,
-        spendPerPoint: pointRate > 0 ? null : 20,
+        spendPerPoint: pointRate > 0 ? null : DEFAULT_SPEND_PER_POINT,
         roundMode: 'floor',
       },
       pointsEarned,

@@ -16,6 +16,12 @@ import { residentManagementDemo } from '../data/resident-management-demo.js';
 
 const STORAGE_KEY = 'laya-resident-management-starter-v2';
 
+function requireFirebaseLive() {
+  if (!state.db) {
+    throw new Error('Resident Management requires Firebase Live. Please connect Firebase and sign in before using this page.');
+  }
+}
+
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -423,58 +429,46 @@ export function resetResidentManagementLocalStore() {
 }
 
 export async function loadResidentManagementDashboard() {
-  if (state.db) {
-    try {
-      const snapshot = await loadFirebaseSnapshot();
-      return { ...snapshot, mode: 'firebase' };
-    } catch (error) {
-      console.error('load firebase resident dashboard failed', error);
-      throw error;
-    }
+  requireFirebaseLive();
+  try {
+    const snapshot = await loadFirebaseSnapshot();
+    return { ...snapshot, mode: 'firebase' };
+  } catch (error) {
+    console.error('load firebase resident dashboard failed', error);
+    throw error;
   }
-  const snapshot = normalizeSnapshot(ensureLocalStore());
-  return { ...snapshot, mode: 'demo' };
 }
 
 export async function saveResidentManagementRecord(payload = {}) {
-  if (state.db) {
-    try {
-      const snapshot = await saveFirebaseResident(payload);
-      return { ...snapshot, mode: 'firebase' };
-    } catch (error) {
-      console.error('save firebase resident failed', error);
-      throw error;
-    }
+  requireFirebaseLive();
+  try {
+    const snapshot = await saveFirebaseResident(payload);
+    return { ...snapshot, mode: 'firebase' };
+  } catch (error) {
+    console.error('save firebase resident failed', error);
+    throw error;
   }
-  const snapshot = setLocalResident(payload);
-  return { ...snapshot, mode: 'demo' };
 }
 
 export async function deleteResidentManagementRecord(residentId) {
   if (!residentId) throw new Error('Resident ID is required');
-  if (state.db) {
-    try {
-      const snapshot = await deleteFirebaseResident(residentId);
-      return { ...snapshot, mode: 'firebase' };
-    } catch (error) {
-      console.error('delete firebase resident failed', error);
-      throw error;
-    }
+  requireFirebaseLive();
+  try {
+    const snapshot = await deleteFirebaseResident(residentId);
+    return { ...snapshot, mode: 'firebase' };
+  } catch (error) {
+    console.error('delete firebase resident failed', error);
+    throw error;
   }
-  const snapshot = deleteLocalResident(residentId);
-  return { ...snapshot, mode: 'demo' };
 }
 
 export async function addResidentPointAdjustment(payload = {}) {
-  if (state.db) {
-    try {
-      const snapshot = await addFirebasePointTransaction(payload);
-      return { ...snapshot, mode: 'firebase' };
-    } catch (error) {
-      console.error('add firebase point transaction failed', error);
-      throw error;
-    }
+  requireFirebaseLive();
+  try {
+    const snapshot = await addFirebasePointTransaction(payload);
+    return { ...snapshot, mode: 'firebase' };
+  } catch (error) {
+    console.error('add firebase point transaction failed', error);
+    throw error;
   }
-  const snapshot = addLocalPointTransaction(payload);
-  return { ...snapshot, mode: 'demo' };
 }

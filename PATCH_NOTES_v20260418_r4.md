@@ -30,3 +30,22 @@ This patch focuses on the final high-priority admin production issues identified
 - `admin.html`
 - `assets/js/pages/admin-page.js`
 - `assets/js/services/member-service.js`
+
+
+---
+
+## Point rule update — 2026-04-18 r4.1
+
+Updated point earning rule from **35 THB = 10 points** to **1 THB = 1 point** across the latest project patch.
+
+Changed files:
+- `assets/js/services/resident-earn-service.js`
+- `assets/js/services/transaction-service.js`
+- `resident-points.html`
+- `admin.html`
+
+Notes:
+- Resident scanner now auto-calculates points using 1:1.
+- Stored formula labels for resident spend transactions now use the updated rule.
+- Transaction-service fallback/default rule now uses 1 THB per 1 point.
+- Admin and resident scanner UI copy now matches the new rule.

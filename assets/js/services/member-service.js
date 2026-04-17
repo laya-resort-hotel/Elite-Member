@@ -309,13 +309,40 @@ export async function loadResidentForUser(uid, email, profileOrMemberCode = {}) 
   }
 }
 
+function residentMergeKey(row = {}) {
+  return String(
+    row.residentId
+    || row.memberId
+    || row.authUid
+    || row.publicCardCode
+    || row.memberCode
+    || row.email
+    || row.id
+    || ''
+  ).trim().toLowerCase();
+}
+
+function mergeResidentRows(primary = {}, secondary = {}) {
+  const merged = { ...secondary, ...primary };
+  merged.unitCodes = Array.isArray(primary.unitCodes) && primary.unitCodes.length
+    ? primary.unitCodes
+    : (Array.isArray(secondary.unitCodes) ? secondary.unitCodes : []);
+  merged.ownedUnits = Array.isArray(primary.ownedUnits) && primary.ownedUnits.length
+    ? primary.ownedUnits
+    : (Array.isArray(secondary.ownedUnits) ? secondary.ownedUnits : []);
+  return merged;
+}
+
 export async function loadAllResidents() {
+  let residentRows = [];
+  let legacyRows = [];
+
   try {
     const residentsSnap = await getDocs(collection(state.db, 'residents'));
     if (!residentsSnap.empty) {
-      return await Promise.all(
+      residentRows = (await Promise.all(
         residentsSnap.docs.map((row) => hydrateResidentFromNewCollections(row.data(), row.id))
-      );
+      )).filter(Boolean);
     }
   } catch (error) {
     console.warn('load residents collection failed', error);
@@ -323,14 +350,31 @@ export async function loadAllResidents() {
 
   try {
     const membersSnap = await getDocs(collection(state.db, 'members'));
-    if (membersSnap.empty) return [];
-    return await Promise.all(
-      membersSnap.docs.map((row) => hydrateLegacyMemberRecord(row.data(), row.id))
-    );
+    if (!membersSnap.empty) {
+      legacyRows = (await Promise.all(
+        membersSnap.docs.map((row) => hydrateLegacyMemberRecord(row.data(), row.id))
+      )).filter(Boolean);
+    }
   } catch (error) {
     console.warn('load legacy members failed', error);
-    return [];
   }
+
+  const merged = new Map();
+
+  for (const row of legacyRows) {
+    const key = residentMergeKey(row);
+    if (!key) continue;
+    merged.set(key, row);
+  }
+
+  for (const row of residentRows) {
+    const key = residentMergeKey(row);
+    if (!key) continue;
+    const existing = merged.get(key);
+    merged.set(key, existing ? mergeResidentRows(row, existing) : row);
+  }
+
+  return [...merged.values()];
 }
 
 export async function searchResidents(keyword) {

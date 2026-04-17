@@ -6,7 +6,6 @@ import {
   addResidentPointAdjustment,
   deleteResidentManagementRecord,
   loadResidentManagementDashboard,
-  resetResidentManagementLocalStore,
   saveResidentManagementRecord,
 } from '../services/resident-management-service.js';
 
@@ -31,11 +30,13 @@ function updateModeBadge(mode) {
   pageState.mode = mode;
   const modeLabel = $('residentManagementMode');
   const note = $('residentManagementNote');
-  if (modeLabel) modeLabel.textContent = mode === 'firebase' ? 'Firebase Live' : 'Demo Local';
+  if (modeLabel) {
+    modeLabel.textContent = mode === 'firebase' ? 'Firebase Live' : mode === 'firebase-required' ? 'Firebase Required' : 'Loading';
+  }
   if (note) {
     note.textContent = mode === 'firebase'
       ? 'หน้านี้กำลังอ่านและเขียนข้อมูลจริงใน Firestore collections สำหรับ Resident Management และ sync link ไปที่ users/{uid}'
-      : 'หน้านี้อยู่ในโหมด demo localStorage พร้อม mock data เพื่อเริ่มเทส flow ก่อนขึ้น Firebase';
+      : 'หน้านี้ใช้ได้เฉพาะเมื่อ Firebase เชื่อมต่อสำเร็จและผู้ใช้มีสิทธิ์ในระบบเท่านั้น';
   }
 }
 
@@ -381,12 +382,6 @@ export function bindResidentManagementPage() {
   $('newResidentManagementBtn')?.addEventListener('click', handleNewResident);
   $('applyPointActionBtn')?.addEventListener('click', handlePointAdjustment);
   $('reloadResidentManagementBtn')?.addEventListener('click', loadResidentManagementPage);
-  $('seedResidentDemoBtn')?.addEventListener('click', () => {
-    const snapshot = resetResidentManagementLocalStore();
-    pageState.selectedResidentId = snapshot.residents[0]?.id || null;
-    refreshSnapshot({ ...snapshot, mode: 'demo' });
-    showToast('Demo seed loaded into local storage', 'success');
-  });
   $('residentSearchInput')?.addEventListener('input', renderResidentList);
   $('residentStatusFilter')?.addEventListener('change', renderResidentList);
   bindDownloadQr();
@@ -399,6 +394,7 @@ export async function loadResidentManagementPage() {
     refreshSnapshot(snapshot);
   } catch (error) {
     console.error(error);
+    updateModeBadge('firebase-required');
     showToast(error?.message || 'Load resident management failed', 'error');
   }
 }

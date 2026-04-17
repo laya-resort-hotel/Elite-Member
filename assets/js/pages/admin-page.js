@@ -71,6 +71,7 @@ const adminContentState = {
 
 const adminMembersState = {
   cache: [],
+  searchTerm: '',
   editor: blankMemberEditorState(),
   insights: blankMemberInsightsState(),
 };
@@ -94,6 +95,7 @@ const adminInviteState = {
   sortBy: 'created_desc',
   pageSize: 20,
   currentPage: 1,
+  loadError: '',
 };
 
 const contentLocaleLabels = {
@@ -442,7 +444,7 @@ function setActiveContentLocale(locale = 'en', options = {}) {
   const editor = getContentEditorState(type);
   editor.activeLocale = CONTENT_LANGS.includes(locale) ? locale : 'en';
   setContentEditorState(type, editor);
-  document.querySelectorAll('.locale-tab-btn').forEach((button) => {
+  document.querySelectorAll('.locale-tab-btn[data-locale-tab]').forEach((button) => {
     const active = button.dataset.localeTab === editor.activeLocale;
     button.classList.toggle('active', active);
     button.setAttribute('aria-selected', active ? 'true' : 'false');
@@ -887,57 +889,70 @@ async function refreshMemberInsights(memberRecord = null) {
     }
   }
 
-  const demoWallet = {
-    currentPoints: Number(demoResident.points || 0),
-    pendingPoints: 0,
-    lifetimeEarned: Number(demoResident.points || 0) + 12000,
-    lifetimeRedeemed: 4800,
-    updatedLabel: 'Demo data',
-    tier: editor.tier || 'elite_black',
-  };
-
-  const demoRedemptions = [
-    {
-      id: 'demo-red-001',
-      targetTitleSnapshot: 'Complimentary Welcome Cocktail',
-      redemptionCode: 'RDM-DEMO-001',
-      status: 'used',
-      pointsCost: 500,
-      usedLabel: '2 Apr 2026, 19:20',
-    },
-    {
-      id: 'demo-red-002',
-      targetTitleSnapshot: 'Late Checkout Benefit',
-      redemptionCode: 'RDM-DEMO-002',
-      status: 'approved',
-      pointsCost: 1200,
-      approvedLabel: '29 Mar 2026, 13:10',
-    },
-    {
-      id: 'demo-red-003',
-      targetTitleSnapshot: 'Complimentary Dessert',
-      redemptionCode: 'RDM-DEMO-003',
-      status: 'pending',
-      pointsCost: 350,
-      createdLabel: '28 Mar 2026, 16:00',
-    },
-  ];
-
   setMemberInsightsState({
-    wallet: demoWallet,
-    recentRedemptions: demoRedemptions,
+    wallet: {
+      currentPoints: 0,
+      pendingPoints: 0,
+      lifetimeEarned: 0,
+      lifetimeRedeemed: 0,
+      updatedLabel: 'Unable to load wallet data',
+      tier: editor.tier || 'elite_black',
+    },
+    recentRedemptions: [],
   });
   renderMemberInsights();
 }
 
+function getFilteredMembers() {
+  const items = Array.isArray(adminMembersState.cache) ? adminMembersState.cache : [];
+  const term = String(adminMembersState.searchTerm || '').trim().toLowerCase();
+  if (!term) return items;
+
+  return items.filter((item) => [
+    item.fullName,
+    item.firstName,
+    item.lastName,
+    item.memberId,
+    item.publicCardCode,
+    item.email,
+    item.phone,
+    ...(Array.isArray(item.ownedUnits) ? item.ownedUnits.map((unit) => unit?.unitNo || unit?.roomNo || '') : []),
+  ].some((field) => String(field || '').toLowerCase().includes(term)));
+}
+
+function renderMembersCount(total, filtered) {
+  if (!$('memberItemCount')) return;
+  $('memberItemCount').textContent = filtered === total ? String(total) : `${filtered}/${total}`;
+}
+
+function renderMembersSearchMeta(total, filtered) {
+  if (!$('memberSearchMeta')) return;
+  if (!total) {
+    $('memberSearchMeta').textContent = 'ยังไม่มีสมาชิกในระบบ';
+    return;
+  }
+  if (filtered === total) {
+    $('memberSearchMeta').textContent = `Loaded ${total} member${total === 1 ? '' : 's'} from Firebase`;
+    return;
+  }
+  $('memberSearchMeta').textContent = `Showing ${filtered} of ${total} member${total === 1 ? '' : 's'}`;
+}
+
 function renderMembersList() {
-  const items = adminMembersState.cache || [];
+  const totalItems = Array.isArray(adminMembersState.cache) ? adminMembersState.cache : [];
+  const items = getFilteredMembers();
   const container = $('adminMembersList');
   if (!container) return;
-  if ($('memberItemCount')) $('memberItemCount').textContent = String(items.length);
+  renderMembersCount(totalItems.length, items.length);
+  renderMembersSearchMeta(totalItems.length, items.length);
+
+  if (!totalItems.length) {
+    container.innerHTML = '<div class="card-item"><p>ยังไม่มีสมาชิกในระบบ</p></div>';
+    return;
+  }
 
   if (!items.length) {
-    container.innerHTML = '<div class="card-item"><p>ยังไม่มีสมาชิกในระบบ</p></div>';
+    container.innerHTML = '<div class="card-item"><p>ไม่พบสมาชิกตามคำค้นหา</p></div>';
     return;
   }
 
@@ -987,7 +1002,7 @@ async function loadMembersTab({ force = false } = {}) {
     return adminMembersState.cache;
   }
 
-  adminMembersState.cache = await loadMembersSafe({ limit: 50 });
+  adminMembersState.cache = await loadMembersSafe({ orderField: 'updatedAt' });
   renderMembersList();
   return adminMembersState.cache;
 }
@@ -1576,39 +1591,45 @@ async function handleListClick(event) {
   const itemId = button.dataset.itemId;
   const action = button.dataset.contentAction;
   if (!itemId) return;
-  if (action === 'edit') {
-    await loadEditorItem(getActiveType(), itemId);
-    return;
-  }
-  if (action === 'publish') {
-    await publishCMSItem(getCollectionNameForType(getActiveType()), itemId);
-    await loadAdminContent(getActiveType(), { force: true });
-    if (getContentEditorState(getActiveType()).docId === itemId) {
+
+  try {
+    if (action === 'edit') {
       await loadEditorItem(getActiveType(), itemId);
-    }
-    showToast(`${labelMap[getActiveType()]} published`);
-    return;
-  }
-  if (action === 'unpublish') {
-    await unpublishCMSItem(getCollectionNameForType(getActiveType()), itemId);
-    await loadAdminContent(getActiveType(), { force: true });
-    if (getContentEditorState(getActiveType()).docId === itemId) {
-      await loadEditorItem(getActiveType(), itemId);
-    }
-    showToast(`${labelMap[getActiveType()]} unpublished`);
-    return;
-  }
-  if (action === 'delete') {
-    const currentEditor = getContentEditorState(getActiveType());
-    if (currentEditor.docId === itemId) {
-      await deleteCurrentEditor();
       return;
     }
-    const ok = window.confirm(`Delete this ${labelMap[getActiveType()]} item?`);
-    if (!ok) return;
-    await deleteCMSItem(getCollectionNameForType(getActiveType()), itemId);
-    await loadAdminContent(getActiveType(), { force: true });
-    showToast(`${labelMap[getActiveType()]} deleted`);
+    if (action === 'publish') {
+      await publishCMSItem(getCollectionNameForType(getActiveType()), itemId);
+      await loadAdminContent(getActiveType(), { force: true });
+      if (getContentEditorState(getActiveType()).docId === itemId) {
+        await loadEditorItem(getActiveType(), itemId);
+      }
+      showToast(`${labelMap[getActiveType()]} published`);
+      return;
+    }
+    if (action === 'unpublish') {
+      await unpublishCMSItem(getCollectionNameForType(getActiveType()), itemId);
+      await loadAdminContent(getActiveType(), { force: true });
+      if (getContentEditorState(getActiveType()).docId === itemId) {
+        await loadEditorItem(getActiveType(), itemId);
+      }
+      showToast(`${labelMap[getActiveType()]} unpublished`);
+      return;
+    }
+    if (action === 'delete') {
+      const currentEditor = getContentEditorState(getActiveType());
+      if (currentEditor.docId === itemId) {
+        await deleteCurrentEditor();
+        return;
+      }
+      const ok = window.confirm(`Delete this ${labelMap[getActiveType()]} item?`);
+      if (!ok) return;
+      await deleteCMSItem(getCollectionNameForType(getActiveType()), itemId);
+      await loadAdminContent(getActiveType(), { force: true });
+      showToast(`${labelMap[getActiveType()]} deleted`);
+    }
+  } catch (error) {
+    console.error(error);
+    showToast(error?.message || `Unable to ${action || 'update'} ${labelMap[getActiveType()] || 'item'}`, 'error');
   }
 }
 
@@ -1783,6 +1804,11 @@ function renderInviteCodeList() {
   syncInviteFilterButtons();
   renderInviteSummary();
 
+  if (adminInviteState.loadError) {
+    container.innerHTML = `<div class="card-item"><p>${escapeHtml(adminInviteState.loadError)}</p></div>`;
+    return;
+  }
+
   const filteredItems = getFilteredInviteItems();
   const sortedItems = getSortedInviteItems(filteredItems);
   const { items, totalPages, totalItems, startIndex, endIndex } = getVisibleInviteItems(sortedItems);
@@ -1830,15 +1856,18 @@ function renderInviteCodeList() {
 
 
 async function loadInviteCodes({ force = false } = {}) {
-  if (!force && adminInviteState.cache.length) {
+  if (!force && adminInviteState.cache.length && !adminInviteState.loadError) {
     renderInviteCodeList();
     return adminInviteState.cache;
   }
+  adminInviteState.loadError = '';
   try {
     adminInviteState.cache = await loadResidentInviteCodes({ limit: 500 });
   } catch (error) {
     console.warn(error);
     adminInviteState.cache = [];
+    adminInviteState.loadError = error?.message || 'Unable to load invite codes right now. Please check Firebase permissions / index / network and try again.';
+    showToast(adminInviteState.loadError, 'error');
   }
   renderInviteCodeList();
   return adminInviteState.cache;
@@ -2037,14 +2066,15 @@ async function handleInviteListClick(event) {
 
 async function loadAdminOverview() {
   try {
-    const [residents, transactions] = await Promise.all([
+    const [residents, allTransactions, recentTransactions] = await Promise.all([
       loadAllResidents(),
-      loadTransactions({ limit: 12 }),
+      loadTransactions({ orderField: 'spentAt' }),
+      loadTransactions({ limit: 12, orderField: 'spentAt' }),
     ]);
-    const totalPoints = transactions.reduce((sum, row) => sum + Number(row.points || 0), 0);
-    const totalSpend = transactions.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    const totalPoints = allTransactions.reduce((sum, row) => sum + Number(row.points || 0), 0);
+    const totalSpend = allTransactions.reduce((sum, row) => sum + Number(row.amount || 0), 0);
     renderAdminKpis({ residents: residents.length, points: totalPoints, spend: totalSpend });
-    renderTable($('adminTransactionsTable'), transactions, 'No transactions yet');
+    renderTable($('adminTransactionsTable'), recentTransactions, 'No transactions yet');
     renderResidentSearchResults($('residentSearchResults'), residents.slice(0, 6));
   } catch (error) {
     console.warn(error);
@@ -2073,12 +2103,22 @@ function bindAdminContentTabs() {
       const type = btn.dataset.adminTab;
       if (!type || type === getActiveType()) return;
       setTab(type);
-      if (type === 'members') {
-        await loadMembersTab({ force: false });
-        return;
+      try {
+        if (type === 'members') {
+          await loadMembersTab({ force: false });
+          return;
+        }
+        await loadAdminContent(type);
+      } catch (error) {
+        console.error(error);
+        showToast(error?.message || `Unable to load ${labelMap[type] || type}`, 'error');
       }
-      await loadAdminContent(type);
     });
+  });
+
+  $('adminMemberSearchInput')?.addEventListener('input', (event) => {
+    adminMembersState.searchTerm = event.target?.value || '';
+    renderMembersList();
   });
 
   $('adminContentList')?.addEventListener('click', handleListClick);
@@ -2147,7 +2187,7 @@ function bindAdminContentTabs() {
     updateUploadStatus('contentGalleryUploadStatus', count ? `เลือกรูป gallery แล้ว ${count} รูป — กด Upload Gallery Images` : '');
   });
 
-  document.querySelectorAll('.locale-tab-btn').forEach((button) => {
+  document.querySelectorAll('.locale-tab-btn[data-locale-tab]').forEach((button) => {
     button.addEventListener('click', () => {
       const locale = button.dataset.localeTab || 'en';
       syncContentEditorFromDom(getActiveType());

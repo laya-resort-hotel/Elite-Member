@@ -13,8 +13,8 @@ import {
 import { state } from '../core/state.js';
 
 export const POINT_RULE = Object.freeze({
-  thbPerBlock: 35,
-  pointsPerBlock: 10,
+  thbPerBlock: 1,
+  pointsPerBlock: 1,
 });
 
 function ensureDb() {

@@ -17,6 +17,7 @@ const pageState = {
   rewards: [],
   residentRedemptions: [],
   currentPoints: 0,
+  residentLinked: false,
 };
 
 function emptyResident() {
@@ -30,6 +31,34 @@ function emptyResident() {
     points: 0,
     totalSpend: 0,
   };
+}
+
+function isLinkedResident(resident) {
+  if (!resident || typeof resident !== 'object') return false;
+  return Boolean(resident.residentId || resident.memberId || resident.id);
+}
+
+function renderRedemptionLockedState() {
+  const container = $('rewardList');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="card-item">
+      <p>${escapeHtml(t('common.residentMember'))}</p>
+      <p>Please contact Front Office or log in with a linked resident account before using reward redemption.</p>
+    </div>
+  `;
+}
+
+function setRewardTabsDisabled(disabled = false) {
+  document.querySelectorAll('.vault-reward-tab').forEach((button) => {
+    if (disabled) {
+      button.setAttribute('disabled', 'disabled');
+      button.setAttribute('aria-disabled', 'true');
+    } else {
+      button.removeAttribute('disabled');
+      button.setAttribute('aria-disabled', 'false');
+    }
+  });
 }
 
 function toMillis(value) {
@@ -330,9 +359,23 @@ export async function loadRedemptionPage() {
   bindTabButtons();
   const resident = await resolveResidentForRedemptionPage();
   renderResidentCard(resident);
-  const points = Number(resident.points || 0);
+  pageState.residentLinked = isLinkedResident(resident);
+  const points = pageState.residentLinked ? Number(resident.points || 0) : 0;
   pageState.currentPoints = points;
   if ($('memberPoints')) $('memberPoints').textContent = formatNumber(points);
+
+  if (!pageState.residentLinked) {
+    pageState.rewards = [];
+    pageState.residentRedemptions = [];
+    pageState.activeTab = 'for-you';
+    setRewardTabsDisabled(true);
+    renderTabs();
+    renderRedemptionLockedState();
+    showToast('This account is not linked to a resident profile yet. Please contact Front Office.', 'error');
+    return;
+  }
+
+  setRewardTabsDisabled(false);
 
   try {
     const rewardItems = await loadCollectionSafe('reward_catalog', { limit: 100, publishedOnly: true });
