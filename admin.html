@@ -35,11 +35,10 @@
         <h2>Single-page CMS</h2>
         <p class="page-intro">รวมการจัดการ News / Promotions / Benefits / Redemption ไว้ในหน้าเดียวแบบแท็บ เพื่อให้ทำงานหลังบ้านง่ายขึ้น โดยแยกของแลกแต้มออกจากสิทธิพิเศษทั่วไปชัดเจน</p>
         <div class="grid-3 compact-grid">
-          <div class="metric-card"><span>Residents</span><strong id="kpiResidents">0</strong></div>
-          <div class="metric-card"><span>All Issued Points</span><strong id="kpiPoints">0</strong></div>
-          <div class="metric-card"><span>All Spend</span><strong id="kpiSpend">฿0</strong></div>
+          <div class="metric-card"><span>Total Residents</span><strong id="kpiResidents">0</strong></div>
+          <div class="metric-card"><span>Issued Points</span><strong id="kpiPoints">0</strong></div>
+          <div class="metric-card"><span>Total Spend</span><strong id="kpiSpend">฿0</strong></div>
         </div>
-        <div class="info-note mt-sm">Dashboard KPI ตอนนี้อ่านยอดรวมจริงจาก Firestore ทั้งหมด ส่วนตารางด้านล่างยังคงแสดงเฉพาะรายการล่าสุดเพื่อให้ดูง่าย</div>
         <div class="row gap wrap mt-md">
           <button id="loadAdminDataBtn" class="primary-btn">Refresh Dashboard</button>
           <a class="ghost-btn" href="./resident-management.html">Resident CRM</a>
@@ -342,11 +341,6 @@
                 <h4 id="memberTabTitle">Member records</h4>
               </div>
               <span class="badge-inline"><span>Members</span><strong id="memberItemCount">0</strong></span>
-            </div>
-            <div class="grid-1 mt-sm">
-              <label class="field-label" for="adminMemberSearchInput">Search members</label>
-              <input id="adminMemberSearchInput" class="input" type="text" placeholder="Search by name, member ID, card code, email, phone, or room" />
-              <div id="memberSearchMeta" class="info-note">Loaded 0 members from Firebase</div>
             </div>
             <div id="adminMembersList" class="admin-content-list"></div>
           </aside>
@@ -686,7 +680,7 @@
       <section class="panel mt-lg">
         <div class="section-head">
           <h3>Recent Transactions</h3>
-          <span class="eyebrow">Latest 12 spend entries</span>
+          <span class="eyebrow">Admin view</span>
         </div>
         <div id="adminTransactionsTable"></div>
       </section>
