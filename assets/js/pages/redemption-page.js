@@ -9,7 +9,6 @@ import {
   redeemReward,
   splitResidentRedemptions,
 } from '../services/redemption-service.js';
-import { demoRewards } from '../data/rewards.js';
 import { loadResidentForUser, loadUserProfile } from '../services/member-service.js';
 import { t } from '../core/i18n.js';
 
@@ -155,9 +154,9 @@ function rewardStatusMessage(pointsRequired, points) {
 function renderRewardCatalog(rewards = [], points = 0) {
   const container = $('rewardList');
   if (!container) return;
-  const list = rewards.length ? rewards : demoRewards;
+  const list = Array.isArray(rewards) ? rewards : [];
   if (!list.length) {
-    container.innerHTML = '<div class="card-item"><p>No rewards available</p></div>';
+    container.innerHTML = `<div class="card-item"><p>${escapeHtml(t('common.noRewardsHereYet'))}</p></div>`;
     return;
   }
 
@@ -337,9 +336,8 @@ export async function loadRedemptionPage() {
 
   try {
     const rewardItems = await loadCollectionSafe('reward_catalog', { limit: 100, publishedOnly: true });
-    const fallbackBenefits = rewardItems.length ? [] : await loadCollectionSafe('benefits', { limit: 100, publishedOnly: true });
-    pageState.rewards = (rewardItems.length ? rewardItems : fallbackBenefits)
-      .filter((item) => item.isActive !== false && Number(item.pointsCost || 0) > 0)
+    pageState.rewards = rewardItems
+      .filter((item) => item.rewardIsActive !== false && item.isActive !== false && Number(item.pointsCost || 0) > 0)
       .sort((a, b) => Number(a.pointsCost || 0) - Number(b.pointsCost || 0));
   } catch (error) {
     console.error(error);

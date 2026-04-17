@@ -3,6 +3,7 @@ import {
   doc,
   getDocs,
   limit,
+  orderBy,
   query,
   runTransaction,
   serverTimestamp,
@@ -249,7 +250,7 @@ export async function redeemReward(rewardId) {
 export async function loadResidentRedemptions(residentId = '') {
   const cleanResidentId = String(residentId || currentResidentId() || '').trim();
   if (!state.firebaseReady || !state.db || !cleanResidentId) return [];
-  const snap = await getDocs(query(collection(state.db, 'residents', cleanResidentId, 'redemptions'), limit(100)));
+  const snap = await getDocs(query(collection(state.db, 'residents', cleanResidentId, 'redemptions'), orderBy('createdAt', 'desc'), limit(100)));
   return snap.docs
     .map((row) => normalizeRedemptionSnapshot(row.id, row.data()))
     .sort((a, b) => {

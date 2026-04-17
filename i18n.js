@@ -1,19 +1,2 @@
-export const state = {
-  app: null,
-  db: null,
-  auth: null,
-  storage: null,
-  firebaseReady: false,
-  currentUser: null,
-  currentRole: null,
-  currentResident: null,
-  currentProfile: null,
-  currentMode: 'auth',
-  memberCode: '',
-  residentId: '',
-  currentLanguage: 'en',
-};
-
-export function setMode(mode) {
-  state.currentMode = mode;
-}
+// Patched on 2026-04-17: root shim to prevent drift. Edit the file under /assets/js instead.
+export * from './assets/js/core/i18n.js';

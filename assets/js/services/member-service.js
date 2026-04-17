@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  orderBy,
   query,
   where,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
@@ -163,7 +164,7 @@ async function attachLegacySpendSummary(resident = {}) {
   if (!memberId) return resident;
 
   try {
-    const spendSnap = await getDocs(query(collection(state.db, 'spend_transactions'), where('memberId', '==', memberId), limit(200)));
+    const spendSnap = await getDocs(query(collection(state.db, 'spend_transactions'), where('memberId', '==', memberId)));
     const totalSpend = spendSnap.docs.reduce((sum, row) => sum + Number(row.data()?.amountEligible ?? row.data()?.amountGross ?? 0), 0);
     return { ...resident, totalSpend };
   } catch (error) {
@@ -355,15 +356,11 @@ export async function loadResidentPointHistory(residentId, maxRows = 10) {
     const snap = await getDocs(query(
       collection(state.db, 'resident_point_transactions'),
       where('residentId', '==', residentId),
+      orderBy('createdAt', 'desc'),
       limit(Math.max(maxRows, 20)),
     ));
     return snap.docs
       .map((item) => ({ id: item.id, ...item.data() }))
-      .sort((a, b) => {
-        const aTime = typeof a.createdAt?.toDate === 'function' ? a.createdAt.toDate().getTime() : new Date(a.createdAt || 0).getTime();
-        const bTime = typeof b.createdAt?.toDate === 'function' ? b.createdAt.toDate().getTime() : new Date(b.createdAt || 0).getTime();
-        return bTime - aTime;
-      })
       .slice(0, maxRows);
   } catch (error) {
     console.warn('resident point history load failed', error);

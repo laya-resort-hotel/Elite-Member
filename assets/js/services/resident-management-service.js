@@ -428,7 +428,8 @@ export async function loadResidentManagementDashboard() {
       const snapshot = await loadFirebaseSnapshot();
       return { ...snapshot, mode: 'firebase' };
     } catch (error) {
-      console.warn('load firebase resident dashboard failed; falling back to local demo', error);
+      console.error('load firebase resident dashboard failed', error);
+      throw error;
     }
   }
   const snapshot = normalizeSnapshot(ensureLocalStore());
@@ -441,7 +442,8 @@ export async function saveResidentManagementRecord(payload = {}) {
       const snapshot = await saveFirebaseResident(payload);
       return { ...snapshot, mode: 'firebase' };
     } catch (error) {
-      console.warn('save firebase resident failed; falling back to local demo', error);
+      console.error('save firebase resident failed', error);
+      throw error;
     }
   }
   const snapshot = setLocalResident(payload);
@@ -455,7 +457,8 @@ export async function deleteResidentManagementRecord(residentId) {
       const snapshot = await deleteFirebaseResident(residentId);
       return { ...snapshot, mode: 'firebase' };
     } catch (error) {
-      console.warn('delete firebase resident failed; falling back to local demo', error);
+      console.error('delete firebase resident failed', error);
+      throw error;
     }
   }
   const snapshot = deleteLocalResident(residentId);
@@ -468,7 +471,8 @@ export async function addResidentPointAdjustment(payload = {}) {
       const snapshot = await addFirebasePointTransaction(payload);
       return { ...snapshot, mode: 'firebase' };
     } catch (error) {
-      console.warn('add firebase point transaction failed; falling back to local demo', error);
+      console.error('add firebase point transaction failed', error);
+      throw error;
     }
   }
   const snapshot = addLocalPointTransaction(payload);

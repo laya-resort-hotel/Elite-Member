@@ -12,6 +12,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import { collection, doc, setDoc, serverTimestamp, updateDoc, writeBatch } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { state } from '../core/state.js';
+import { t } from '../core/i18n.js';
 import { setResidentSessionMode } from '../core/session.js';
 import { getResidentInviteByCode, normalizeInviteCode, normalizeUnitCode, parseUnitCodes } from './resident-invite-service.js';
 
