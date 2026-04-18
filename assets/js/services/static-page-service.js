@@ -21,8 +21,24 @@ function stringValue(value = '') {
   return String(value || '').trim();
 }
 
-function plainTextToHtml(value = '') {
+
+function looksLikeEscapedHtml(value = '') {
   const text = stringValue(value);
+  return /&(lt|gt);\/?[a-z]/i.test(text)
+    || /&#0*60;\/?[a-z]/i.test(text)
+    || /&#x0*3c;\/?[a-z]/i.test(text);
+}
+
+function decodeEscapedHtml(value = '') {
+  const text = stringValue(value);
+  if (!text || !looksLikeEscapedHtml(text) || typeof document === 'undefined') return text;
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return stringValue(textarea.value);
+}
+
+function plainTextToHtml(value = '') {
+  const text = decodeEscapedHtml(value);
   if (!text) return '';
   if (/[<][a-z!/]/i.test(text)) return text;
   const blocks = text.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
