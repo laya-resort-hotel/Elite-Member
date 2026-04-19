@@ -731,85 +731,124 @@ body[data-page="home"] .vault-news-image-bg {
   height: 100% !important;
 }
 
-
-/* Member page mobile polish patch */
-@media (max-width: 720px) {
-  body[data-page="member"] .vault-main-content {
-    padding-left: 12px;
-    padding-right: 12px;
+/* Static pages: larger, easier-to-read typography on mobile */
+@media (max-width: 900px) {
+  body[data-page="about"] .vault-main-content,
+  body[data-page="contact"] .vault-main-content,
+  body[data-page="faq"] .vault-main-content {
+    padding-inline: 14px;
   }
 
-  body[data-page="member"] .vault-member-panel {
-    margin: 0;
-    padding: 16px;
-    border-radius: 26px;
+  body[data-page="about"] .about-panel,
+  body[data-page="about"] .about-copy-card,
+  body[data-page="about"] .about-contact-card,
+  body[data-page="contact"] .about-panel,
+  body[data-page="contact"] .about-copy-card,
+  body[data-page="contact"] .about-contact-card,
+  body[data-page="faq"] .about-panel,
+  body[data-page="faq"] .about-copy-card,
+  body[data-page="faq"] .about-contact-card {
+    padding: 22px 18px;
+    border-radius: 22px;
   }
 
-  body[data-page="member"] .vault-profile-strip {
-    grid-template-columns: 52px 1fr auto;
-    gap: 10px;
-    padding: 14px 12px;
+  body[data-page="about"] .about-kicker,
+  body[data-page="contact"] .about-kicker,
+  body[data-page="faq"] .about-kicker {
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
   }
 
-  body[data-page="member"] .vault-avatar {
-    width: 52px;
-    height: 52px;
-    font-size: 20px;
+  body[data-page="about"] .about-title,
+  body[data-page="contact"] .about-title,
+  body[data-page="faq"] .about-title {
+    font-size: clamp(2.05rem, 7vw, 2.45rem);
+    line-height: 1.14;
+    margin-bottom: 14px;
   }
 
-  body[data-page="member"] .vault-profile-name {
-    font-size: 20px;
+  body[data-page="about"] .about-lead,
+  body[data-page="about"] .about-copy-card p,
+  body[data-page="about"] .faq-item p,
+  body[data-page="about"] .about-contact-value,
+  body[data-page="about"] .about-quote,
+  body[data-page="contact"] .about-lead,
+  body[data-page="contact"] .about-copy-card p,
+  body[data-page="contact"] .faq-item p,
+  body[data-page="contact"] .about-contact-value,
+  body[data-page="contact"] .about-quote,
+  body[data-page="faq"] .about-lead,
+  body[data-page="faq"] .about-copy-card p,
+  body[data-page="faq"] .faq-item p,
+  body[data-page="faq"] .about-contact-value,
+  body[data-page="faq"] .about-quote {
+    font-size: 16px;
+    line-height: 1.86;
   }
 
-  body[data-page="member"] .vault-points-pill {
-    min-width: auto;
-    padding: 10px 12px;
+  body[data-page="about"] .about-section-heading,
+  body[data-page="about"] .static-page-content-card :is(h2, h3),
+  body[data-page="contact"] .about-section-heading,
+  body[data-page="contact"] .static-page-content-card :is(h2, h3),
+  body[data-page="faq"] .about-section-heading,
+  body[data-page="faq"] .static-page-content-card :is(h2, h3) {
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: 0.06em;
   }
 
-  body[data-page="member"] .metric-card {
-    min-height: auto;
-    padding: 16px;
+  body[data-page="about"] .about-contact-label,
+  body[data-page="contact"] .about-contact-label,
+  body[data-page="faq"] .about-contact-label {
+    font-size: 11.5px;
   }
 
-  body[data-page="member"] .member-strong-code {
-    font-size: 15px;
-    letter-spacing: .03em;
-    word-break: break-word;
+  body[data-page="about"] .faq-item,
+  body[data-page="contact"] .faq-item,
+  body[data-page="faq"] .faq-item {
+    padding-bottom: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  body[data-page="about"] .vault-section-title,
+  body[data-page="contact"] .vault-section-title,
+  body[data-page="faq"] .vault-section-title {
+    font-size: 11px;
+    letter-spacing: 0.34em;
   }
 
-  body[data-page="member"] .member-qr-panel {
-    padding: 16px;
-    gap: 14px;
+  body[data-page="about"] .about-title,
+  body[data-page="contact"] .about-title,
+  body[data-page="faq"] .about-title {
+    font-size: 2.1rem;
   }
 
-  body[data-page="member"] .member-qr-panel .qr-wrap {
-    align-self: center;
+  body[data-page="about"] .about-lead,
+  body[data-page="about"] .about-copy-card p,
+  body[data-page="about"] .faq-item p,
+  body[data-page="about"] .about-contact-value,
+  body[data-page="about"] .about-quote,
+  body[data-page="contact"] .about-lead,
+  body[data-page="contact"] .about-copy-card p,
+  body[data-page="contact"] .faq-item p,
+  body[data-page="contact"] .about-contact-value,
+  body[data-page="contact"] .about-quote,
+  body[data-page="faq"] .about-lead,
+  body[data-page="faq"] .about-copy-card p,
+  body[data-page="faq"] .faq-item p,
+  body[data-page="faq"] .about-contact-value,
+  body[data-page="faq"] .about-quote {
+    font-size: 16.5px;
+    line-height: 1.9;
   }
 
-  body[data-page="member"] .member-qr-meta {
-    width: 100%;
-  }
-
-  body[data-page="member"] .member-benefits-panel {
-    padding: 16px;
-    gap: 14px;
-  }
-
-  body[data-page="member"] .member-benefits-title {
-    font-size: 20px;
-  }
-
-  body[data-page="member"] .member-benefits-copy {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  body[data-page="member"] .member-benefits-group {
-    padding: 16px;
-    border-radius: 18px;
-  }
-
-  body[data-page="member"] .member-history-panel .card-item {
-    padding: 14px;
+  body[data-page="about"] .about-section-heading,
+  body[data-page="about"] .static-page-content-card :is(h2, h3),
+  body[data-page="contact"] .about-section-heading,
+  body[data-page="contact"] .static-page-content-card :is(h2, h3),
+  body[data-page="faq"] .about-section-heading,
+  body[data-page="faq"] .static-page-content-card :is(h2, h3) {
+    font-size: 16.5px;
   }
 }
