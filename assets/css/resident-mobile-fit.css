@@ -852,3 +852,189 @@ body[data-page="home"] .vault-news-image-bg {
     font-size: 16.5px;
   }
 }
+
+
+/* r5 content page mobile readability fix */
+@media (max-width: 768px) {
+  body[data-page="news"] .topbar > div:first-child,
+  body[data-page="promotions"] .topbar > div:first-child,
+  body[data-page="benefits"] .topbar > div:first-child,
+  body[data-page="news-detail"] .topbar > div:first-child,
+  body[data-page="promotions-detail"] .topbar > div:first-child,
+  body[data-page="benefits-detail"] .topbar > div:first-child {
+    min-width: 0;
+  }
+
+  body[data-page="news"] .topbar h1,
+  body[data-page="promotions"] .topbar h1,
+  body[data-page="benefits"] .topbar h1,
+  body[data-page="news-detail"] .topbar h1,
+  body[data-page="promotions-detail"] .topbar h1,
+  body[data-page="benefits-detail"] .topbar h1 {
+    font-size: 18px;
+    line-height: 1.18;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body[data-page="news"] .eyebrow,
+  body[data-page="promotions"] .eyebrow,
+  body[data-page="benefits"] .eyebrow,
+  body[data-page="news-detail"] .eyebrow,
+  body[data-page="promotions-detail"] .eyebrow,
+  body[data-page="benefits-detail"] .eyebrow {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="news"] .page-actions .badge-inline,
+  body[data-page="promotions"] .page-actions .badge-inline,
+  body[data-page="benefits"] .page-actions .badge-inline,
+  body[data-page="news-detail"] .page-actions .badge-inline,
+  body[data-page="promotions-detail"] .page-actions .badge-inline,
+  body[data-page="benefits-detail"] .page-actions .badge-inline {
+    max-width: 78vw;
+  }
+
+  body[data-page="news"] .page-actions .badge-inline strong,
+  body[data-page="promotions"] .page-actions .badge-inline strong,
+  body[data-page="benefits"] .page-actions .badge-inline strong,
+  body[data-page="news-detail"] .page-actions .badge-inline strong,
+  body[data-page="promotions-detail"] .page-actions .badge-inline strong,
+  body[data-page="benefits-detail"] .page-actions .badge-inline strong {
+    display: inline-block;
+    max-width: 34vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+
+  body[data-page="news"] .content-entry-card,
+  body[data-page="promotions"] .content-entry-card,
+  body[data-page="benefits"] .content-entry-card,
+  body[data-page="news-detail"] .panel,
+  body[data-page="promotions-detail"] .panel,
+  body[data-page="benefits-detail"] .panel {
+    overflow: hidden;
+  }
+
+  body[data-page="news"] .entry-cover,
+  body[data-page="promotions"] .entry-cover,
+  body[data-page="benefits"] .entry-cover,
+  body[data-page="news"] .entry-cover-fallback,
+  body[data-page="promotions"] .entry-cover-fallback,
+  body[data-page="benefits"] .entry-cover-fallback {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+    margin-bottom: 12px;
+  }
+
+  body[data-page="news"] .content-entry-top,
+  body[data-page="promotions"] .content-entry-top,
+  body[data-page="benefits"] .content-entry-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  body[data-page="news"] .content-entry-side,
+  body[data-page="promotions"] .content-entry-side,
+  body[data-page="benefits"] .content-entry-side {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  body[data-page="news"] .content-entry-card h4,
+  body[data-page="promotions"] .content-entry-card h4,
+  body[data-page="benefits"] .content-entry-card h4,
+  body[data-page="news"] .content-entry-card p,
+  body[data-page="promotions"] .content-entry-card p,
+  body[data-page="benefits"] .content-entry-card p,
+  body[data-page="news-detail"] #detailHeading,
+  body[data-page="promotions-detail"] #detailHeading,
+  body[data-page="benefits-detail"] #detailHeading,
+  body[data-page="news-detail"] #detailSummary,
+  body[data-page="promotions-detail"] #detailSummary,
+  body[data-page="benefits-detail"] #detailSummary,
+  body[data-page="news-detail"] .detail-paragraph,
+  body[data-page="promotions-detail"] .detail-paragraph,
+  body[data-page="benefits-detail"] .detail-paragraph,
+  body[data-page="news-detail"] .detail-bullets li,
+  body[data-page="promotions-detail"] .detail-bullets li,
+  body[data-page="benefits-detail"] .detail-bullets li,
+  body[data-page="news-detail"] #detailMeta,
+  body[data-page="promotions-detail"] #detailMeta,
+  body[data-page="benefits-detail"] #detailMeta {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  body[data-page="news-detail"] .detail-hero h2,
+  body[data-page="promotions-detail"] .detail-hero h2,
+  body[data-page="benefits-detail"] .detail-hero h2 {
+    font-size: 24px;
+    line-height: 1.18;
+  }
+
+  body[data-page="news-detail"] .detail-cover,
+  body[data-page="promotions-detail"] .detail-cover,
+  body[data-page="benefits-detail"] .detail-cover,
+  body[data-page="news-detail"] .detail-cover-fallback,
+  body[data-page="promotions-detail"] .detail-cover-fallback,
+  body[data-page="benefits-detail"] .detail-cover-fallback {
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 4 / 3;
+  }
+
+  body[data-page="news-detail"] .detail-gallery-grid,
+  body[data-page="promotions-detail"] .detail-gallery-grid,
+  body[data-page="benefits-detail"] .detail-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  body[data-page="news-detail"] .detail-gallery-card img,
+  body[data-page="promotions-detail"] .detail-gallery-card img,
+  body[data-page="benefits-detail"] .detail-gallery-card img {
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  body[data-page="news"] .app-shell,
+  body[data-page="promotions"] .app-shell,
+  body[data-page="benefits"] .app-shell,
+  body[data-page="news-detail"] .app-shell,
+  body[data-page="promotions-detail"] .app-shell,
+  body[data-page="benefits-detail"] .app-shell {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  body[data-page="news"] .page-actions .badge-inline strong,
+  body[data-page="promotions"] .page-actions .badge-inline strong,
+  body[data-page="benefits"] .page-actions .badge-inline strong,
+  body[data-page="news-detail"] .page-actions .badge-inline strong,
+  body[data-page="promotions-detail"] .page-actions .badge-inline strong,
+  body[data-page="benefits-detail"] .page-actions .badge-inline strong {
+    max-width: 42vw;
+  }
+
+  body[data-page="news-detail"] .detail-gallery-grid,
+  body[data-page="promotions-detail"] .detail-gallery-grid,
+  body[data-page="benefits-detail"] .detail-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-page="news-detail"] .detail-gallery-card img,
+  body[data-page="promotions-detail"] .detail-gallery-card img,
+  body[data-page="benefits-detail"] .detail-gallery-card img {
+    height: 180px;
+  }
+}

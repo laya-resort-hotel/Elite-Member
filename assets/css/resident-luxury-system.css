@@ -720,8 +720,8 @@ html.resident-loader-active body.has-resident-loader {
   justify-content: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 50% -8%, rgba(55, 177, 203, 0.14), transparent 36%),
-    linear-gradient(180deg, rgba(3, 7, 13, 0.96) 0%, rgba(5, 9, 15, 0.985) 100%);
+    radial-gradient(circle at 50% 10%, rgba(42, 132, 190, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(5, 8, 13, 0.96) 0%, rgba(5, 7, 11, 0.985) 100%);
   backdrop-filter: blur(10px);
   opacity: 1;
   visibility: visible;
@@ -732,170 +732,136 @@ html.resident-loader-active body.has-resident-loader {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  display: none;
 }
 
 .resident-route-loader__inner {
-  min-width: min(86vw, 330px);
-  padding: 28px 28px 24px;
-  border-radius: 30px;
+  min-width: min(84vw, 340px);
+  padding: 32px 28px 22px;
+  border-radius: 28px;
   text-align: center;
-  border: 1px solid rgba(54, 149, 176, 0.22);
+  border: 1px solid rgba(62, 118, 159, 0.22);
   background:
-    linear-gradient(180deg, rgba(7, 14, 24, 0.965) 0%, rgba(5, 10, 18, 0.985) 100%);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    linear-gradient(180deg, rgba(11, 18, 29, 0.96) 0%, rgba(7, 11, 18, 0.98) 100%);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, .52),
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 0 0 1px rgba(255,255,255,.02);
 }
 
 .resident-route-loader__brand {
-  position: relative;
-  width: min(62vw, 270px);
-  margin: 0 auto;
-  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
 .resident-route-loader__droplets {
   position: relative;
-  width: 100%;
-  height: 176px;
-  margin: 0 auto 8px;
-  pointer-events: none;
+  width: min(56vw, 220px);
+  max-width: 220px;
+  height: 164px;
+  filter: drop-shadow(0 14px 28px rgba(4, 18, 45, 0.22));
 }
 
-.resident-route-loader__droplets::after {
-  content: "";
+.resident-route-loader__drop {
+  --distance: 12px;
+  --delay: 0s;
+  --duration: 2.8s;
+  --sway: 0px;
   position: absolute;
-  inset: auto 10% 0;
-  height: 26px;
-  background: radial-gradient(circle, rgba(40, 160, 201, 0.14) 0%, rgba(40, 160, 201, 0) 68%);
-  filter: blur(8px);
-  opacity: 0.75;
-}
-
-.resident-route-loader__droplet {
-  position: absolute;
-  left: var(--x);
-  top: var(--y);
+  display: block;
   width: var(--w);
   height: var(--h);
-  transform: translate(-50%, 0);
-  transform-origin: center top;
-  clip-path: polygon(50% 0%, 72% 12%, 86% 32%, 92% 54%, 86% 77%, 68% 92%, 50% 100%, 32% 92%, 14% 77%, 8% 54%, 14% 32%, 28% 12%);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #55d8df 0%, #2f97cc 56%, #143f9a 100%);
-  box-shadow:
-    0 10px 18px rgba(4, 34, 96, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38);
-  opacity: 0.96;
-  animation: residentLoaderDrip var(--dur, 2.65s) cubic-bezier(.46, .05, .24, 1) infinite;
-  animation-delay: var(--delay, 0s);
+  left: var(--x);
+  top: var(--y);
+  border-radius: 50% 50% 54% 54% / 16% 16% 84% 84%;
+  clip-path: polygon(50% 0%, 67% 14%, 84% 39%, 93% 62%, 88% 80%, 69% 96%, 50% 100%, 31% 96%, 12% 80%, 7% 62%, 16% 39%, 33% 14%);
+  background: linear-gradient(180deg, rgba(91, 226, 232, 0.98) 0%, rgba(32, 145, 204, 0.98) 48%, rgba(12, 76, 166, 0.98) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 16px rgba(5,31,72,.18);
+  animation: residentDropDrift var(--duration) cubic-bezier(.45,.05,.35,1) infinite;
+  animation-delay: var(--delay);
+  will-change: transform, opacity;
 }
 
-.resident-route-loader__droplet::before {
-  content: "";
+.resident-route-loader__drop::before {
+  content: '';
   position: absolute;
-  top: 8%;
-  left: 24%;
-  width: 34%;
-  height: 28%;
+  left: 18%;
+  top: 10%;
+  width: 28%;
+  height: 36%;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.04) 100%);
-  filter: blur(.5px);
-  opacity: 0.85;
+  background: linear-gradient(180deg, rgba(255,255,255,.20) 0%, rgba(255,255,255,0) 100%);
+  opacity: .75;
 }
 
-.resident-route-loader__droplet::after {
-  content: "";
-  position: absolute;
-  inset: auto 18% 7% 18%;
-  height: 18%;
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(10, 61, 150, 0) 0%, rgba(10, 61, 150, 0.22) 100%);
-}
-
-.resident-route-loader__droplet.droplet-1  { --x: 50%; --y: 0px;   --w: 16px; --h: 40px; --drop: 20px; --dur: 2.92s; --delay: 0.00s; }
-.resident-route-loader__droplet.droplet-2  { --x: 30%; --y: 54px;  --w: 12px; --h: 28px; --drop: 14px; --dur: 2.34s; --delay: 0.28s; }
-.resident-route-loader__droplet.droplet-3  { --x: 40%; --y: 40px;  --w: 15px; --h: 44px; --drop: 18px; --dur: 2.58s; --delay: 0.16s; }
-.resident-route-loader__droplet.droplet-4  { --x: 50%; --y: 58px;  --w: 20px; --h: 76px; --drop: 22px; --dur: 2.76s; --delay: 0.38s; }
-.resident-route-loader__droplet.droplet-5  { --x: 60%; --y: 40px;  --w: 15px; --h: 44px; --drop: 18px; --dur: 2.56s; --delay: 0.22s; }
-.resident-route-loader__droplet.droplet-6  { --x: 70%; --y: 54px;  --w: 12px; --h: 28px; --drop: 14px; --dur: 2.35s; --delay: 0.44s; }
-.resident-route-loader__droplet.droplet-7  { --x: 18%; --y: 96px;  --w: 14px; --h: 40px; --drop: 15px; --dur: 2.42s; --delay: 0.32s; }
-.resident-route-loader__droplet.droplet-8  { --x: 30%; --y: 86px;  --w: 15px; --h: 42px; --drop: 17px; --dur: 2.48s; --delay: 0.50s; }
-.resident-route-loader__droplet.droplet-9  { --x: 40%; --y: 82px;  --w: 22px; --h: 64px; --drop: 26px; --dur: 2.90s; --delay: 0.12s; }
-.resident-route-loader__droplet.droplet-10 { --x: 60%; --y: 82px;  --w: 22px; --h: 64px; --drop: 24px; --dur: 2.84s; --delay: 0.60s; }
-.resident-route-loader__droplet.droplet-11 { --x: 70%; --y: 86px;  --w: 15px; --h: 42px; --drop: 17px; --dur: 2.48s; --delay: 0.56s; }
-.resident-route-loader__droplet.droplet-12 { --x: 82%; --y: 96px;  --w: 14px; --h: 40px; --drop: 15px; --dur: 2.42s; --delay: 0.76s; }
-.resident-route-loader__droplet.droplet-13 { --x: 50%; --y: 138px; --w: 16px; --h: 46px; --drop: 19px; --dur: 2.64s; --delay: 0.92s; }
+.resident-route-loader__drop--1  { --w: 11%;   --h: 38%; --x: 44.5%; --y: 0%;   --delay: 0s;    --distance: 11px; --duration: 2.7s; }
+.resident-route-loader__drop--2  { --w: 8%;    --h: 22%; --x: 22%;   --y: 30%;  --delay: .28s;  --distance: 8px;  --duration: 2.35s; --sway: -1px; }
+.resident-route-loader__drop--3  { --w: 10%;   --h: 34%; --x: 34%;   --y: 16%;  --delay: .16s;  --distance: 10px; --duration: 2.55s; --sway: -2px; }
+.resident-route-loader__drop--4  { --w: 16%;   --h: 44%; --x: 42%;   --y: 42%;  --delay: .36s;  --distance: 13px; --duration: 2.95s; }
+.resident-route-loader__drop--5  { --w: 10%;   --h: 34%; --x: 56%;   --y: 16%;  --delay: .22s;  --distance: 10px; --duration: 2.55s; --sway: 2px; }
+.resident-route-loader__drop--6  { --w: 8%;    --h: 22%; --x: 70%;   --y: 30%;  --delay: .42s;  --distance: 8px;  --duration: 2.35s; --sway: 1px; }
+.resident-route-loader__drop--7  { --w: 11%;   --h: 34%; --x: 4%;    --y: 57%;  --delay: .32s;  --distance: 10px; --duration: 2.5s; }
+.resident-route-loader__drop--8  { --w: 10.5%; --h: 35%; --x: 17.5%; --y: 47%;  --delay: .46s;  --distance: 9px;  --duration: 2.45s; --sway: -1px; }
+.resident-route-loader__drop--9  { --w: 16%;   --h: 45%; --x: 31.5%; --y: 46%;  --delay: .10s;  --distance: 15px; --duration: 3.0s;  --sway: -1px; }
+.resident-route-loader__drop--10 { --w: 16%;   --h: 45%; --x: 52.5%; --y: 46%;  --delay: .56s;  --distance: 14px; --duration: 2.9s;  --sway: 1px; }
+.resident-route-loader__drop--11 { --w: 10.5%; --h: 35%; --x: 68.5%; --y: 47%;  --delay: .52s;  --distance: 9px;  --duration: 2.45s; --sway: 1px; }
+.resident-route-loader__drop--12 { --w: 11%;   --h: 34%; --x: 84%;   --y: 57%;  --delay: .72s;  --distance: 10px; --duration: 2.5s; }
+.resident-route-loader__drop--13 { --w: 10%;   --h: 31%; --x: 45.5%; --y: 81%;  --delay: .84s;  --distance: 10px; --duration: 2.6s; }
 
 .resident-route-loader__wordmark {
   display: block;
-  width: 100%;
+  width: min(66vw, 260px);
+  max-width: 260px;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.22));
+  filter: drop-shadow(0 12px 26px rgba(0, 18, 44, 0.18));
 }
 
 .resident-route-loader__caption {
-  margin-top: 10px;
+  margin-top: 14px;
   font-size: 11px;
-  letter-spacing: .22em;
-  color: rgba(228, 219, 198, 0.74);
+  letter-spacing: .24em;
+  color: rgba(228, 236, 245, 0.72);
   text-transform: uppercase;
 }
 
-@keyframes residentLoaderDrip {
-  0% {
-    transform: translate(-50%, 0) scale(0.98);
-    opacity: 0.26;
+@keyframes residentDropDrift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: .92;
   }
-  12% {
-    opacity: 0.96;
-  }
-  58% {
-    transform: translate(-50%, var(--drop)) scale(1.02, 0.98);
+  35% {
+    transform: translate3d(calc(var(--sway) * .5), calc(var(--distance) * .55), 0) scale(.985, 1.015);
     opacity: 1;
   }
-  68% {
-    transform: translate(-50%, calc(var(--drop) + 4px)) scale(0.98, 1.02);
-    opacity: 0.84;
-  }
-  69% {
-    transform: translate(-50%, 0) scale(0.96);
-    opacity: 0;
-  }
-  100% {
-    transform: translate(-50%, 0) scale(1);
-    opacity: 0.3;
+  72% {
+    transform: translate3d(var(--sway), var(--distance), 0) scale(.97, 1.04);
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .resident-route-loader__droplet {
-    animation: residentLoaderPulseSoft 2.8s ease-in-out infinite;
+  .resident-route-loader__drop {
+    animation: none;
   }
-}
-
-@keyframes residentLoaderPulseSoft {
-  0%, 100% { opacity: 0.55; transform: translate(-50%, 0) scale(0.98); }
-  50% { opacity: 1; transform: translate(-50%, 6px) scale(1.01); }
 }
 
 @media (max-width: 720px) {
   .resident-route-loader__inner {
-    min-width: min(90vw, 306px);
-    padding: 24px 22px 22px;
-    border-radius: 26px;
-  }
-
-  .resident-route-loader__brand {
-    width: min(66vw, 224px);
+    min-width: min(88vw, 300px);
+    padding: 28px 22px 20px;
+    border-radius: 24px;
   }
 
   .resident-route-loader__droplets {
-    height: 152px;
-    margin-bottom: 6px;
+    width: min(60vw, 200px);
+    height: 148px;
   }
 
-  .resident-route-loader__droplet {
-    transform: translate(-50%, 0) scale(0.92);
+  .resident-route-loader__wordmark {
+    width: min(70vw, 240px);
   }
 
   .resident-route-loader__caption {
@@ -903,6 +869,9 @@ html.resident-loader-active body.has-resident-loader {
     letter-spacing: .18em;
   }
 }
+
+
+
 
 /* Hide legacy website subtitle across resident pages */
 body[data-page]:not([data-page="resident-login"]) .vault-appbar-subtitle {
