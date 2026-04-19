@@ -16,6 +16,9 @@ const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption', 'about', 'contact', 'faq']);
 const RESIDENT_LOADER_PAGES = new Set(['resident-login', 'signup', 'resident', 'home', 'member', 'settings', 'redemption', 'about', 'contact', 'faq', 'news', 'promotions', 'benefits', 'news-detail', 'promotions-detail', 'benefits-detail']);
 const pageBindings = new Set();
+const RESIDENT_LOADER_MIN_VISIBLE_MS = 900;
+let residentLoaderShownAt = 0;
+let residentLoaderHideTimer = null;
 
 function pageUsesResidentLoader() {
   return RESIDENT_LOADER_PAGES.has(page);
@@ -24,6 +27,11 @@ function pageUsesResidentLoader() {
 function showResidentLoader() {
   const loader = document.getElementById('residentRouteLoader');
   if (!loader) return;
+  if (residentLoaderHideTimer) {
+    window.clearTimeout(residentLoaderHideTimer);
+    residentLoaderHideTimer = null;
+  }
+  residentLoaderShownAt = Date.now();
   loader.classList.remove('is-hidden');
   document.documentElement.classList.add('resident-loader-active');
 }
@@ -31,8 +39,14 @@ function showResidentLoader() {
 function hideResidentLoader() {
   const loader = document.getElementById('residentRouteLoader');
   if (!loader) return;
-  loader.classList.add('is-hidden');
-  document.documentElement.classList.remove('resident-loader-active');
+  const elapsed = residentLoaderShownAt ? Date.now() - residentLoaderShownAt : RESIDENT_LOADER_MIN_VISIBLE_MS;
+  const wait = Math.max(0, RESIDENT_LOADER_MIN_VISIBLE_MS - elapsed);
+  if (residentLoaderHideTimer) window.clearTimeout(residentLoaderHideTimer);
+  residentLoaderHideTimer = window.setTimeout(() => {
+    loader.classList.add('is-hidden');
+    document.documentElement.classList.remove('resident-loader-active');
+    residentLoaderHideTimer = null;
+  }, wait);
 }
 
 function bindResidentLoaderNavigation() {
