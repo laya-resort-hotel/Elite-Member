@@ -21,6 +21,10 @@ function stringValue(value = '') {
   return String(value || '').trim();
 }
 
+function isPermissionDeniedError(error) {
+  return error?.code === 'permission-denied' || /Missing or insufficient permissions/i.test(String(error?.message || ''));
+}
+
 
 function looksLikeEscapedHtml(value = '') {
   const text = stringValue(value);
@@ -250,12 +254,21 @@ export async function loadStaticPageContent(slug = 'about') {
   if (!state.db) {
     return normalizeStaticPageEditorState({ slug: normalizedSlug });
   }
-  const ref = doc(state.db, 'site_pages', normalizedSlug);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    return normalizeStaticPageEditorState({ slug: normalizedSlug });
+
+  try {
+    const ref = doc(state.db, 'site_pages', normalizedSlug);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      return normalizeStaticPageEditorState({ slug: normalizedSlug });
+    }
+    return normalizeStaticPageEditorState({ slug: normalizedSlug, ...snap.data() });
+  } catch (error) {
+    if (isPermissionDeniedError(error)) {
+      console.warn(`site_pages/${normalizedSlug} read blocked by Firestore rules — using built-in fallback content`, error);
+      return normalizeStaticPageEditorState({ slug: normalizedSlug });
+    }
+    throw error;
   }
-  return normalizeStaticPageEditorState({ slug: normalizedSlug, ...snap.data() });
 }
 
 export async function saveStaticPageContent(slug = 'about', payload = {}) {

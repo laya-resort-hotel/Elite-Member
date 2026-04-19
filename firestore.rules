@@ -353,7 +353,7 @@ function validResidentPointRedeemCreate() {
     }
 
     match /site_pages/{docId} {
-      allow read: if signedIn();
+      allow read: if true;
       allow write: if isAdminLike();
     }
 
