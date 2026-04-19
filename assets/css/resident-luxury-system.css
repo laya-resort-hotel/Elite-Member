@@ -759,7 +759,8 @@ html.resident-loader-active body.has-resident-loader {
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 14px 36px rgba(0, 0, 0, 0.35));
-  animation: residentLoaderPulse 1.8s ease-in-out infinite;
+  animation: none;
+  max-height: min(44vh, 360px);
 }
 
 .resident-route-loader__caption {
