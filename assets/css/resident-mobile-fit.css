@@ -730,3 +730,86 @@ body[data-page="home"] .vault-news-image-bg {
   width: 100% !important;
   height: 100% !important;
 }
+
+
+/* Member page mobile polish patch */
+@media (max-width: 720px) {
+  body[data-page="member"] .vault-main-content {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  body[data-page="member"] .vault-member-panel {
+    margin: 0;
+    padding: 16px;
+    border-radius: 26px;
+  }
+
+  body[data-page="member"] .vault-profile-strip {
+    grid-template-columns: 52px 1fr auto;
+    gap: 10px;
+    padding: 14px 12px;
+  }
+
+  body[data-page="member"] .vault-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+  }
+
+  body[data-page="member"] .vault-profile-name {
+    font-size: 20px;
+  }
+
+  body[data-page="member"] .vault-points-pill {
+    min-width: auto;
+    padding: 10px 12px;
+  }
+
+  body[data-page="member"] .metric-card {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  body[data-page="member"] .member-strong-code {
+    font-size: 15px;
+    letter-spacing: .03em;
+    word-break: break-word;
+  }
+
+  body[data-page="member"] .member-qr-panel {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  body[data-page="member"] .member-qr-panel .qr-wrap {
+    align-self: center;
+  }
+
+  body[data-page="member"] .member-qr-meta {
+    width: 100%;
+  }
+
+  body[data-page="member"] .member-benefits-panel {
+    padding: 16px;
+    gap: 14px;
+  }
+
+  body[data-page="member"] .member-benefits-title {
+    font-size: 20px;
+  }
+
+  body[data-page="member"] .member-benefits-copy {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  body[data-page="member"] .member-benefits-group {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  body[data-page="member"] .member-history-panel .card-item {
+    padding: 14px;
+  }
+}

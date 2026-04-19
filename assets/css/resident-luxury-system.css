@@ -791,3 +791,80 @@ html.resident-loader-active body.has-resident-loader {
     letter-spacing: .18em;
   }
 }
+
+
+/* Member page polish patch */
+body[data-page="member"] .vault-appbar-copy {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+body[data-page="member"] .elite-card-toolbar {
+  margin-bottom: 12px;
+}
+
+body[data-page="member"] .member-qr-panel .readonly-note {
+  margin: 6px 0 0;
+  color: rgba(241, 233, 213, 0.78);
+  line-height: 1.55;
+}
+
+body[data-page="member"] .member-benefits-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: var(--resident-surface);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+body[data-page="member"] .member-benefits-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body[data-page="member"] .member-benefits-title {
+  margin: 6px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+  color: #f3ead3;
+}
+
+body[data-page="member"] .member-benefits-copy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body[data-page="member"] .member-benefits-group {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02));
+}
+
+body[data-page="member"] .member-benefits-group h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+body[data-page="member"] .member-benefits-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: rgba(244, 239, 230, 0.92);
+  line-height: 1.55;
+}
+
+body[data-page="member"] .member-benefits-list li::marker {
+  color: var(--gold);
+}

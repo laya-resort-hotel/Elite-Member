@@ -11,8 +11,8 @@
   <link rel="stylesheet" href="./assets/css/layout.css" />
   <link rel="stylesheet" href="./assets/css/components.css?v=20260405lang1" />
   <link rel="stylesheet" href="./assets/css/responsive.css" />
-  <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260405lang1" />
-  <link rel="stylesheet" href="./assets/css/resident-mobile-fit.css?v=20260405mobile2" />
+  <link rel="stylesheet" href="./assets/css/resident-luxury-system.css?v=20260419member1" />
+  <link rel="stylesheet" href="./assets/css/resident-mobile-fit.css?v=20260419member1" />
   <script defer src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
   <script type="module" src="./assets/js/main.js?v=20260405cms4b"></script>
 </head>
@@ -33,7 +33,6 @@
         </a>
         <div class="vault-appbar-copy">
           <div class="vault-appbar-title">LAYA Resident</div>
-          <div class="vault-appbar-subtitle">layaresortphuket.com</div>
         </div>
         <div class="vault-appbar-actions">
           <a id="residentLoginBtn" class="vault-auth-chip hidden" href="./resident-login.html">Log in</a>
@@ -79,9 +78,7 @@
                 </div>
               </div>
             </div>
-            <div class="card-action-row mt-sm">
-              <button type="button" class="ghost-btn full-btn" data-card-download>Download card image</button>
-            </div>
+
           </div>
 
           <div class="resident-card-summary">
@@ -138,7 +135,7 @@
             <div class="member-qr-panel mt-md">
               <div>
                 <div class="small-label">Member QR</div>
-                <p class="readonly-note">ใช้ให้ทีมโรงแรมสแกนเพื่อบันทึก spend และ point</p>
+                <p class="readonly-note">Show this QR code to the hotel team to record spend and points.</p>
               </div>
               <div class="qr-wrap">
                 <canvas id="memberQrCanvas" width="124" height="124"></canvas>
@@ -154,10 +151,38 @@
               <div id="residentPointHistoryMini"></div>
             </div>
 
-            <div class="member-links-grid mt-md">
-              <a class="nav-link-card" href="./benefits.html"><strong>Benefits</strong><small>ดูสิทธิ์ของ Elite Black Card</small></a>
-              <a class="nav-link-card" href="./news.html"><strong>News</strong><small>อัปเดตข่าวสารล่าสุด</small></a>
-            </div>
+            <section class="member-benefits-panel mt-md" aria-label="Elite Black Card benefits">
+              <div class="member-benefits-head">
+                <div>
+                  <div class="small-label">Benefits</div>
+                  <h3 class="member-benefits-title">Elite Black Card Privileges</h3>
+                </div>
+                <span class="pill gold-pill">MEMBER</span>
+              </div>
+
+              <div class="member-benefits-copy">
+                <div class="member-benefits-group">
+                  <h4>Discount Benefits</h4>
+                  <ul class="member-benefits-list">
+                    <li>30% OFF accommodation from the Best Flexible Rate</li>
+                    <li>25% OFF food (non-alcohol)</li>
+                    <li>25% OFF spa (not valid with promotions)</li>
+                    <li>Complimentary access to hotel facilities</li>
+                    <li>One (1) free parking lot per unit</li>
+                  </ul>
+                </div>
+
+                <div class="member-benefits-group">
+                  <h4>Terms &amp; Conditions</h4>
+                  <ul class="member-benefits-list">
+                    <li>Benefits are non-transferable.</li>
+                    <li>Card must be presented before billing.</li>
+                    <li>Discounts cannot be combined with other promotions, vouchers, or discounts.</li>
+                    <li>This privilege card is valid from 1 January 2026 to 31 December 2031.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       </section>
