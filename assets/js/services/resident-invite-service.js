@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -203,4 +204,21 @@ export async function regenerateResidentInviteCode(code = '') {
   await batch.commit();
   const createdSnap = await getDoc(newRef);
   return mapInviteSnapshot(createdSnap);
+}
+
+
+export async function deleteResidentInviteCode(code = '') {
+  if (!state.db) throw new Error('Firestore is not ready');
+  assertAdminInviteRole();
+  const normalized = normalizeInviteCode(code);
+  if (!normalized) throw new Error('Invite code is required');
+  const ref = doc(state.db, INVITE_COLLECTION, normalized);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) throw new Error('Invite code not found');
+  const current = mapInviteSnapshot(snap);
+  if (current.status === 'claimed') {
+    throw new Error('Claimed code cannot be deleted');
+  }
+  await deleteDoc(ref);
+  return current;
 }

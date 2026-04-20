@@ -17,6 +17,7 @@ import {
 import { deleteStoragePaths, uploadCmsCover, uploadCmsGallery } from '../services/storage-service.js';
 import {
   createResidentInviteCode,
+  deleteResidentInviteCode,
   disableResidentInviteCode,
   loadResidentInviteCodes,
   normalizeUnitCode,
@@ -1824,6 +1825,7 @@ function renderInviteCodeList() {
     const units = [item.primaryUnitCode, ...(Array.isArray(item.additionalUnitCodes) ? item.additionalUnitCodes : [])].filter(Boolean);
     const canDisable = status === 'active';
     const canRegenerate = status !== 'claimed';
+    const canDelete = status !== 'claimed';
     const metaLine = status === 'claimed'
       ? `Used by ${escapeHtml(item.claimedByEmail || item.claimedResidentId || '-')}`
       : status === 'disabled'
@@ -1846,6 +1848,7 @@ function renderInviteCodeList() {
             <button class="ghost-btn" type="button" data-invite-action="copy" data-invite-code="${escapeHtml(item.code || item.id || '')}">Copy</button>
             ${canDisable ? `<button class="ghost-btn" type="button" data-invite-action="disable" data-invite-code="${escapeHtml(item.code || item.id || '')}">Disable</button>` : ''}
             ${canRegenerate ? `<button class="ghost-btn" type="button" data-invite-action="regenerate" data-invite-code="${escapeHtml(item.code || item.id || '')}">Regenerate</button>` : ''}
+            ${canDelete ? `<button class="ghost-btn" type="button" data-invite-action="delete" data-invite-code="${escapeHtml(item.code || item.id || '')}">Delete</button>` : ''}
             <small class="muted invite-meta-line">${metaLine}</small>
           </div>
         </div>
@@ -2031,6 +2034,28 @@ async function handleInviteListClick(event) {
         $('inviteCodeStatus').classList.remove('hidden');
       }
       showToast(`Disabled ${code}`);
+      renderInviteCodeList();
+    } catch (error) {
+      console.error(error);
+      showToast(explainInvitePermissionError(error), 'error');
+    } finally {
+      button.disabled = false;
+    }
+    return;
+  }
+
+  if (action === 'delete') {
+    const ok = window.confirm(`Delete invite code ${code}? This cannot be undone.`);
+    if (!ok) return;
+    try {
+      button.disabled = true;
+      await deleteResidentInviteCode(code);
+      adminInviteState.cache = (adminInviteState.cache || []).filter((item) => item.code !== code);
+      if ($('inviteCodeStatus')) {
+        $('inviteCodeStatus').textContent = `ลบ code ${code} แล้ว`;
+        $('inviteCodeStatus').classList.remove('hidden');
+      }
+      showToast(`Deleted ${code}`);
       renderInviteCodeList();
     } catch (error) {
       console.error(error);
