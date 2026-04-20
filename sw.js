@@ -1,10 +1,10 @@
-const CACHE_NAME = 'laya-pwa-v20260420-icon1';
+const CACHE_NAME = 'laya-pwa-v20260420-name1';
 const CORE_ASSETS = [
   './',
   './resident-login.html',
-  './manifest.webmanifest',
-  './assets/images/laya-app-icon-192-v20260420.png',
-  './assets/images/laya-app-icon-512-v20260420.png'
+  './manifest.webmanifest?v=20260420name1',
+  './assets/images/laya-app-icon-192-v20260420b.png',
+  './assets/images/laya-app-icon-512-v20260420b.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -20,14 +20,19 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   event.respondWith((async () => {
     const cached = await caches.match(event.request);
     if (cached) return cached;
     try {
-      const response = await fetch(event.request);
-      return response;
+      return await fetch(event.request);
     } catch (error) {
       return cached || Response.error();
     }

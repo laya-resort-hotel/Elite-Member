@@ -378,12 +378,30 @@ async function initApp() {
   }
 }
 
+
 function registerPwaSupport() {
   if (!('serviceWorker' in navigator)) return;
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js?v=20260420icon1').catch((error) => {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('./sw.js?v=20260420name1');
+      if (typeof registration.update === 'function') {
+        registration.update().catch(() => undefined);
+      }
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
+            worker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    } catch (error) {
       console.warn('Service worker registration failed:', error);
-    });
+    }
   }, { once: true });
 }
 
