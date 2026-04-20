@@ -112,17 +112,19 @@ async function attemptSignup() {
   }
 
   const email = $('residentSignupEmail')?.value.trim();
-  const pin = $('residentSignupPin')?.value.trim();
+  const firstName = $('residentSignupFirstName')?.value.trim();
+  const lastName = $('residentSignupLastName')?.value.trim();
+  const password = $('residentSignupPin')?.value.trim();
   const inviteCode = normalizeInviteCode($('residentSignupInviteCode')?.value || '');
   const primaryUnitCode = normalizeUnitCode($('residentSignupPrimaryUnit')?.value || '');
   const additionalUnits = parseUnitCodes($('residentSignupAdditionalUnits')?.value || '').filter((code) => code !== primaryUnitCode);
   const submitBtn = $('residentSignupSubmitBtn');
 
-  if (!email || !pin || !inviteCode || !primaryUnitCode) {
+  if (!firstName || !lastName || !email || !password || !inviteCode || !primaryUnitCode) {
     showToast(t('residentLogin.signupRequiredFields'), 'error');
     return;
   }
-  if (!/^\d{6}$/.test(pin)) {
+  if (String(password).length < 6) {
     showToast(t('residentLogin.invalidPin'), 'error');
     return;
   }
@@ -131,8 +133,10 @@ async function attemptSignup() {
     if (submitBtn) submitBtn.disabled = true;
     window.__showResidentLoader?.();
     await signUpResidentWithInvite({
+      firstName,
+      lastName,
       email,
-      pin,
+      password,
       inviteCode,
       primaryUnitCode,
       additionalUnitCodes: additionalUnits,
@@ -209,7 +213,7 @@ function bindEnterKeys() {
     }
   });
 
-  ['residentSignupEmail', 'residentSignupPin', 'residentSignupInviteCode', 'residentSignupPrimaryUnit', 'residentSignupAdditionalUnits'].forEach((id) => {
+  ['residentSignupFirstName', 'residentSignupLastName', 'residentSignupEmail', 'residentSignupPin', 'residentSignupInviteCode', 'residentSignupPrimaryUnit', 'residentSignupAdditionalUnits'].forEach((id) => {
     const el = $(id);
     if (el && !el.dataset.boundEnter) {
       el.dataset.boundEnter = '1';

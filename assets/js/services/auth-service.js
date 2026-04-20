@@ -113,7 +113,9 @@ export async function logoutCurrentUser() {
 }
 
 
-function buildResidentDisplayName(email = '', primaryUnitCode = '') {
+function buildResidentDisplayName(email = '', primaryUnitCode = '', firstName = '', lastName = '') {
+  const manualName = [String(firstName || '').trim(), String(lastName || '').trim()].filter(Boolean).join(' ').trim();
+  if (manualName) return manualName;
   const localPart = String(email || '').split('@')[0] || '';
   const prettified = localPart
     .replace(/[._-]+/g, ' ')
@@ -140,13 +142,16 @@ export async function signUpResidentWithInvite(payload = {}) {
   }
 
   const email = normalizeLoginIdentifier(payload.email || '');
-  const pin = String(payload.pin || '').trim();
+  const firstName = String(payload.firstName || '').trim();
+  const lastName = String(payload.lastName || '').trim();
+  const password = String(payload.password || payload.pin || '').trim();
   const inviteCode = normalizeInviteCode(payload.inviteCode || '');
   const primaryUnitCode = normalizeUnitCode(payload.primaryUnitCode || '');
   const additionalUnitCodes = parseUnitCodes(payload.additionalUnitCodes || payload.additionalUnits || []).filter((code) => code && code !== primaryUnitCode);
 
   if (!email) throw new Error('Email is required');
-  if (!/^\d{6}$/.test(pin)) throw new Error('PIN must be exactly 6 digits');
+  if (!firstName || !lastName) throw new Error('First name and last name are required');
+  if (password.length < 6) throw new Error('Password must be at least 6 characters');
   if (!inviteCode) throw new Error('Invite code is required');
   if (!primaryUnitCode) throw new Error('Primary room is required');
 
@@ -161,12 +166,12 @@ export async function signUpResidentWithInvite(payload = {}) {
   await setPersistence(state.auth, browserLocalPersistence);
   setResidentSessionMode('local');
 
-  const cred = await createUserWithEmailAndPassword(state.auth, email, pin);
+  const cred = await createUserWithEmailAndPassword(state.auth, email, password);
   const residentId = doc(collection(state.db, 'residents')).id;
   const memberCode = makeResidentCode('RES');
   const publicCardCode = makePublicCardCode();
   const cardNumber = makeCardNumber();
-  const displayName = buildResidentDisplayName(email, primaryUnitCode);
+  const displayName = buildResidentDisplayName(email, primaryUnitCode, firstName, lastName);
 
   try {
     await updateProfile(cred.user, { displayName });
@@ -187,8 +192,8 @@ export async function signUpResidentWithInvite(payload = {}) {
     memberCode,
     qrCodeValue: publicCardCode,
     cardNumber,
-    firstName: '',
-    lastName: '',
+    firstName,
+    lastName,
     displayName,
     email,
     loginEmail: email,

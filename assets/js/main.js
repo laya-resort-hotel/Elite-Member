@@ -16,168 +16,6 @@ const ADMIN_PAGES = new Set(['admin', 'members', 'resident-management', 'invite-
 const RESIDENT_PAGES = new Set(['resident', 'home', 'member', 'settings', 'redemption', 'about', 'contact', 'faq']);
 const RESIDENT_LOADER_PAGES = new Set(['resident-login', 'signup', 'resident', 'home', 'member', 'settings', 'redemption', 'about', 'contact', 'faq', 'news', 'promotions', 'benefits', 'news-detail', 'promotions-detail', 'benefits-detail']);
 const pageBindings = new Set();
-
-const LAYA_PWA_VERSION = '20260420-settings1';
-let deferredInstallPrompt = null;
-
-function isIosDevice() {
-  return /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
-}
-
-function isStandaloneApp() {
-  return window.matchMedia?.('(display-mode: standalone)')?.matches || window.navigator.standalone === true;
-}
-
-function rememberDeferredInstallPrompt(event) {
-  deferredInstallPrompt = event;
-  window.dispatchEvent(new CustomEvent('laya-pwa-install-available'));
-}
-
-function updatePwaStatusText() {
-  const status = document.getElementById('pwaStatusText');
-  const version = document.getElementById('pwaVersionText');
-  if (version) version.textContent = `Version: ${LAYA_PWA_VERSION}`;
-  if (!status) return;
-  if (isStandaloneApp()) {
-    status.textContent = 'Installed on this device. You can tap Update App Version to refresh to the newest build.';
-    return;
-  }
-  if (deferredInstallPrompt) {
-    status.textContent = 'Ready to install on this device. Tap Install LAYA Resident.';
-    return;
-  }
-  if (isIosDevice()) {
-    status.textContent = 'On iPhone/iPad, tap Install LAYA Resident to see Add to Home Screen instructions.';
-    return;
-  }
-  status.textContent = 'If install is not ready yet, open this page in Chrome and use the app for a moment, then try again.';
-}
-
-async function promptInstallFromSettings() {
-  if (isStandaloneApp()) {
-    showToast('ติดตั้ง LAYA Resident บนเครื่องนี้แล้ว', 'success');
-    updatePwaStatusText();
-    return;
-  }
-
-  if (deferredInstallPrompt) {
-    const promptEvent = deferredInstallPrompt;
-    deferredInstallPrompt = null;
-    try {
-      await promptEvent.prompt();
-      await promptEvent.userChoice;
-    } catch (error) {
-      console.warn('Install prompt failed:', error);
-    }
-    window.setTimeout(updatePwaStatusText, 300);
-    return;
-  }
-
-  if (isIosDevice()) {
-    window.alert('ติดตั้ง LAYA Resident\n\nบน iPhone / iPad ให้กดปุ่ม Share ของ Safari แล้วเลือก Add to Home Screen');
-    return;
-  }
-
-  showToast('ระบบยังไม่เปิด install prompt ในตอนนี้ ลองเปิดผ่าน Chrome แล้วใช้งานหน้าเว็บสักครู่ก่อนกดใหม่', 'error');
-}
-
-async function refreshPwaVersion() {
-  const registration = await navigator.serviceWorker?.getRegistration?.();
-  if (registration) {
-    await registration.update().catch(() => undefined);
-    if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    if (registration.installing) {
-      registration.installing.addEventListener('statechange', () => {
-        if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      });
-    }
-  }
-
-  if ('caches' in window) {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter((key) => /^laya-/i.test(key)).map((key) => caches.delete(key)));
-  }
-
-  const url = new URL(window.location.href);
-  url.searchParams.set('refresh', Date.now().toString());
-  window.location.replace(url.toString());
-}
-
-function bindSettingsPwaControls() {
-  const installBtn = document.getElementById('installAppBtn');
-  const updateBtn = document.getElementById('updateAppBtn');
-
-  if (installBtn && !installBtn.dataset.bound) {
-    installBtn.dataset.bound = '1';
-    installBtn.addEventListener('click', async () => {
-      installBtn.disabled = true;
-      try {
-        await promptInstallFromSettings();
-      } finally {
-        installBtn.disabled = false;
-        updatePwaStatusText();
-      }
-    });
-  }
-
-  if (updateBtn && !updateBtn.dataset.bound) {
-    updateBtn.dataset.bound = '1';
-    updateBtn.addEventListener('click', async () => {
-      const original = updateBtn.querySelector('span:last-child')?.textContent || 'Update App Version';
-      updateBtn.disabled = true;
-      const label = updateBtn.querySelector('span:last-child');
-      if (label) label.textContent = 'Updating...';
-      try {
-        showToast('กำลังอัปเดตเวอร์ชันล่าสุด...', 'success');
-        await refreshPwaVersion();
-      } catch (error) {
-        console.error('Update app failed:', error);
-        showToast(error?.message || 'Update app failed', 'error');
-      } finally {
-        updateBtn.disabled = false;
-        if (label) label.textContent = original;
-      }
-    });
-  }
-
-  updatePwaStatusText();
-  window.addEventListener('laya-pwa-install-available', updatePwaStatusText);
-  window.addEventListener('appinstalled', () => {
-    showToast('ติดตั้ง LAYA Resident สำเร็จ', 'success');
-    updatePwaStatusText();
-  }, { once: true });
-}
-
-function registerPwaSupport() {
-  window.addEventListener('beforeinstallprompt', (event) => {
-    event.preventDefault();
-    rememberDeferredInstallPrompt(event);
-  });
-
-  if (!('serviceWorker' in navigator)) return;
-  window.addEventListener('load', async () => {
-    try {
-      const registration = await navigator.serviceWorker.register(`./sw.js?v=${LAYA_PWA_VERSION}`);
-      if (typeof registration.update === 'function') {
-        registration.update().catch(() => undefined);
-      }
-      if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      registration.addEventListener('updatefound', () => {
-        const worker = registration.installing;
-        if (!worker) return;
-        worker.addEventListener('statechange', () => {
-          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-            worker.postMessage({ type: 'SKIP_WAITING' });
-          }
-        });
-      });
-      updatePwaStatusText();
-    } catch (error) {
-      console.warn('Service worker registration failed:', error);
-    }
-  }, { once: true });
-}
-
 const RESIDENT_LOADER_MIN_MS = 900;
 let residentLoaderShownAt = 0;
 let residentLoaderHideTimer = null;
@@ -348,12 +186,13 @@ async function initCurrentPage(isLive = false) {
 
 case 'settings': {
   renderResidentCard(state.currentResident || emptyResident());
+  const { bindSettingsPage } = await import('./pages/settings-page.js?v=20260420namepass1');
+  bindPageOnce('settings', bindSettingsPage);
   const btn = document.getElementById('changeLanguageBtn');
   if (btn && !btn.dataset.bound) {
     btn.dataset.bound = '1';
     btn.addEventListener('click', () => openLanguagePicker());
   }
-  bindSettingsPwaControls();
   break;
 }
 case 'about':
@@ -447,6 +286,10 @@ async function renderPageForRole(role, user, profile = {}) {
   state.currentRole = role || 'resident';
   state.currentProfile = profile || null;
   state.currentResident = await loadResidentForUser(user.uid, user.email, profile);
+  if (state.currentResident && profile?.displayName) {
+    state.currentResident.displayName = profile.displayName;
+    state.currentResident.fullName = profile.displayName;
+  }
   setMode('resident-live');
   updateStatusLabels({ modeState: 'resident-live' });
 
@@ -540,7 +383,5 @@ async function initApp() {
     hideResidentLoader();
   }
 }
-
-registerPwaSupport();
 
 initApp();

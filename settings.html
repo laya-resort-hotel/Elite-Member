@@ -7,11 +7,6 @@
   <meta name="theme-color" content="#0d0f12" />
   <meta name="description" content="LAYA Resident settings" />
   <link rel="icon" href="data:,">
-  <link rel="manifest" href="./manifest.webmanifest?v=20260420settings1" />
-  <link rel="apple-touch-icon" href="./assets/images/laya-app-icon-180-v20260420b.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="LAYA Resident" />
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
   <link rel="stylesheet" href="./assets/css/components.css?v=20260405lang1" />
@@ -104,23 +99,34 @@
           </span>
           <span>Change Language</span>
         </button>
-        <button class="vault-settings-item button-like" type="button" id="installAppBtn">
+        <button class="vault-settings-item button-like" type="button" id="editNameBtn">
           <span class="vault-settings-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5v10.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m8.4 11.5 3.6 3.7 3.6-3.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 18.2h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 19.5h4.2L19 8.7 15.3 5 4.5 15.8V19.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m13.8 6.5 3.7 3.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </span>
-          <span>Install LAYA Resident</span>
+          <span>Edit name</span>
         </button>
-        <button class="vault-settings-item button-like" type="button" id="updateAppBtn">
-          <span class="vault-settings-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M19 8.5A7 7 0 0 0 6.6 6.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 4.8v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 15.5A7 7 0 0 0 17.4 17.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 19.2v-4h-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-          <span>Update App Version</span>
-        </button>
-        <div class="vault-settings-item" style="display:block; padding-top:14px; padding-bottom:14px;">
-          <div style="font-weight:600; margin-bottom:6px;">LAYA Resident App</div>
-          <div id="pwaStatusText" class="muted-light" style="font-size:13px; line-height:1.5;">Checking install status...</div>
-          <div id="pwaVersionText" class="muted-light" style="font-size:12px; margin-top:6px; opacity:.82;">Version: 20260420-settings1</div>
+      </section>
+
+      <section id="editNamePanel" class="panel glass hidden" style="margin-top:16px;">
+        <div class="resident-login-panel-head">
+          <div>
+            <h3>Edit display name</h3>
+            <p class="muted">Update the name shown on your Member card and Home page.</p>
+          </div>
+          <span class="pill gold-pill">Profile</span>
         </div>
+        <label class="field-label" for="settingsFirstName">First name</label>
+        <input id="settingsFirstName" class="input" type="text" placeholder="First name" autocomplete="given-name" />
+        <label class="field-label" for="settingsLastName">Last name</label>
+        <input id="settingsLastName" class="input" type="text" placeholder="Last name" autocomplete="family-name" />
+        <div class="row gap wrap mt-md">
+          <button id="saveNameBtn" class="primary-btn" type="button">Save name</button>
+          <button id="cancelEditNameBtn" class="ghost-btn" type="button">Cancel</button>
+        </div>
+        <div id="editNameStatus" class="info-note hidden mt-sm"></div>
+      </section>
+
+      <section class="vault-settings-list">
       </section>
     </main>
   </div>

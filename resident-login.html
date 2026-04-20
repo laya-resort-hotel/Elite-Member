@@ -7,11 +7,6 @@
   <meta name="theme-color" content="#0d0f12" />
   <meta name="description" content="LAYA Resident login" />
   <link rel="icon" href="data:,">
-  <link rel="manifest" href="./manifest.webmanifest?v=20260420name1" />
-  <link rel="apple-touch-icon" href="./assets/images/laya-app-icon-180-v20260420b.png" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="LAYA Resident" />
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
   <link rel="stylesheet" href="./assets/css/components.css?v=20260405lang1" />
@@ -69,7 +64,7 @@
         <div class="panel glass resident-auth-panel resident-auth-panel-elevated">
           <div class="resident-auth-intro resident-auth-intro-clean">
             <div class="vault-section-title resident-owner-privilege-title">Owner Privilege</div>
-            <p>Sign in with your email and 6-digit PIN, or activate owner access with an invitation code for first-time registration.</p>
+            <p>Sign in with your email and password, or activate owner access with an invitation code for first-time registration.</p>
           </div>
 
           <div id="residentSessionFlash" class="resident-session-flash hidden"></div>
@@ -110,15 +105,15 @@
             <div class="resident-login-panel-head">
               <div>
                 <h3>Resident Log In</h3>
-                <p id="residentLoginHint" class="muted">Use your resident email and 6-digit PIN to access your account.</p>
+                <p id="residentLoginHint" class="muted">Use your resident email and password to access your account.</p>
               </div>
               <span class="pill gold-pill">Secure</span>
             </div>
 
             <label class="field-label" for="residentLoginIdentifier">Email</label>
             <input id="residentLoginIdentifier" class="input" type="email" placeholder="resident@example.com" autocomplete="username" />
-            <label class="field-label" for="residentLoginPassword">6-digit PIN</label>
-            <input id="residentLoginPassword" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="current-password" />
+            <label class="field-label" for="residentLoginPassword">Password</label>
+            <input id="residentLoginPassword" class="input" type="password" placeholder="Enter your password" autocomplete="current-password" />
 
             <div class="resident-login-options">
               <label class="remember-choice" for="residentRememberMe">
@@ -128,7 +123,7 @@
                   <small>Recommended for the owner's personal device.</small>
                 </span>
               </label>
-              <button id="forgotPasswordBtn" class="ghost-btn compact-btn" type="button">Forgot PIN?</button>
+              <button id="forgotPasswordBtn" class="ghost-btn compact-btn" type="button">Forgot Password?</button>
             </div>
 
             <div class="row gap wrap mt-md">
@@ -162,11 +157,17 @@
               <span class="pill gold-pill">Invite only</span>
             </div>
 
+            <label class="field-label" for="residentSignupFirstName">First name</label>
+            <input id="residentSignupFirstName" class="input" type="text" placeholder="e.g. Sanjorn" autocomplete="given-name" />
+
+            <label class="field-label" for="residentSignupLastName">Last name</label>
+            <input id="residentSignupLastName" class="input" type="text" placeholder="e.g. Wong" autocomplete="family-name" />
+
             <label class="field-label" for="residentSignupEmail">Email</label>
             <input id="residentSignupEmail" class="input" type="email" placeholder="owner@example.com" autocomplete="email" />
 
-            <label class="field-label" for="residentSignupPin">6-digit PIN</label>
-            <input id="residentSignupPin" class="input" type="password" inputmode="numeric" maxlength="6" placeholder="e.g. 246810" autocomplete="new-password" />
+            <label class="field-label" for="residentSignupPin">Password</label>
+            <input id="residentSignupPin" class="input" type="password" minlength="6" placeholder="At least 6 characters" autocomplete="new-password" />
 
             <label class="field-label" for="residentSignupInviteCode">Invitation code</label>
             <input id="residentSignupInviteCode" class="input" type="text" maxlength="10" placeholder="e.g. SWFKG" />
