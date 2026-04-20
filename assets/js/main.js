@@ -378,4 +378,15 @@ async function initApp() {
   }
 }
 
+function registerPwaSupport() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js?v=20260420icon1').catch((error) => {
+      console.warn('Service worker registration failed:', error);
+    });
+  }, { once: true });
+}
+
+registerPwaSupport();
+
 initApp();

@@ -1,0 +1,25 @@
+{
+  "id": "./resident-login.html",
+  "name": "LAYA Suites & Residences",
+  "short_name": "LAYA",
+  "description": "LAYA Suites & Residences resident access.",
+  "start_url": "./resident-login.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d0f12",
+  "icons": [
+    {
+      "src": "./assets/images/laya-app-icon-192-v20260420.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/images/laya-app-icon-512-v20260420.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
