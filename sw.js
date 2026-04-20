@@ -1,8 +1,9 @@
-const CACHE_NAME = 'laya-pwa-v20260420-name1';
+const CACHE_NAME = 'laya-resident-pwa-v20260420-settings1';
 const CORE_ASSETS = [
   './',
+  './settings.html',
   './resident-login.html',
-  './manifest.webmanifest?v=20260420name1',
+  './manifest.webmanifest?v=20260420settings1',
   './assets/images/laya-app-icon-192-v20260420b.png',
   './assets/images/laya-app-icon-512-v20260420b.png'
 ];

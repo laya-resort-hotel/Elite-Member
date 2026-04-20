@@ -7,6 +7,11 @@
   <meta name="theme-color" content="#0d0f12" />
   <meta name="description" content="LAYA Resident settings" />
   <link rel="icon" href="data:,">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260420settings1" />
+  <link rel="apple-touch-icon" href="./assets/images/laya-app-icon-180-v20260420b.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="LAYA Resident" />
   <link rel="stylesheet" href="./assets/css/base.css" />
   <link rel="stylesheet" href="./assets/css/layout.css" />
   <link rel="stylesheet" href="./assets/css/components.css?v=20260405lang1" />
@@ -99,6 +104,23 @@
           </span>
           <span>Change Language</span>
         </button>
+        <button class="vault-settings-item button-like" type="button" id="installAppBtn">
+          <span class="vault-settings-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5v10.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m8.4 11.5 3.6 3.7 3.6-3.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 18.2h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span>Install LAYA Resident</span>
+        </button>
+        <button class="vault-settings-item button-like" type="button" id="updateAppBtn">
+          <span class="vault-settings-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M19 8.5A7 7 0 0 0 6.6 6.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 4.8v4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 15.5A7 7 0 0 0 17.4 17.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 19.2v-4h-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span>Update App Version</span>
+        </button>
+        <div class="vault-settings-item" style="display:block; padding-top:14px; padding-bottom:14px;">
+          <div style="font-weight:600; margin-bottom:6px;">LAYA Resident App</div>
+          <div id="pwaStatusText" class="muted-light" style="font-size:13px; line-height:1.5;">Checking install status...</div>
+          <div id="pwaVersionText" class="muted-light" style="font-size:12px; margin-top:6px; opacity:.82;">Version: 20260420-settings1</div>
+        </div>
       </section>
     </main>
   </div>
